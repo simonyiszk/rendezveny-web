@@ -13,8 +13,9 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./backend
 
     steps:
     - uses: actions/checkout@v2
@@ -22,6 +23,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12.x
+    - run: npm install
+      working-directory: ${{env.working-directory}}
     - run: npm run lint
+      working-directory: ${{env.working-directory}}
     - run: npm run build
+      working-directory: ${{env.working-directory}}
     - run: npm run test
+      working-directory: ${{env.working-directory}}
