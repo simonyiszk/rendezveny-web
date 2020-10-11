@@ -138,7 +138,7 @@ module.exports = {
 			{ selector: 'variableLike', format: ['camelCase', 'UPPER_CASE'] },
 			{ selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
 			{ selector: 'memberLike', format: ['camelCase'] },
-			{ selector: 'property', modifiers: ['private'], format: ['PascalCase'], prefix: ['m'] },
+			// { selector: 'property', modifiers: ['private'], format: ['PascalCase'], prefix: ['m'] },
 			{ selector: 'property', modifiers: ['static', 'readonly'], format: ['UPPER_CASE'] },
 			{ selector: 'property', modifiers: ['private', 'static', 'readonly'], format: ['UPPER_CASE'] },
 			{ selector: 'enumMember', format: ['UPPER_CASE'] },
