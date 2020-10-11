@@ -1,5 +1,5 @@
 frontend:
- - ./frontend/*
+ - ./frontend/**/*
 
 backend:
- - ./backend/*
+ - ./backend/**/*
