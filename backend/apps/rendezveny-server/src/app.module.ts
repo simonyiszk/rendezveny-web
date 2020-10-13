@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ApiV1Module } from './api/v1/api.v1';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataModule } from './data/DataModule';
+import { BusinessModule } from './business/BusinessModule';
 
 @Module({
 	imports: [
@@ -15,6 +16,10 @@ import { DataModule } from './data/DataModule';
 			autoSchemaFile: join(process.cwd(), 'apps/rendezveny-server/src/api/v1/schema.gql'),
 			sortSchema: true
 		}),
+		ApiV1Module,
+
+		BusinessModule,
+
 		TypeOrmModule.forRootAsync({
 			useFactory: async() => {
 				const ormconfig = await import('../ormconfig');
@@ -31,7 +36,6 @@ import { DataModule } from './data/DataModule';
 				};
 			}
 		}),
-		ApiV1Module,
 		DataModule
 	]
 })
