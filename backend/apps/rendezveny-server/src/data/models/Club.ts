@@ -10,8 +10,8 @@ export class Club {
 	@Column()
 	public name!: string;
 
-	@OneToMany(_ => ClubMembership, membership => membership.club, {
+	@OneToMany(_ => ClubMembership, async membership => membership.club, {
 		onDelete: 'CASCADE'
 	})
-	public memberships!: ClubMembership[];
+	public memberships!: Promise<ClubMembership[]>;
 }

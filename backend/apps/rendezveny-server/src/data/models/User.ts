@@ -18,13 +18,13 @@ export class User {
 	@Column()
 	public isSuspended!: boolean;
 
-	@OneToOne(_ => LocalIdentity, localIdentity => localIdentity.user, {
+	@OneToOne(_ => LocalIdentity, async localIdentity => localIdentity.user, {
 		onDelete: 'CASCADE'
 	})
-	public localIdentity?: LocalIdentity;
+	public localIdentity?: Promise<LocalIdentity>;
 
-	@OneToMany(_ => ClubMembership, membership => membership.user, {
+	@OneToMany(_ => ClubMembership, async membership => membership.user, {
 		onDelete: 'CASCADE'
 	})
-	public memberships: ClubMembership[];
+	public memberships!: Promise<ClubMembership[]>;
 }

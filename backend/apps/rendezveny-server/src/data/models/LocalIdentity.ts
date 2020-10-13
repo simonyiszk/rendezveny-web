@@ -16,7 +16,7 @@ export class LocalIdentity {
 	@Column()
 	public salt!: string;
 
-	@OneToOne(_ => User, user => user.localIdentity)
+	@OneToOne(_ => User, async user => user.localIdentity)
 	@JoinColumn()
-	public user!: User;
+	public user!: Promise<User>;
 }

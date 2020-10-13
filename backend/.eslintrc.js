@@ -148,7 +148,9 @@ module.exports = {
 		'@typescript-eslint/no-extra-non-null-assertion': ['error'],
 		'@typescript-eslint/no-floating-promises': 'error',
 		'@typescript-eslint/no-implied-eval': 'error',
+		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
+		'@typescript-eslint/no-non-null-assertion': 'off',
 		'@typescript-eslint/no-require-imports': 'error',
 		'@typescript-eslint/no-throw-literal': 'error',
 		'@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
@@ -168,7 +170,7 @@ module.exports = {
 		'@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
 		'@typescript-eslint/strict-boolean-expressions': 'error',
 		'@typescript-eslint/switch-exhaustiveness-check': 'error',
-		'@typescript-eslint/unified-signatures': 'error',
+		// '@typescript-eslint/unified-signatures': 'error',
 
 		// Formatting
 		'array-bracket-newline': ['error', 'consistent'],
