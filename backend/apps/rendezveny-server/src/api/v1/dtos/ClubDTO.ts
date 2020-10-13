@@ -4,26 +4,26 @@ import { PaginatedDTO } from '../utils/PaginatedDTO';
 import { PaginatedMembershipDTO } from './MembershipDTO';
 
 @ObjectType({
-	description: 'The data of a user'
+	description: 'The data of a club'
 })
-export class UserDTO {
+export class ClubDTO {
 	@Field({
-		description: 'The id of a user'
+		description: 'The id of a club'
 	})
 	public id: string = '';
 
 	@Field({
-		description: 'The name of the user'
+		description: 'The name of the club'
 	})
 	public name: string = '';
 
 	@Field(_ => PaginatedMembershipDTO, {
-		description: 'The club memberships of the user'
+		description: 'The club memberships of the club'
 	})
 	public clubMemberships?: PaginatedMembershipDTO;
 }
 
 @ObjectType({
-	description: 'Paginated data of users'
+	description: 'Paginated data of clubs'
 })
-export class PaginatedUserDTO extends PaginatedDTO(UserDTO) {}
+export class PaginatedClubDTO extends PaginatedDTO(ClubDTO) {}
