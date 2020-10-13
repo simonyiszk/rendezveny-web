@@ -15,6 +15,8 @@
 		"start:debug": "nest start --debug --watch",
 		"start:prod": "node dist/main",
 
+		"seed:dev": "ts-node -r tsconfig-paths/register apps/rendezveny-server/src/data/seed/seed-database.ts",
+
 		"lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
 
 		"test": "jest",
