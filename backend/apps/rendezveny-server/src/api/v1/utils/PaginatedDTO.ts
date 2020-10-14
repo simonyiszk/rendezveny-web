@@ -1,5 +1,5 @@
 import { Type } from '@nestjs/common';
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Args, Field, Int, ObjectType } from '@nestjs/graphql';
 
 interface IPaginatedType<T> {
 	nodes: T[];
@@ -8,7 +8,7 @@ interface IPaginatedType<T> {
 	offset?: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PaginatedDTO<T>(classRef: Type<T>): new() => IPaginatedType<T> {
 	@ObjectType({ isAbstract: true })
 	class BasePaginatedType implements IPaginatedType<T> {
@@ -36,4 +36,22 @@ export function PaginatedDTO<T>(classRef: Type<T>): new() => IPaginatedType<T> {
 	}
 
 	return BasePaginatedType;
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function PageSize(): ParameterDecorator {
+	return Args('pageSize', {
+		description: 'The size of the page',
+		type: () => Int,
+		defaultValue: 100
+	});
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function Offset(): ParameterDecorator {
+	return Args('offset', {
+		description: 'The offset of the page',
+		type: () => Int,
+		defaultValue: 0
+	});
 }

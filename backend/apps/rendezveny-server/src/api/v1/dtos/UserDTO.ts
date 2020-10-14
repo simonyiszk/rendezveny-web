@@ -2,6 +2,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { PaginatedDTO } from '../utils/PaginatedDTO';
 import { PaginatedMembershipDTO } from './MembershipDTO';
+import { LocalIdentityDTO } from './LocalIdentityDTO';
 
 @ObjectType({
 	description: 'The data of a user'
@@ -21,6 +22,12 @@ export class UserDTO {
 		description: 'The club memberships of the user'
 	})
 	public clubMemberships?: PaginatedMembershipDTO;
+
+	@Field(_ => LocalIdentityDTO, {
+		nullable: true,
+		description: 'The local identity of the user (if has one)'
+	})
+	public localIdentity?: LocalIdentityDTO;
 }
 
 @ObjectType({
