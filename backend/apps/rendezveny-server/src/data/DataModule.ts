@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './models/User';
 import { LocalIdentity } from './models/LocalIdentity';
@@ -16,4 +16,25 @@ import { RefreshToken } from './models/RefreshToken';
 		TypeOrmModule
 	]
 })
-export class DataModule {}
+export class DataModule {
+	public static forRoot(): DynamicModule[] {
+		return [
+			TypeOrmModule.forRootAsync({
+				useFactory: async() => {
+					const ormconfig = await import('../../ormconfig');
+					return {
+						type: ormconfig.type as 'mysql',
+						host: ormconfig.host,
+						port: ormconfig.port,
+						username: ormconfig.username,
+						password: ormconfig.password,
+						database: ormconfig.database,
+
+						autoLoadEntities: true,
+						logging: ['warn', 'error', 'query']
+					};
+				}
+			})
+		];
+	}
+}
