@@ -1,4 +1,4 @@
-import { checkArgument } from '../../utils/preconditions';
+import { checkArgument } from '../../../utils/preconditions';
 import { InvalidPaginationPageSizeException } from './InvalidPaginationPageSizeException';
 import { InvalidPaginationOffsetException } from './InvalidPaginationOffsetException';
 import { isInt } from 'class-validator';

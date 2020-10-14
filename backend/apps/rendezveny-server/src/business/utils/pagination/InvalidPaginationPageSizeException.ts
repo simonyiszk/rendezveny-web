@@ -1,4 +1,4 @@
-import { BusinessException } from './BusinessException';
+import { BusinessException } from '../BusinessException';
 
 export class InvalidPaginationPageSizeException extends BusinessException {
 	public constructor(pageSize: number) {

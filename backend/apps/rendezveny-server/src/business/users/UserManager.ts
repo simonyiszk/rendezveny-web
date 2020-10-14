@@ -15,12 +15,12 @@ import { LocalIdentityUserExistsWithEmailException } from './exceptions/LocalIde
 import {
 	LocalIdentityUserExistsWithUsernameException
 } from './exceptions/LocalIdentityUserExistsWithUsernameException';
-import { checkPagination } from '../utils/CheckPagination';
+import { checkPagination } from '../utils/pagination/CheckPagination';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClubMembership } from '../../data/models/ClubMembership';
 import { nameof } from '../../utils/nameof';
 import { AccessToken } from '../auth/AuthTokens';
-import { checkPermission } from '../utils/CheckPermissions';
+import { checkPermission } from '../utils/permissions/CheckPermissions';
 import { ClubRole } from '../../data/models/ClubRole';
 
 @Injectable()

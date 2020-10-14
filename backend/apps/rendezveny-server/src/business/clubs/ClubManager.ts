@@ -7,11 +7,11 @@ import { ClubDoesNotExistsException } from './exceptions/ClubDoesNotExistsExcept
 import { ClubMembership } from '../../data/models/ClubMembership';
 import { InjectRepository } from '@nestjs/typeorm';
 import { nameof } from '../../utils/nameof';
-import { checkPagination } from '../utils/CheckPagination';
+import { checkPagination } from '../utils/pagination/CheckPagination';
 import { isNotEmpty } from 'class-validator';
 import { ClubNameValidationException } from './exceptions/ClubNameValidationException';
 import { AccessToken } from '../auth/AuthTokens';
-import { checkPermission } from '../utils/CheckPermissions';
+import { checkPermission } from '../utils/permissions/CheckPermissions';
 import { UserRole } from '../../data/models/UserRole';
 import { ClubRole } from '../../data/models/ClubRole';
 

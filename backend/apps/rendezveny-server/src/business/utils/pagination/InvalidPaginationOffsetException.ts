@@ -1,4 +1,4 @@
-import { BusinessException } from './BusinessException';
+import { BusinessException } from '../BusinessException';
 
 export class InvalidPaginationOffsetException extends BusinessException {
 	public constructor(offset: number) {
