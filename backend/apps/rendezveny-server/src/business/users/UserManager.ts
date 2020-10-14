@@ -2,17 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager, Repository, Transaction, TransactionManager } from 'typeorm';
 import { User } from '../../data/models/User';
 import { checkArgument } from '../../utils/preconditions';
-import { UserDoesNotExistsException } from './UserDoesNotExistsException';
+import { UserDoesNotExistsException } from './exceptions/UserDoesNotExistsException';
 import { UserRole } from '../../data/models/UserRole';
 import { CryptoService } from '../crypto/CryptoService';
-import { UserNameValidationException } from './UserNameValidationException';
-import { UserUserNameValidationException } from './UserUserNameValidationException';
+import { UserNameValidationException } from './exceptions/UserNameValidationException';
+import { UserUserNameValidationException } from './exceptions/UserUserNameValidationException';
 import { isEmail, isNotEmpty, matches, minLength } from 'class-validator';
-import { UserEmailValidationException } from './UserEmailValidationException';
-import { UserPasswordValidationException } from './UserPasswordValidationException';
+import { UserEmailValidationException } from './exceptions/UserEmailValidationException';
+import { UserPasswordValidationException } from './exceptions/UserPasswordValidationException';
 import { LocalIdentity } from '../../data/models/LocalIdentity';
-import { LocalIdentityUserExistsWithEmailException } from './LocalIdentityUserExistsWithEmailException';
-import { LocalIdentityUserExistsWithUsernameException } from './LocalIdentityUserExistsWithUsernameException';
+import { LocalIdentityUserExistsWithEmailException } from './exceptions/LocalIdentityUserExistsWithEmailException';
+import {
+	LocalIdentityUserExistsWithUsernameException
+} from './exceptions/LocalIdentityUserExistsWithUsernameException';
 import { checkPagination } from '../utils/CheckPagination';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClubMembership } from '../../data/models/ClubMembership';
