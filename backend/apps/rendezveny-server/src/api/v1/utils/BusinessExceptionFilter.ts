@@ -6,6 +6,7 @@ import { GraphQLError } from 'graphql';
 @Catch(BusinessException)
 export class BusinessExceptionFilter implements GqlExceptionFilter {
 	public catch(exception: BusinessException, _host: ArgumentsHost): GraphQLError {
+		console.error(exception);
 		return new GraphQLError(
 			exception.message,
 			null,
