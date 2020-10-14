@@ -16,8 +16,10 @@ describe('AppController (e2e)', () => {
 		await app.init();
 	});
 
-	it('/ (GET)', async() => request(app.getHttpServer())
-		.get('/')
-		.expect(SUCCESS)
-		.expect('Hello World!'));
+	it('/ (POST)', async() => request(app.getHttpServer())
+		.post('/api/v1')
+		.send({ operationName: 'IntrospectionQuery',
+			variables: {},
+			query: 'query IntrospectionQuery { __schema { queryType { name } }' })
+		.expect(SUCCESS));
 });
