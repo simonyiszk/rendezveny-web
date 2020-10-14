@@ -6,7 +6,7 @@ import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { UserManager } from '../../../business/users/UserManager';
 import { MembershipResolver } from './MembershipResolver';
 import { LocalIdentityDTO } from '../dtos/LocalIdentityDTO';
-import { AccessContext } from '../../../business/auth/AuthAccessJwtStrategy';
+import { AccessContext } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessToken } from '../../../business/auth/AuthTokens';
 
 @Resolver((_: never) => UserDTO)

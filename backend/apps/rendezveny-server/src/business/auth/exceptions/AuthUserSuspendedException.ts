@@ -1,4 +1,4 @@
-import { BusinessException } from '../utils/BusinessException';
+import { BusinessException } from '../../utils/BusinessException';
 
 export class AuthUserSuspendedException extends BusinessException {
 	public constructor() {

@@ -6,8 +6,8 @@ import { UserManager } from './users/UserManager';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthManager } from './auth/AuthManager';
-import { AuthRefreshJwtStrategy } from './auth/AuthRefreshJwtStrategy';
-import { AuthAccessJwtStrategy } from './auth/AuthAccessJwtStrategy';
+import { AuthRefreshJwtStrategy } from './auth/passport/AuthRefreshJwtStrategy';
+import { AuthAccessJwtStrategy } from './auth/passport/AuthAccessJwtStrategy';
 
 @Module({
 	imports: [

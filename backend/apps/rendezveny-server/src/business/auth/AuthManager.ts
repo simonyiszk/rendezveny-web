@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { checkArgument } from '../../utils/preconditions';
 import { isNotEmpty } from 'class-validator';
-import { AuthUserNameValidationException } from './AuthUserNameValidationException';
-import { AuthPasswordValidationException } from './AuthPasswordValidationException';
+import { AuthUserNameValidationException } from './exceptions/AuthUserNameValidationException';
+import { AuthPasswordValidationException } from './exceptions/AuthPasswordValidationException';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../data/models/User';
 import { EntityManager, Repository, Transaction, TransactionManager } from 'typeorm';
@@ -11,11 +11,11 @@ import { LocalIdentity } from '../../data/models/LocalIdentity';
 import { nameof } from '../../utils/nameof';
 import { ClubMembership } from '../../data/models/ClubMembership';
 import { CryptoService } from '../crypto/CryptoService';
-import { AuthInvalidUsernameOrPasswordException } from './AuthInvalidUsernameOrPasswordException';
-import { AuthInvalidTokenException } from './AuthInvalidTokenException';
+import { AuthInvalidUsernameOrPasswordException } from './exceptions/AuthInvalidUsernameOrPasswordException';
+import { AuthInvalidTokenException } from './exceptions/AuthInvalidTokenException';
 import { AccessToken, RefreshToken } from './AuthTokens';
 import { RefreshToken as RefreshTokenEntity } from '../../data/models/RefreshToken';
-import { AuthUserSuspendedException } from './AuthUserSuspendedException';
+import { AuthUserSuspendedException } from './exceptions/AuthUserSuspendedException';
 
 @Injectable()
 export class AuthManager {

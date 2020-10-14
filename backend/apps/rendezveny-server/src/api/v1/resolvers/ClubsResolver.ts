@@ -8,7 +8,7 @@ import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { GraphQLBoolean } from 'graphql';
 import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { MembershipResolver } from './MembershipResolver';
-import { AccessContext, AuthAccessGuard } from '../../../business/auth/AuthAccessJwtStrategy';
+import { AccessContext, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessToken } from '../../../business/auth/AuthTokens';
 
 @Resolver((_: never) => ClubDTO)

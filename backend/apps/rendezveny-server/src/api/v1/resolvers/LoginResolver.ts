@@ -3,7 +3,7 @@ import { GraphQLBoolean, GraphQLString } from 'graphql';
 import { AuthManager } from '../../../business/auth/AuthManager';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
-import { AuthRefreshGuard, RefreshContext } from '../../../business/auth/AuthRefreshJwtStrategy';
+import { AuthRefreshGuard, RefreshContext } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
 import { RefreshToken } from '../../../business/auth/AuthTokens';
 import { LoginDTO } from '../dtos/LoginDTO';
 
