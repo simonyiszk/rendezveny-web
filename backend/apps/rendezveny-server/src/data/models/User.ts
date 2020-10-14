@@ -2,12 +2,13 @@ import { Column, Entity, Generated, OneToMany, OneToOne, PrimaryColumn } from 't
 import { UserRole } from './UserRole';
 import { LocalIdentity } from './LocalIdentity';
 import { ClubMembership } from './ClubMembership';
+import { RefreshToken } from './RefreshToken';
 
 @Entity()
 export class User {
 	@PrimaryColumn()
 	@Generated('uuid')
-	public id!: string;
+	public readonly id!: string;
 
 	@Column()
 	public name!: string;
@@ -18,13 +19,38 @@ export class User {
 	@Column()
 	public isSuspended!: boolean;
 
-	@OneToOne(_ => LocalIdentity, async localIdentity => localIdentity.user, {
+	@OneToOne(_ => LocalIdentity, localIdentity => localIdentity.user, {
 		onDelete: 'CASCADE'
 	})
-	public localIdentity?: Promise<LocalIdentity>;
+	public localIdentity?: LocalIdentity;
 
-	@OneToMany(_ => ClubMembership, async membership => membership.user, {
+	@OneToMany(_ => ClubMembership, membership => membership.user, {
 		onDelete: 'CASCADE'
 	})
-	public memberships!: Promise<ClubMembership[]>;
+	public memberships!: ClubMembership[];
+
+	@OneToMany(_ => RefreshToken, token => token.user, {
+		onDelete: 'CASCADE'
+	})
+	public refreshTokens!: RefreshToken[];
+
+	public constructor(params?: {
+		name: string,
+		role?: UserRole,
+		isSuspended?: boolean,
+		localIdentity?: LocalIdentity,
+		memberships?: ClubMembership[]
+	}) {
+		if(params) {
+			this.name = params.name;
+			this.role = params.role ?? UserRole.USER;
+			this.isSuspended = params.isSuspended ?? false;
+			if(params.localIdentity) {
+				this.localIdentity = params.localIdentity;
+			}
+			if(params.memberships) {
+				this.memberships = params.memberships;
+			}
+		}
+	}
 }

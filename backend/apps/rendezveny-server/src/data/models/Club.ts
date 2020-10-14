@@ -5,13 +5,25 @@ import { ClubMembership } from './ClubMembership';
 export class Club {
 	@PrimaryColumn()
 	@Generated('uuid')
-	public id!: string;
+	public readonly id!: string;
 
 	@Column()
 	public name!: string;
 
-	@OneToMany(_ => ClubMembership, async membership => membership.club, {
+	@OneToMany(_ => ClubMembership, membership => membership.club, {
 		onDelete: 'CASCADE'
 	})
-	public memberships!: Promise<ClubMembership[]>;
+	public memberships!: ClubMembership[];
+
+	public constructor(params?: {
+		name: string,
+		memberships?: ClubMembership[]
+	}) {
+		if(params) {
+			this.name = params.name;
+			if(params.memberships) {
+				this.memberships = params.memberships;
+			}
+		}
+	}
 }
