@@ -1,16 +1,36 @@
 import { Club } from './Club';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from './User';
 import { ClubRole } from './ClubRole';
 
 @Entity()
 export class ClubMembership {
-	@ManyToOne(_ => Club, async club => club.memberships, { primary: true })
-	public club!: Promise<Club>;
+	@PrimaryColumn()
+	public readonly clubId?: string;
 
-	@ManyToOne(_ => User, async user => user.memberships, { primary: true })
-	public user!: Promise<User>;
+	@ManyToOne(_ => Club, club => club.memberships, { eager: true })
+	@JoinColumn({ name: 'clubId' })
+	public club!: Club;
+
+	@PrimaryColumn()
+	public readonly userId?: string;
+
+	@ManyToOne(_ => User, user => user.refreshTokens, { eager: true })
+	@JoinColumn({ name: 'userId' })
+	public user!: User;
 
 	@Column('enum', { enum: ClubRole })
 	public clubRole!: ClubRole;
+
+	public constructor(params?: {
+		club: Club,
+		user: User,
+		clubRole?: ClubRole
+	}) {
+		if(params) {
+			this.club = params.club;
+			this.user = params.user;
+			this.clubRole = params.clubRole ?? ClubRole.MEMBER;
+		}
+	}
 }
