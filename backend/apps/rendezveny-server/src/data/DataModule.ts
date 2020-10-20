@@ -5,11 +5,23 @@ import { LocalIdentity } from './models/LocalIdentity';
 import { Club } from './models/Club';
 import { ClubMembership } from './models/ClubMembership';
 import { RefreshToken } from './models/RefreshToken';
+import { Event } from './models/Event';
+import { Organizer } from './models/Organizer';
+import { Registration } from './models/Registration';
+import { Tag } from './models/Tag';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([
-			User, LocalIdentity, Club, ClubMembership, RefreshToken
+			Club,
+			ClubMembership,
+			Event,
+			LocalIdentity,
+			Organizer,
+			RefreshToken,
+			Registration,
+			Tag,
+			User
 		])
 	],
 	exports: [

@@ -2,6 +2,7 @@ import { Club } from './Club';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from './User';
 import { ClubRole } from './ClubRole';
+import { nameof } from '../../utils/nameof';
 
 @Entity()
 export class ClubMembership {
@@ -9,14 +10,14 @@ export class ClubMembership {
 	public readonly clubId?: string;
 
 	@ManyToOne(_ => Club, club => club.memberships, { eager: true })
-	@JoinColumn({ name: 'clubId' })
+	@JoinColumn({ name: nameof<ClubMembership>('clubId') })
 	public club!: Club;
 
 	@PrimaryColumn()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.refreshTokens, { eager: true })
-	@JoinColumn({ name: 'userId' })
+	@ManyToOne(_ => User, user => user.memberships, { eager: true })
+	@JoinColumn({ name: nameof<ClubMembership>('userId') })
 	public user!: User;
 
 	@Column('enum', { enum: ClubRole })

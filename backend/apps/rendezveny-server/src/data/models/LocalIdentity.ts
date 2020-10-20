@@ -1,8 +1,9 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, Unique } from 'typeorm';
 import { User } from './User';
+import { nameof } from '../../utils/nameof';
 
 @Entity()
-@Unique(['email'])
+@Unique([nameof<LocalIdentity>('email')])
 export class LocalIdentity {
 	@PrimaryColumn()
 	public username!: string;

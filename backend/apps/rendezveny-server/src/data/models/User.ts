@@ -3,6 +3,8 @@ import { UserRole } from './UserRole';
 import { LocalIdentity } from './LocalIdentity';
 import { ClubMembership } from './ClubMembership';
 import { RefreshToken } from './RefreshToken';
+import { Registration } from './Registration';
+import { Organizer } from './Organizer';
 
 @Entity()
 export class User {
@@ -33,6 +35,16 @@ export class User {
 		onDelete: 'CASCADE'
 	})
 	public refreshTokens!: RefreshToken[];
+
+	@OneToMany(_ => Registration, registration => registration.user, {
+		onDelete: 'CASCADE'
+	})
+	public registrations!: Registration[];
+
+	@OneToMany(_ => Organizer, organizing => organizing.user, {
+		onDelete: 'CASCADE'
+	})
+	public organizing!: Organizer[];
 
 	public constructor(params?: {
 		name: string,

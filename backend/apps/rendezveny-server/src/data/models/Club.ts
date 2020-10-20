@@ -1,5 +1,6 @@
-import { Column, Entity, Generated, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Generated, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
 import { ClubMembership } from './ClubMembership';
+import { Event } from './Event';
 
 @Entity()
 export class Club {
@@ -14,6 +15,9 @@ export class Club {
 		onDelete: 'CASCADE'
 	})
 	public memberships!: ClubMembership[];
+
+	@ManyToMany(_ => Event, event => event.hostingClubs)
+	public hostedEvents!: Event[];
 
 	public constructor(params?: {
 		name: string,

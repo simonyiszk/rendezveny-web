@@ -1,5 +1,6 @@
 import { Entity, Generated, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from './User';
+import { nameof } from '../../utils/nameof';
 
 @Entity()
 export class RefreshToken {
@@ -11,7 +12,7 @@ export class RefreshToken {
 	public readonly userId?: string;
 
 	@ManyToOne(_ => User, user => user.refreshTokens, { eager: true })
-	@JoinColumn({ name: 'userId' })
+	@JoinColumn({ name: nameof<RefreshToken>('userId') })
 	public user!: User;
 
 	public constructor(params?: {
