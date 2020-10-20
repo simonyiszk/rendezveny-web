@@ -19,9 +19,8 @@ import { checkPagination } from '../utils/pagination/CheckPagination';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClubMembership } from '../../data/models/ClubMembership';
 import { nameof } from '../../utils/nameof';
-import { AccessToken } from '../auth/AuthTokens';
+import { AccessContext } from '../auth/AuthTokens';
 import { checkPermission } from '../utils/permissions/CheckPermissions';
-import { ClubRole } from '../../data/models/ClubRole';
 
 @Injectable()
 export class UserManager {
@@ -49,19 +48,19 @@ export class UserManager {
 	) {}
 
 	public async getAllUsers(
-		accessContext: AccessToken
+		accessContext: AccessContext
 	): Promise<{ users: User[], count: number}> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const [users, count] = await this.userRepository.findAndCount();
 		return { users, count };
 	}
 
 	public async getAllUsersPaginated(
-		accessContext: AccessToken, pageSize: number, offset: number
+		accessContext: AccessContext, pageSize: number, offset: number
 	): Promise<{ users: User[], count: number}> {
 		checkPagination(pageSize, offset);
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const [users, count] = await this.userRepository.findAndCount({
 			take: pageSize,
@@ -72,7 +71,7 @@ export class UserManager {
 	}
 
 	public async getUser(
-		accessContext: AccessToken, id: string
+		accessContext: AccessContext, id: string
 	): Promise<User> {
 		const user = await this.userRepository.findOne({ id }, {
 			relations: [
@@ -80,31 +79,28 @@ export class UserManager {
 			]
 		});
 
-		checkPermission(
-			accessContext.rol === UserRole.USER && accessContext.uid === id,
-			accessContext.rol === UserRole.USER && accessContext.clb
-				.filter(clb => clb.rol === ClubRole.CLUB_MANAGER)
-				.some(clb => user?.memberships.map(m => m.club.id).includes(clb.cid)),
-			accessContext.rol === UserRole.ADMIN
-		);
-
 		if(!user) {
 			throw new UserDoesNotExistsException(id);
 		}
-		else {
-			return user;
-		}
+
+		checkPermission(
+			accessContext.isUser() && accessContext.isSameUser(user),
+			accessContext.isUser() && accessContext.isManagerOfUser(user),
+			accessContext.isAdmin()
+		);
+
+		return user;
 	}
 
 	@Transaction()
 	public async addUserWithLocalIdentity(
-		accessContext: AccessToken, name: string, username: string, email: string, password: string,
+		accessContext: AccessContext, name: string, username: string, email: string, password: string,
 	): Promise<User> {
 		checkArgument(isNotEmpty(name), UserNameValidationException);
 		checkArgument(isNotEmpty(username), UserUserNameValidationException);
 		checkArgument(isEmail(email), UserEmailValidationException);
 		UserManager.checkPassword(password);
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const identityWithEmail = await this.localIdentityRepository.findOne({ email });
 		if(!identityWithEmail) {
@@ -135,28 +131,30 @@ export class UserManager {
 
 
 	public async editUser(
-		accessContext: AccessToken, id: string, name: string,
+		accessContext: AccessContext, id: string, name: string,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<User> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
-
 		const user = await this.userRepository.findOne({ id });
 
 		if(!user) {
 			throw new UserDoesNotExistsException(id);
 		}
-		else {
-			user.name = name;
-			return this.userRepository.save(user);
-		}
+
+		checkPermission(
+			accessContext.isUser() && accessContext.isSameUser(user),
+			accessContext.isAdmin()
+		);
+
+		user.name = name;
+		return this.userRepository.save(user);
 	}
 
 	@Transaction()
 	public async editUserRole(
-		accessContext: AccessToken, id: string, role: UserRole,
+		accessContext: AccessContext, id: string, role: UserRole,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<User> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const user = await this.userRepository.findOne({ id });
 
@@ -171,10 +169,10 @@ export class UserManager {
 
 	@Transaction()
 	public async suspendUser(
-		accessContext: AccessToken, id: string,
+		accessContext: AccessContext, id: string,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<void> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const user = await this.userRepository.findOne({ id });
 
@@ -189,10 +187,10 @@ export class UserManager {
 
 	@Transaction()
 	public async unsuspendUser(
-		accessContext: AccessToken, id: string,
+		accessContext: AccessContext, id: string,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<void> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const user = await this.userRepository.findOne({ id });
 
@@ -206,7 +204,7 @@ export class UserManager {
 	}
 
 	public async getAllClubMemberships(
-		accessContext: AccessToken, id: string
+		accessContext: AccessContext, id: string
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		const user = await this.userRepository.findOne({ id }, {
 			relations: [
@@ -214,60 +212,54 @@ export class UserManager {
 			]
 		});
 
-		checkPermission(
-			accessContext.rol === UserRole.USER && accessContext.uid === id,
-			accessContext.rol === UserRole.USER && accessContext.clb
-				.filter(clb => clb.rol === ClubRole.CLUB_MANAGER)
-				.some(clb => user?.memberships.map(m => m.club.id).includes(clb.cid)),
-			accessContext.rol === UserRole.ADMIN
-		);
-
 		if(!user) {
 			throw new UserDoesNotExistsException(id);
 		}
-		else {
-			return {
-				memberships: user.memberships,
-				count: user.memberships.length
-			};
-		}
+
+		checkPermission(
+			accessContext.isUser() && accessContext.isSameUser(user),
+			accessContext.isUser() && accessContext.isManagerOfUser(user),
+			accessContext.isAdmin()
+		);
+
+		return {
+			memberships: user.memberships,
+			count: user.memberships.length
+		};
 	}
 
 	public async getAllClubMembershipsPaginated(
-		accessContext: AccessToken, id: string, pageSize: number, offset: number
+		accessContext: AccessContext, id: string, pageSize: number, offset: number
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		checkPagination(pageSize, offset);
 
 		const user = await this.userRepository.findOne({ id });
 
-		checkPermission(
-			accessContext.rol === UserRole.USER && accessContext.uid === id,
-			accessContext.rol === UserRole.USER && accessContext.clb
-				.filter(clb => clb.rol === ClubRole.CLUB_MANAGER)
-				.some(clb => user?.memberships.map(m => m.club.id).includes(clb.cid)),
-			accessContext.rol === UserRole.ADMIN
-		);
-
 		if(!user) {
 			throw new UserDoesNotExistsException(id);
 		}
-		else {
-			const [memberships, count] = await this.membershipRepository.findAndCount({
-				where: { user },
-				take: pageSize,
-				skip: offset * pageSize
-			});
-			return {
-				memberships,
-				count
-			};
-		}
+
+		checkPermission(
+			accessContext.isUser() && accessContext.isSameUser(user),
+			accessContext.isUser() && accessContext.isManagerOfUser(user),
+			accessContext.isAdmin()
+		);
+
+		const [memberships, count] = await this.membershipRepository.findAndCount({
+			where: { user },
+			take: pageSize,
+			skip: offset * pageSize
+		});
+		return {
+			memberships,
+			count
+		};
 	}
 
 	public async getLocalIdentity(
-		accessContext: AccessToken, id: string
+		accessContext: AccessContext, id: string
 	): Promise<LocalIdentity | null> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const user = await this.userRepository.findOne({ id }, {
 			relations: [

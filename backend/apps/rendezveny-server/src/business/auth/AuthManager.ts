@@ -13,7 +13,7 @@ import { ClubMembership } from '../../data/models/ClubMembership';
 import { CryptoService } from '../crypto/CryptoService';
 import { AuthInvalidUsernameOrPasswordException } from './exceptions/AuthInvalidUsernameOrPasswordException';
 import { AuthInvalidTokenException } from './exceptions/AuthInvalidTokenException';
-import { AccessToken, RefreshToken } from './AuthTokens';
+import { AccessToken, RefreshContext, RefreshToken } from './AuthTokens';
 import { RefreshToken as RefreshTokenEntity } from '../../data/models/RefreshToken';
 import { AuthUserSuspendedException } from './exceptions/AuthUserSuspendedException';
 
@@ -66,7 +66,7 @@ export class AuthManager {
 
 				return {
 					refresh: refreshToken,
-					access: await this.loginWithRefreshToken(refreshPayload)
+					access: await this.loginWithRefreshToken(new RefreshContext(refreshPayload))
 				};
 			}
 		}
@@ -75,14 +75,14 @@ export class AuthManager {
 	}
 
 	public async loginWithRefreshToken(
-		refreshContext: RefreshToken
+		refreshContext: RefreshContext
 	): Promise<string> {
-		const token = await this.refreshTokenRepository.findOne({ id: refreshContext.tid });
-		if(!token || token.user.id !== refreshContext.uid) {
+		const token = await this.refreshTokenRepository.findOne({ id: refreshContext.getTokenId() });
+		if(!token || token.user.id !== refreshContext.getUserId()) {
 			throw new AuthInvalidTokenException();
 		}
 
-		const user = await this.userRepository.findOne({ id: refreshContext.uid }, {
+		const user = await this.userRepository.findOne({ id: refreshContext.getUserId() }, {
 			relations: [
 				`${nameof<User>('memberships')}`,
 				`${nameof<User>('memberships')}.${nameof<ClubMembership>('club')}`
@@ -113,9 +113,9 @@ export class AuthManager {
 
 	@Transaction()
 	public async logout(
-		refreshContext: RefreshToken,
+		refreshContext: RefreshContext,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<void> {
-		await this.refreshTokenRepository.delete({ id: refreshContext.tid });
+		await this.refreshTokenRepository.delete({ id: refreshContext.getTokenId() });
 	}
 }

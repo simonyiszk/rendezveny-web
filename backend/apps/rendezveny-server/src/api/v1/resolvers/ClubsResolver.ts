@@ -8,8 +8,8 @@ import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { GraphQLBoolean } from 'graphql';
 import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { MembershipResolver } from './MembershipResolver';
-import { AccessContext, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
-import { AccessToken } from '../../../business/auth/AuthTokens';
+import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
+import { AccessContext } from '../../../business/auth/AuthTokens';
 
 @Resolver((_: never) => ClubDTO)
 export class ClubsResolver {
@@ -24,7 +24,7 @@ export class ClubsResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async getClubs(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
 	): Promise<PaginatedClubDTO> {
@@ -45,7 +45,7 @@ export class ClubsResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async getClub(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string
 	): Promise<ClubDTO> {
 		return this.clubManager.getClub(accessContext, id);
@@ -58,7 +58,7 @@ export class ClubsResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async addClub(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Args('name', { description: 'The name of the club' }) name: string
 	): Promise<ClubDTO> {
 		return this.clubManager.addClub(accessContext, name);
@@ -71,7 +71,7 @@ export class ClubsResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async editClub(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string,
 		@Args('name', { description: 'The name of the club' }) name: string
 	): Promise<ClubDTO> {
@@ -85,7 +85,7 @@ export class ClubsResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async deleteClub(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string
 	): Promise<boolean> {
 		await this.clubManager.deleteClub(accessContext, id);
@@ -96,7 +96,7 @@ export class ClubsResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async getUserMemberships(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Parent() club: ClubDTO,
 		@PageSize() pageSize: number,
 		@Offset() offset: number,

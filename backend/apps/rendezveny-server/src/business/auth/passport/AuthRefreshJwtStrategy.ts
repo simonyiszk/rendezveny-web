@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext, Injectable, Request } from '@nestjs/common';
 import { Token } from 'graphql';
 import { checkArgument } from '../../../utils/preconditions';
-import { isRefreshToken, RefreshToken } from '../AuthTokens';
+import { isRefreshToken, RefreshContext, RefreshToken } from '../AuthTokens';
 import { AuthInvalidTokenException } from '../exceptions/AuthInvalidTokenException';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthJwtGuard } from './AuthJwtGuard';
@@ -34,7 +34,7 @@ export class AuthRefreshGuard extends AuthJwtGuard('refresh') {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const RefreshContext = createParamDecorator((data: unknown, context: ExecutionContext) => {
+export const RefreshCtx = createParamDecorator((data: unknown, context: ExecutionContext) => {
 	const ctx = GqlExecutionContext.create(context);
-	return ctx.getContext().req.user as RefreshToken;
+	return new RefreshContext(ctx.getContext().req.user as RefreshToken);
 });

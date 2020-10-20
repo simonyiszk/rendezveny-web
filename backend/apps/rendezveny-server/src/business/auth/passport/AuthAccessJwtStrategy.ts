@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext, Injectable, Request } from '@nestjs/common';
 import { Token } from 'graphql';
 import { checkArgument } from '../../../utils/preconditions';
-import { AccessToken, isAccessToken } from '../AuthTokens';
+import { AccessContext, AccessToken, isAccessToken } from '../AuthTokens';
 import { AuthInvalidTokenException } from '../exceptions/AuthInvalidTokenException';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthJwtGuard } from './AuthJwtGuard';
@@ -34,7 +34,7 @@ export class AuthAccessGuard extends AuthJwtGuard('access') {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const AccessContext = createParamDecorator((data: unknown, context: ExecutionContext) => {
+export const AccessCtx = createParamDecorator((data: unknown, context: ExecutionContext) => {
 	const ctx = GqlExecutionContext.create(context);
-	return ctx.getContext().req.user as AccessToken;
+	return new AccessContext(ctx.getContext().req.user as AccessToken);
 });

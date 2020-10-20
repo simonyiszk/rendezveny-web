@@ -3,8 +3,8 @@ import { GraphQLBoolean, GraphQLString } from 'graphql';
 import { AuthManager } from '../../../business/auth/AuthManager';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
-import { AuthRefreshGuard, RefreshContext } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
-import { RefreshToken } from '../../../business/auth/AuthTokens';
+import { AuthRefreshGuard, RefreshCtx } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
+import { RefreshContext } from '../../../business/auth/AuthTokens';
 import { LoginDTO } from '../dtos/LoginDTO';
 
 @Resolver()
@@ -32,7 +32,7 @@ export class LoginResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthRefreshGuard)
 	public async loginWithRefreshToken(
-		@RefreshContext() refreshContext: RefreshToken
+		@RefreshCtx() refreshContext: RefreshContext
 	): Promise<string> {
 		return this.authManager.loginWithRefreshToken(refreshContext);
 	}
@@ -44,7 +44,7 @@ export class LoginResolver {
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthRefreshGuard)
 	public async logout(
-		@RefreshContext() refreshContext: RefreshToken
+		@RefreshCtx() refreshContext: RefreshContext
 	): Promise<boolean> {
 		await this.authManager.logout(refreshContext);
 		return true;

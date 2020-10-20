@@ -10,10 +10,8 @@ import { nameof } from '../../utils/nameof';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { isNotEmpty } from 'class-validator';
 import { ClubNameValidationException } from './exceptions/ClubNameValidationException';
-import { AccessToken } from '../auth/AuthTokens';
+import { AccessContext } from '../auth/AuthTokens';
 import { checkPermission } from '../utils/permissions/CheckPermissions';
-import { UserRole } from '../../data/models/UserRole';
-import { ClubRole } from '../../data/models/ClubRole';
 
 @Injectable()
 export class ClubManager {
@@ -23,19 +21,19 @@ export class ClubManager {
 	) {}
 
 	public async getAllClubs(
-		accessContext: AccessToken
+		accessContext: AccessContext
 	): Promise<{ clubs: Club[], count: number}> {
-		checkPermission(accessContext.rol === UserRole.USER, accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isUser(), accessContext.isAdmin());
 
 		const [clubs, count] = await this.clubRepository.findAndCount();
 		return { clubs, count };
 	}
 
 	public async getAllClubsPaginated(
-		accessContext: AccessToken, pageSize: number, offset: number
+		accessContext: AccessContext, pageSize: number, offset: number
 	): Promise<{ clubs: Club[], count: number}> {
 		checkPagination(pageSize, offset);
-		checkPermission(accessContext.rol === UserRole.USER, accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isUser(), accessContext.isAdmin());
 
 		const [clubs, count] = await this.clubRepository.findAndCount({
 			take: pageSize,
@@ -46,9 +44,9 @@ export class ClubManager {
 	}
 
 	public async getClub(
-		accessContext: AccessToken, id: string
+		accessContext: AccessContext, id: string
 	): Promise<Club> {
-		checkPermission(accessContext.rol === UserRole.USER, accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isUser(), accessContext.isAdmin());
 
 		const club = await this.clubRepository.findOne({ id });
 
@@ -62,11 +60,11 @@ export class ClubManager {
 
 	@Transaction()
 	public async addClub(
-		accessContext: AccessToken, name: string,
+		accessContext: AccessContext, name: string,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const clubWithName = await this.clubRepository.findOne({ name });
 
@@ -81,11 +79,11 @@ export class ClubManager {
 
 	@Transaction()
 	public async editClub(
-		accessContext: AccessToken, id: string, name: string,
+		accessContext: AccessContext, id: string, name: string,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const club = await this.clubRepository.findOne({ id });
 
@@ -100,10 +98,10 @@ export class ClubManager {
 
 	@Transaction()
 	public async deleteClub(
-		accessContext: AccessToken, id: string,
+		accessContext: AccessContext, id: string,
 		@TransactionManager() _entityManager?: EntityManager
 	): Promise<void> {
-		checkPermission(accessContext.rol === UserRole.ADMIN);
+		checkPermission(accessContext.isAdmin());
 
 		const club = await this.clubRepository.findOne({ id });
 
@@ -116,16 +114,8 @@ export class ClubManager {
 	}
 
 	public async getAllClubMemberships(
-		accessContext: AccessToken, id: string
+		accessContext: AccessContext, id: string
 	): Promise<{ memberships: ClubMembership[], count: number}> {
-		checkPermission(
-			(
-				accessContext.rol === UserRole.USER
-				&& accessContext.clb.filter(clb => clb.cid === id && clb.rol === ClubRole.CLUB_MANAGER).length > 0
-			),
-			accessContext.rol === UserRole.ADMIN
-		);
-
 		const club = await this.clubRepository.findOne({ id }, {
 			relations: [
 				nameof<Club>('memberships')
@@ -135,41 +125,43 @@ export class ClubManager {
 		if(!club) {
 			throw new ClubDoesNotExistsException(id);
 		}
-		else {
-			return {
-				memberships: club.memberships,
-				count: club.memberships.length
-			};
-		}
+
+		checkPermission(
+			accessContext.isUser() && accessContext.isManagerOfClub(club),
+			accessContext.isAdmin()
+		);
+
+
+		return {
+			memberships: club.memberships,
+			count: club.memberships.length
+		};
 	}
 
 	public async getAllClubMembershipsPaginated(
-		accessContext: AccessToken, id: string, pageSize: number, offset: number
+		accessContext: AccessContext, id: string, pageSize: number, offset: number
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		checkPagination(pageSize, offset);
-		checkPermission(
-			(
-				accessContext.rol === UserRole.USER
-				&& accessContext.clb.filter(clb => clb.cid === id && clb.rol === ClubRole.CLUB_MANAGER).length > 0
-			),
-			accessContext.rol === UserRole.ADMIN
-		);
 
 		const club = await this.clubRepository.findOne({ id });
 
 		if(!club) {
 			throw new ClubDoesNotExistsException(id);
 		}
-		else {
-			const [memberships, count] = await this.membershipRepository.findAndCount({
-				where: { club },
-				take: pageSize,
-				skip: offset * pageSize
-			});
-			return {
-				memberships,
-				count
-			};
-		}
+
+		checkPermission(
+			accessContext.isUser() && accessContext.isManagerOfClub(club),
+			accessContext.isAdmin()
+		);
+
+		const [memberships, count] = await this.membershipRepository.findAndCount({
+			where: { club },
+			take: pageSize,
+			skip: offset * pageSize
+		});
+		return {
+			memberships,
+			count
+		};
 	}
 }

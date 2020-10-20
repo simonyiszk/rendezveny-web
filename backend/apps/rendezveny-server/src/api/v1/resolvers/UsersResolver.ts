@@ -6,8 +6,8 @@ import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { UserManager } from '../../../business/users/UserManager';
 import { MembershipResolver } from './MembershipResolver';
 import { LocalIdentityDTO } from '../dtos/LocalIdentityDTO';
-import { AccessContext } from '../../../business/auth/passport/AuthAccessJwtStrategy';
-import { AccessToken } from '../../../business/auth/AuthTokens';
+import { AccessCtx } from '../../../business/auth/passport/AuthAccessJwtStrategy';
+import { AccessContext } from '../../../business/auth/AuthTokens';
 
 @Resolver((_: never) => UserDTO)
 export class UsersResolver {
@@ -20,7 +20,7 @@ export class UsersResolver {
 		description: 'Gets the users in the system'
 	})
 	public async getUsers(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@PageSize() pageSize: number,
 		@Offset() offset: number
 	): Promise<PaginatedUserDTO> {
@@ -39,7 +39,7 @@ export class UsersResolver {
 		description: 'Gets one user based on its id'
 	})
 	public async getUser(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the user' }) id: string
 	): Promise<UserDTO> {
 		return this.userManager.getUser(accessContext, id);
@@ -47,7 +47,7 @@ export class UsersResolver {
 
 	@ResolveField(nameof<UserDTO>('clubMemberships'), _ => PaginatedMembershipDTO)
 	public async getUserMemberships(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Parent() user: UserDTO,
 		@PageSize() pageSize: number,
 		@Offset() offset: number
@@ -68,7 +68,7 @@ export class UsersResolver {
 
 	@ResolveField(nameof<UserDTO>('localIdentity'), _ => LocalIdentityDTO, { nullable: true })
 	public async getLocalIdentity(
-		@AccessContext() accessContext: AccessToken,
+		@AccessCtx() accessContext: AccessContext,
 		@Parent() user: UserDTO
 	): Promise<LocalIdentityDTO | null> {
 		return this.userManager.getLocalIdentity(accessContext, user.id);
