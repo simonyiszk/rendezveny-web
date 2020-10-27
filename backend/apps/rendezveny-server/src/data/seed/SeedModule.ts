@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { SeedService } from './SeedService';
 import { DataModule } from '../DataModule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BusinessModule } from '../../business/BusinessModule';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
 	imports: [
@@ -21,7 +23,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 				};
 			}
 		}),
-		DataModule
+		DataModule,
+		BusinessModule,
+		JwtModule.register({})
 	],
 	providers: [
 		SeedService
