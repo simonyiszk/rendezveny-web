@@ -1,38 +1,7 @@
-/* eslint-disable max-classes-per-file */
-import { UserRole } from '../../data/models/UserRole';
-import { ClubRole } from '../../data/models/ClubRole';
-import { Club } from '../../data/models/Club';
-import { User } from '../../data/models/User';
-
-export interface RefreshToken {
-	typ: 'refresh'
-	tid: string
-	uid: string
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
-export function isRefreshToken(token: any): token is RefreshToken {
-	return token !== null
-		&& typeof token === 'object'
-		&& typeof token!.typ === 'string'
-		&& token!.typ === 'refresh';
-}
-
-export class RefreshContext {
-	private readonly refreshToken: RefreshToken;
-
-	public constructor(refreshToken: RefreshToken) {
-		this.refreshToken = refreshToken;
-	}
-
-	public getTokenId(): string {
-		return this.refreshToken.tid;
-	}
-
-	public getUserId(): string {
-		return this.refreshToken.uid;
-	}
-}
+import { UserRole } from '../../../data/models/UserRole';
+import { ClubRole } from '../../../data/models/ClubRole';
+import { Club } from '../../../data/models/Club';
+import { User } from '../../../data/models/User';
 
 export interface AccessToken {
 	typ: 'access'
@@ -68,9 +37,19 @@ export class AccessContext {
 		return this.accessToken.rol === UserRole.ADMIN;
 	}
 
+	public isMemberOfClub(club: Club): boolean {
+		return this.accessToken.clb
+			.some(clb => clb.cid === club.id);
+	}
+
 	public isManagerOfClub(club: Club): boolean {
 		return this.accessToken.clb
-			.filter(clb => clb.cid === club.id && clb.rol === ClubRole.CLUB_MANAGER)
+			.some(clb => clb.cid === club.id && clb.rol === ClubRole.CLUB_MANAGER);
+	}
+
+	public isManagerOfAnyClub(): boolean {
+		return this.accessToken.clb
+			.filter(clb => clb.rol === ClubRole.CLUB_MANAGER)
 			.length > 0;
 	}
 
@@ -84,5 +63,3 @@ export class AccessContext {
 		return this.accessToken.uid === user.id;
 	}
 }
-
-export type Token = RefreshToken | AccessToken;

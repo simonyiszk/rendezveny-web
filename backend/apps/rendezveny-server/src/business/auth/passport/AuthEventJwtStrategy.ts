@@ -7,10 +7,10 @@ import { checkArgument } from '../../../utils/preconditions';
 import { AuthInvalidTokenException } from '../exceptions/AuthInvalidTokenException';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthJwtGuard } from './AuthJwtGuard';
-import { isRefreshToken, RefreshContext, RefreshToken } from '../tokens/RefreshToken';
+import { EventContext, EventToken, isEventToken } from '../tokens/EventToken';
 
 @Injectable()
-export class AuthRefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh') {
+export class AuthEventJwtStrategy extends PassportStrategy(Strategy, 'event') {
 	public constructor() {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,14 +19,14 @@ export class AuthRefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh'
 		});
 	}
 
-	public async validate(payload: Token): Promise<RefreshToken> {
-		checkArgument(isRefreshToken(payload), AuthInvalidTokenException);
-		return payload as unknown as RefreshToken;
+	public async validate(payload: Token): Promise<EventToken> {
+		checkArgument(isEventToken(payload), AuthInvalidTokenException);
+		return payload as unknown as EventToken;
 	}
 }
 
 @Injectable()
-export class AuthRefreshGuard extends AuthJwtGuard('refresh') {
+export class AuthEventGuard extends AuthJwtGuard('event') {
 	public getRequest(context: ExecutionContext): Request {
 		const ctx = GqlExecutionContext.create(context);
 		return ctx.getContext().req;
@@ -34,7 +34,7 @@ export class AuthRefreshGuard extends AuthJwtGuard('refresh') {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const RefreshCtx = createParamDecorator((data: unknown, context: ExecutionContext) => {
+export const EventCtx = createParamDecorator((data: unknown, context: ExecutionContext) => {
 	const ctx = GqlExecutionContext.create(context);
-	return new RefreshContext(ctx.getContext().req.user as RefreshToken);
+	return new EventContext(ctx.getContext().req.user as EventToken);
 });

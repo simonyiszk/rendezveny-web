@@ -13,9 +13,10 @@ import { ClubMembership } from '../../data/models/ClubMembership';
 import { CryptoService } from '../crypto/CryptoService';
 import { AuthInvalidUsernameOrPasswordException } from './exceptions/AuthInvalidUsernameOrPasswordException';
 import { AuthInvalidTokenException } from './exceptions/AuthInvalidTokenException';
-import { AccessToken, RefreshContext, RefreshToken } from './AuthTokens';
 import { RefreshToken as RefreshTokenEntity } from '../../data/models/RefreshToken';
 import { AuthUserSuspendedException } from './exceptions/AuthUserSuspendedException';
+import { RefreshContext, RefreshToken } from './tokens/RefreshToken';
+import { AccessToken } from './tokens/AccessToken';
 
 @Injectable()
 export class AuthManager {

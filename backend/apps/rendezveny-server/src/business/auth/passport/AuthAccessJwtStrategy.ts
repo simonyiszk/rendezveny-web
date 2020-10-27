@@ -4,17 +4,17 @@ import { PassportStrategy } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext, Injectable, Request } from '@nestjs/common';
 import { Token } from 'graphql';
 import { checkArgument } from '../../../utils/preconditions';
-import { AccessContext, AccessToken, isAccessToken } from '../AuthTokens';
 import { AuthInvalidTokenException } from '../exceptions/AuthInvalidTokenException';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthJwtGuard } from './AuthJwtGuard';
+import { AccessContext, AccessToken, isAccessToken } from '../tokens/AccessToken';
 
 @Injectable()
 export class AuthAccessJwtStrategy extends PassportStrategy(Strategy, 'access') {
 	public constructor() {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-			ignoreExpiration: false,
+			ignoreExpiration: true,
 			secretOrKey: 'rendezveny'
 		});
 	}
