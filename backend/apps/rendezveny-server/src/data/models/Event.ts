@@ -3,9 +3,10 @@ import { Club } from './Club';
 import { Tag } from './Tag';
 import { Registration } from './Registration';
 import { Organizer } from './Organizer';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class Event {
+export class Event extends BaseEntity<Event> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -19,19 +20,19 @@ export class Event {
 	@Column()
 	public place?: string;
 
-	@Column({ type: 'timestamp with local time zone', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	public start?: Date;
 
-	@Column({ type: 'timestamp with local time zone', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	public end?: Date;
 
 	@Column()
 	public isDateOrTime!: boolean;
 
-	@Column({ type: 'timestamp with local time zone', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	public registrationStart?: Date;
 
-	@Column({ type: 'timestamp with local time zone', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	public registrationEnd?: Date;
 
 	@Column()
@@ -67,6 +68,7 @@ export class Event {
 		hostingClubs?: Club[],
 		tags?: Tag[]
 	}) {
+		super();
 		if(params) {
 			this.name = params.name;
 			this.description = params.description;

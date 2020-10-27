@@ -14,8 +14,7 @@ export class TemporaryIdentity {
 	public name!: string;
 
 	@OneToOne(_ => Registration, registration => registration.temporaryIdentity, {
-		onDelete: 'SET NULL',
-		eager: true
+		onDelete: 'SET NULL'
 	})
 	public registration!: Registration;
 

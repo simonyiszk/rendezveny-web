@@ -9,3 +9,5 @@ export enum RegistrationNotificationSettings {
 	EMAIL_THREE_DAYS = 1 << 5,
 	ALL = ~(~0 << 16)
 }
+
+export const DEFAULT = RegistrationNotificationSettings.ALL;

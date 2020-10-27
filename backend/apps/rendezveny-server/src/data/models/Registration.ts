@@ -33,10 +33,10 @@ export class Registration {
 	@JoinColumn()
 	public temporaryIdentity?: TemporaryIdentity;
 
-	@Column({ type: 'timestamp with local time zone', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	public registrationDate!: Date;
 
-	@Column({ type: 'timestamp with local time zone', nullable: true })
+	@Column({ type: 'timestamp', nullable: true })
 	public attendDate?: Date;
 
 	@Column({ type: 'enum', enum: RegistrationNotificationSettings })
