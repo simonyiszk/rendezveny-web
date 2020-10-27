@@ -9,6 +9,7 @@ import { Event } from './models/Event';
 import { Organizer } from './models/Organizer';
 import { Registration } from './models/Registration';
 import { Tag } from './models/Tag';
+import { TemporaryIdentity } from './models/TemporaryIdentity';
 
 @Module({
 	imports: [
@@ -21,6 +22,7 @@ import { Tag } from './models/Tag';
 			RefreshToken,
 			Registration,
 			Tag,
+			TemporaryIdentity,
 			User
 		])
 	],

@@ -8,6 +8,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthManager } from './auth/AuthManager';
 import { AuthRefreshJwtStrategy } from './auth/passport/AuthRefreshJwtStrategy';
 import { AuthAccessJwtStrategy } from './auth/passport/AuthAccessJwtStrategy';
+import { EventManager } from './events/EventManager';
+import { AuthEventJwtStrategy } from './auth/passport/AuthEventJwtStrategy';
+import { RegistrationManager } from './events/RegistrationManager';
 
 @Module({
 	imports: [
@@ -20,14 +23,19 @@ import { AuthAccessJwtStrategy } from './auth/passport/AuthAccessJwtStrategy';
 	providers: [
 		ClubManager,
 		UserManager,
+		EventManager,
+		RegistrationManager,
 		AuthManager,
 		AuthRefreshJwtStrategy,
 		AuthAccessJwtStrategy,
+		AuthEventJwtStrategy,
 		CryptoService
 	],
 	exports: [
 		ClubManager,
 		UserManager,
+		EventManager,
+		RegistrationManager,
 		AuthManager
 	]
 })
