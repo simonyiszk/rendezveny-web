@@ -1,39 +1,40 @@
-import { Injectable } from '@nestjs/common';
-import { EntityManager, Repository, Transaction, TransactionManager } from 'typeorm';
+import { Repository, Transaction, TransactionRepository } from 'typeorm';
 import { Club } from '../../data/models/Club';
 import { checkArgument } from '../../utils/preconditions';
 import { ClubWithNameExistsException } from './exceptions/ClubWithNameExistsException';
 import { ClubDoesNotExistsException } from './exceptions/ClubDoesNotExistsException';
 import { ClubMembership } from '../../data/models/ClubMembership';
 import { InjectRepository } from '@nestjs/typeorm';
-import { nameof } from '../../utils/nameof';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { isNotEmpty } from 'class-validator';
 import { ClubNameValidationException } from './exceptions/ClubNameValidationException';
-import { AccessContext } from '../auth/AuthTokens';
-import { checkPermission } from '../utils/permissions/CheckPermissions';
+import { AccessContext } from '../auth/tokens/AccessToken';
+import { BaseManager, Manager } from '../utils/BaseManager';
+import { AuthClub, AuthContext, AuthorizeGuard, IsAdmin, IsManagerOfClub, IsUser } from '../auth/AuthorizeGuard';
 
-@Injectable()
-export class ClubManager {
+@Manager()
+export class ClubManager extends BaseManager {
 	public constructor(
 		@InjectRepository(Club) private readonly clubRepository: Repository<Club>,
 		@InjectRepository(ClubMembership) private readonly membershipRepository: Repository<ClubMembership>
-	) {}
+	) {
+		super();
+	}
 
+	@AuthorizeGuard(IsUser(), IsAdmin())
 	public async getAllClubs(
-		accessContext: AccessContext
+		@AuthContext() _accessContext: AccessContext
 	): Promise<{ clubs: Club[], count: number}> {
-		checkPermission(accessContext.isUser(), accessContext.isAdmin());
-
 		const [clubs, count] = await this.clubRepository.findAndCount();
 		return { clubs, count };
 	}
 
+	@AuthorizeGuard(IsUser(), IsAdmin())
 	public async getAllClubsPaginated(
-		accessContext: AccessContext, pageSize: number, offset: number
+		@AuthContext() _accessContext: AccessContext,
+		pageSize: number, offset: number
 	): Promise<{ clubs: Club[], count: number}> {
 		checkPagination(pageSize, offset);
-		checkPermission(accessContext.isUser(), accessContext.isAdmin());
 
 		const [clubs, count] = await this.clubRepository.findAndCount({
 			take: pageSize,
@@ -43,116 +44,105 @@ export class ClubManager {
 		return { clubs, count };
 	}
 
-	public async getClub(
-		accessContext: AccessContext, id: string
+	public async getClubById(
+		@AuthContext() accessContext: AccessContext,
+		id: string
 	): Promise<Club> {
-		checkPermission(accessContext.isUser(), accessContext.isAdmin());
-
 		const club = await this.clubRepository.findOne({ id });
 
 		if(!club) {
-			throw new ClubDoesNotExistsException(id);
+			return this.getClubFail(accessContext, id);
 		}
 		else {
-			return club;
+			return this.getClub(accessContext, club);
 		}
 	}
 
+	@AuthorizeGuard(IsUser(), IsAdmin())
+	public async getClub(
+		@AuthContext() _accessContext: AccessContext,
+		@AuthClub() club: Club
+	): Promise<Club> {
+		return club;
+	}
+
+	@AuthorizeGuard(IsUser(), IsAdmin())
+	private async getClubFail(
+		@AuthContext() _accessContext: AccessContext,
+		id: string
+	): Promise<Club> {
+		throw new ClubDoesNotExistsException(id);
+	}
+
 	@Transaction()
+	@AuthorizeGuard(IsAdmin())
 	public async addClub(
-		accessContext: AccessContext, name: string,
-		@TransactionManager() _entityManager?: EntityManager
+		@AuthContext() accessContext: AccessContext,
+		name: string,
+		@TransactionRepository(Club) clubRepository?: Repository<Club>
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
-		checkPermission(accessContext.isAdmin());
 
-		const clubWithName = await this.clubRepository.findOne({ name });
+		const clubWithName = await clubRepository!.findOne({ name });
 
 		if(clubWithName) {
 			throw new ClubWithNameExistsException(name);
 		}
 		else {
 			const club = new Club({ name });
-			return this.clubRepository.save(club);
+			return clubRepository!.save(club);
 		}
 	}
 
 	@Transaction()
+	@AuthorizeGuard(IsAdmin())
 	public async editClub(
-		accessContext: AccessContext, id: string, name: string,
-		@TransactionManager() _entityManager?: EntityManager
+		@AuthContext() accessContext: AccessContext,
+		@AuthClub() club: Club,
+		name: string,
+		@TransactionRepository(Club) clubRepository?: Repository<Club>
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
-		checkPermission(accessContext.isAdmin());
 
-		const club = await this.clubRepository.findOne({ id });
+		const clubWithName = await clubRepository!.findOne({ name });
 
-		if(!club) {
-			throw new ClubDoesNotExistsException(id);
+		if(clubWithName && club.id !== clubWithName.id) {
+			throw new ClubWithNameExistsException(name);
 		}
 		else {
 			club.name = name;
-			return this.clubRepository.save(club, { });
+			return clubRepository!.save(club);
 		}
 	}
 
-	@Transaction()
+	@AuthorizeGuard(IsAdmin())
 	public async deleteClub(
-		accessContext: AccessContext, id: string,
-		@TransactionManager() _entityManager?: EntityManager
+		@AuthContext() accessContext: AccessContext,
+		@AuthClub() club: Club
 	): Promise<void> {
-		checkPermission(accessContext.isAdmin());
-
-		const club = await this.clubRepository.findOne({ id });
-
-		if(!club) {
-			throw new ClubDoesNotExistsException(id);
-		}
-		else {
-			await this.clubRepository.remove(club);
-		}
+		await this.clubRepository.remove(club);
 	}
 
+	@AuthorizeGuard(IsManagerOfClub(), IsAdmin())
 	public async getAllClubMemberships(
-		accessContext: AccessContext, id: string
+		@AuthContext() accessContext: AccessContext,
+		@AuthClub() club: Club
 	): Promise<{ memberships: ClubMembership[], count: number}> {
-		const club = await this.clubRepository.findOne({ id }, {
-			relations: [
-				nameof<Club>('memberships')
-			]
-		});
-
-		if(!club) {
-			throw new ClubDoesNotExistsException(id);
-		}
-
-		checkPermission(
-			accessContext.isUser() && accessContext.isManagerOfClub(club),
-			accessContext.isAdmin()
-		);
-
+		const memberships = await this.membershipRepository.find({ club });
 
 		return {
-			memberships: club.memberships,
-			count: club.memberships.length
+			memberships: memberships,
+			count: memberships.length
 		};
 	}
 
+	@AuthorizeGuard(IsManagerOfClub(), IsAdmin())
 	public async getAllClubMembershipsPaginated(
-		accessContext: AccessContext, id: string, pageSize: number, offset: number
+		@AuthContext() accessContext: AccessContext,
+		@AuthClub() club: Club,
+		pageSize: number, offset: number
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		checkPagination(pageSize, offset);
-
-		const club = await this.clubRepository.findOne({ id });
-
-		if(!club) {
-			throw new ClubDoesNotExistsException(id);
-		}
-
-		checkPermission(
-			accessContext.isUser() && accessContext.isManagerOfClub(club),
-			accessContext.isAdmin()
-		);
 
 		const [memberships, count] = await this.membershipRepository.findAndCount({
 			where: { club },
