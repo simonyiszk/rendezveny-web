@@ -9,7 +9,7 @@ import { GraphQLBoolean } from 'graphql';
 import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { MembershipResolver } from './MembershipResolver';
 import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
-import { AccessContext } from '../../../business/auth/AuthTokens';
+import { AccessContext } from '../../../business/auth/tokens/AccessToken';
 
 @Resolver((_: never) => ClubDTO)
 export class ClubsResolver {
@@ -48,7 +48,7 @@ export class ClubsResolver {
 		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string
 	): Promise<ClubDTO> {
-		return this.clubManager.getClub(accessContext, id);
+		return this.clubManager.getClubById(accessContext, id);
 	}
 
 	@Mutation(_ => ClubDTO, {
@@ -75,7 +75,8 @@ export class ClubsResolver {
 		@Args('id', { description: 'The id of the club' }) id: string,
 		@Args('name', { description: 'The name of the club' }) name: string
 	): Promise<ClubDTO> {
-		return this.clubManager.editClub(accessContext, id, name);
+		const club = await this.clubManager.getClubById(accessContext, id);
+		return this.clubManager.editClub(accessContext, club, name);
 	}
 
 	@Mutation(_ => GraphQLBoolean, {
@@ -88,7 +89,8 @@ export class ClubsResolver {
 		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string
 	): Promise<boolean> {
-		await this.clubManager.deleteClub(accessContext, id);
+		const club = await this.clubManager.getClubById(accessContext, id);
+		await this.clubManager.deleteClub(accessContext, club);
 		return true;
 	}
 
@@ -97,12 +99,13 @@ export class ClubsResolver {
 	@UseGuards(AuthAccessGuard)
 	public async getUserMemberships(
 		@AccessCtx() accessContext: AccessContext,
-		@Parent() club: ClubDTO,
+		@Parent() clubDTO: ClubDTO,
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
 	): Promise<PaginatedMembershipDTO> {
+		const club = await this.clubManager.getClubById(accessContext, clubDTO.id);
 		const { memberships, count } = await this.clubManager.getAllClubMembershipsPaginated(
-			accessContext, club.id, pageSize, offset
+			accessContext, club, pageSize, offset
 		);
 
 		return {

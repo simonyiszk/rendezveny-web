@@ -4,8 +4,8 @@ import { AuthManager } from '../../../business/auth/AuthManager';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { AuthRefreshGuard, RefreshCtx } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
-import { RefreshContext } from '../../../business/auth/AuthTokens';
 import { LoginDTO } from '../dtos/LoginDTO';
+import { RefreshContext } from '../../../business/auth/tokens/RefreshToken';
 
 @Resolver()
 export class LoginResolver {

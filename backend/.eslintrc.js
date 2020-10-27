@@ -70,7 +70,6 @@ module.exports = {
 		'no-label-var': 'error',
 		'no-shadow': 'error',
 		'no-undef-init': 'error',
-		'no-undefined': 'error',
 
 		// ES2015 practices
 		'arrow-body-style': ['error', 'as-needed'],
@@ -100,39 +99,6 @@ module.exports = {
 		'@typescript-eslint/ban-ts-comment': 'error',
 		'@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'explicit' }],
 		'@typescript-eslint/explicit-module-boundary-types': 'error',
-		'@typescript-eslint/member-ordering': ['error', { default: [
-			// Index signature
-			'signature',
-
-			// Static
-			'public-static-field',
-			'protected-static-field',
-			'private-static-field',
-			'public-static-method',
-			'protected-static-method',
-			'private-static-method',
-
-			// Fields
-			'public-instance-field',
-			'protected-instance-field',
-			'private-instance-field',
-			'public-abstract-field',
-			'protected-abstract-field',
-			'private-abstract-field',
-
-			// Constructors
-			'public-constructor',
-			'protected-constructor',
-			'private-constructor',
-
-			// Methods
-			'public-instance-method',
-			'protected-instance-method',
-			'public-abstract-method',
-			'protected-abstract-method',
-			'private-instance-method',
-			'private-abstract-method'
-		] }],
 		'@typescript-eslint/naming-convention': ['error',
 			{ selector: 'default', format: ['camelCase'] },
 			{ selector: 'variableLike', format: ['camelCase', 'UPPER_CASE'] },
@@ -219,7 +185,6 @@ module.exports = {
 		'multiline-ternary': ['error', 'always-multiline'],
 		'new-parens': 'error',
 		'newline-per-chained-call': ['error', { ignoreChainWithDepth: 4 }],
-		'no-bitwise': 'error',
 		'no-continue': 'error',
 		'no-mixed-operators': 'error',
 		'no-mixed-spaces-and-tabs': ['error', 'smart-tabs'],
