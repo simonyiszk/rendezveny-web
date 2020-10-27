@@ -1,5 +1,6 @@
 import { User } from '../../data/models/User';
 import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
+import { Registration } from '../../data/models/Registration';
 
 /* eslint-disable no-magic-numbers */
 export enum EventRelationType {
@@ -15,14 +16,20 @@ export enum EventRelationType {
 export class EventRelation {
 	public readonly user: User | TemporaryIdentity;
 	private readonly relation: EventRelationType;
+	private readonly registration?: Registration;
 
-	public constructor(user: User | TemporaryIdentity, relation: EventRelationType) {
+	public constructor(user: User | TemporaryIdentity, relation: EventRelationType, registration?: Registration) {
 		this.user = user;
 		this.relation = relation;
+		this.registration = registration;
 	}
 
 	public isRegistered(): boolean {
 		return (this.relation & EventRelationType.REGISTERED) === EventRelationType.REGISTERED;
+	}
+
+	public getRegistration(): Registration {
+		return this.registration!;
 	}
 
 	public didAttend(): boolean {

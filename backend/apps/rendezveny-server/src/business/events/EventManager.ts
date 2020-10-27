@@ -39,6 +39,7 @@ import { UnauthorizedException } from '../utils/permissions/UnauthorizedExceptio
 import { EventRelation, EventRelationType } from './EventRelation';
 import { nameof } from '../../utils/nameof';
 import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
+import { Registration } from '../../data/models/Registration';
 
 /* eslint-enable max-len */
 
@@ -352,12 +353,13 @@ export class EventManager extends BaseManager {
 	): Promise<{ relations: EventRelation[], count: number }> {
 		const relations = users.map((user) => {
 			let relation = EventRelationType.NONE;
-			if(event.registrations.some(registration => registration.user?.id === user.id)) {
+			let registration: Registration | undefined;
+
+			if(event.registrations.some(reg => reg.user?.id === user.id)) {
 				relation = relation | EventRelationType.REGISTERED;
+				registration = event.registrations.find(reg => reg.user?.id === user.id)!;
 			}
-			if(event.registrations.some(
-				registration => registration.user?.id === user.id && registration.attendDate
-			)) {
+			if(event.registrations.some(reg => reg.user?.id === user.id && reg.attendDate)) {
 				relation = relation | EventRelationType.ATTENDED;
 			}
 			if(event.organizers.some(organizer => organizer.user.id === user.id)) {
@@ -369,7 +371,7 @@ export class EventManager extends BaseManager {
 			if(user.memberships.some(membership => event.hostingClubs.some(club => club.id === membership.club.id))) {
 				relation = relation | EventRelationType.HOSTING_MEMBER;
 			}
-			return new EventRelation(user, relation);
+			return new EventRelation(user, relation, registration);
 		});
 
 		const temporaryRelations = temporaryIdentities.map((temporaryIdentity) => {
