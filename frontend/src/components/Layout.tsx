@@ -1,10 +1,10 @@
+import { Box, CSSReset, Flex } from '@chakra-ui/core';
 import { graphql, useStaticQuery } from 'gatsby';
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-import Header from './Header';
 import Footer from './Footer';
-import { Box, Flex } from '@chakra-ui/core';
+import Header from './Header';
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -31,12 +31,19 @@ export function Layout({ children }: LayoutProps): JSX.Element {
         <meta name="description" content={data.site.siteMetadata.description} />
       </Helmet>
 
-      <Flex flexDir="column" height="100vh" boxSizing="border-box">
+      <Flex flexDir="column" height="100vh">
         <header>
           <Header />
         </header>
 
-        <Box as="main" flexGrow={1}>{children}</Box>
+        <Box
+          as="main"
+          py={['1rem', null, '2rem']}
+          px={['1rem', null, '6rem']}
+          flexGrow={1}
+        >
+          {children}
+        </Box>
 
         <footer>
           <Footer />
