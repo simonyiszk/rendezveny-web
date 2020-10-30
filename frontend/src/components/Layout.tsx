@@ -3,6 +3,8 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 
 import Header from './Header';
+import Footer from './Footer';
+import { Box, Flex } from '@chakra-ui/core';
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -29,13 +31,17 @@ export function Layout({ children }: LayoutProps): JSX.Element {
         <meta name="description" content={data.site.siteMetadata.description} />
       </Helmet>
 
-      <header>
-        <Header />
-      </header>
+      <Flex flexDir="column" height="100vh" boxSizing="border-box">
+        <header>
+          <Header />
+        </header>
 
-      <main>{children}</main>
+        <Box as="main" flexGrow={1}>{children}</Box>
 
-      <footer>{/* TODO */}</footer>
+        <footer>
+          <Footer />
+        </footer>
+      </Flex>
     </React.StrictMode>
   );
 }
