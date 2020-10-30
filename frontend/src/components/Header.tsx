@@ -40,8 +40,12 @@ export default function Header(): JSX.Element {
           <Menu>
             <MenuButton>Rendezvények</MenuButton>
             <MenuList>
-              <MenuItem>Rendezvények</MenuItem>
-              <MenuItem>Történet</MenuItem>
+              <MenuItem as={Link} to="/">
+                Rendezvények
+              </MenuItem>
+              <MenuItem as={Link} to="/history">
+                Történet
+              </MenuItem>
             </MenuList>
           </Menu>
         </Flex>
