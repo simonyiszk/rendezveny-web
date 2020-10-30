@@ -2,6 +2,7 @@ import { Box, BoxProps } from '@chakra-ui/core';
 import React from 'react';
 
 import { Event } from '../interfaces';
+import EventBox from './EventBox';
 import SectionHeader from './SectionHeader';
 
 interface Props extends BoxProps {
@@ -18,9 +19,11 @@ export default function EventSection({
       {listOfEvents.length > 0 && (
         <div>
           <SectionHeader text={text} />
-          {listOfEvents.map((e: Event) => (
-            <div key={e.id}>{e.name}</div>
-          ))}
+          <Box pl={['0', null, '0.5rem']}>
+            {listOfEvents.map((e: Event) => (
+              <EventBox key={e.id} event={e} />
+            ))}
+          </Box>
         </div>
       )}
     </Box>
