@@ -2,6 +2,8 @@ import { graphql, useStaticQuery } from 'gatsby';
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
+import Header from './Header';
+
 export interface LayoutProps {
   children: React.ReactNode;
 }
@@ -27,7 +29,9 @@ export function Layout({ children }: LayoutProps): JSX.Element {
         <meta name="description" content={data.site.siteMetadata.description} />
       </Helmet>
 
-      <header>{/* TODO */}</header>
+      <header>
+        <Header />
+      </header>
 
       <main>{children}</main>
 
