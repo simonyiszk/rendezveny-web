@@ -11,8 +11,7 @@ export default function Header(): JSX.Element {
       <Link to="/">
         <Image
           display={['none', null, 'block']}
-          height="3rem"
-          m={-2}
+          height="2rem"
           src={logo}
           alt="Logo"
         />
