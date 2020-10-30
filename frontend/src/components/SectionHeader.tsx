@@ -9,7 +9,7 @@ export default function SectionHeader({ text, ...props }: Props): JSX.Element {
   return (
     <Box
       as="h2"
-      fontSize={['1rem', null, '2rem']}
+      fontSize={['1rem', null, '1.5rem']}
       fontWeight={['bold', null, '400']}
       borderBottom="solid 1px black"
       mt="1rem"
