@@ -1,4 +1,4 @@
-import { Box, BoxProps } from '@chakra-ui/core';
+import { BoxProps, Flex } from '@chakra-ui/core';
 import React from 'react';
 
 interface Props extends BoxProps {
@@ -12,16 +12,17 @@ export default function Button({
   ...props
 }: Props): JSX.Element {
   return (
-    <Box
+    <Flex
       px="1rem"
       py="0.5rem"
-      textAlign="center"
+      justifyContent="center"
+      alignItems="center"
       backgroundColor="simonyi"
       cursor="pointer"
       onClick={onClick}
       {...props}
     >
       {text}
-    </Box>
+    </Flex>
   );
 }
