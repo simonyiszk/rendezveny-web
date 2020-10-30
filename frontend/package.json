@@ -25,6 +25,7 @@
     "gatsby-plugin-manifest": "^2.4.21",
     "gatsby-plugin-react-helmet": "^3.3.10",
     "gatsby-plugin-typescript": "^2.4.16",
+    "gatsby-source-filesystem": "^2.3.37",
     "node-fetch": "^2.6.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
