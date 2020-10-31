@@ -55,7 +55,9 @@ export default function Header(): JSX.Element {
             <MenuList>
               <MenuItem>Profil</MenuItem>
               <MenuItem>Logok</MenuItem>
-              <MenuItem>Kilépés</MenuItem>
+              <MenuItem as={Link} to="/login">
+                Kilépés
+              </MenuItem>
             </MenuList>
           </Menu>
         </Flex>
