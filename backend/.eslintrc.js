@@ -70,7 +70,6 @@ module.exports = {
 		'no-label-var': 'error',
 		'no-shadow': 'error',
 		'no-undef-init': 'error',
-		'no-undefined': 'error',
 
 		// ES2015 practices
 		'arrow-body-style': ['error', 'as-needed'],
@@ -100,45 +99,12 @@ module.exports = {
 		'@typescript-eslint/ban-ts-comment': 'error',
 		'@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'explicit' }],
 		'@typescript-eslint/explicit-module-boundary-types': 'error',
-		'@typescript-eslint/member-ordering': ['error', { default: [
-			// Index signature
-			'signature',
-
-			// Static
-			'public-static-field',
-			'protected-static-field',
-			'private-static-field',
-			'public-static-method',
-			'protected-static-method',
-			'private-static-method',
-
-			// Fields
-			'public-instance-field',
-			'protected-instance-field',
-			'private-instance-field',
-			'public-abstract-field',
-			'protected-abstract-field',
-			'private-abstract-field',
-
-			// Constructors
-			'public-constructor',
-			'protected-constructor',
-			'private-constructor',
-
-			// Methods
-			'public-instance-method',
-			'protected-instance-method',
-			'public-abstract-method',
-			'protected-abstract-method',
-			'private-instance-method',
-			'private-abstract-method'
-		] }],
 		'@typescript-eslint/naming-convention': ['error',
 			{ selector: 'default', format: ['camelCase'] },
 			{ selector: 'variableLike', format: ['camelCase', 'UPPER_CASE'] },
 			{ selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
 			{ selector: 'memberLike', format: ['camelCase'] },
-			{ selector: 'property', modifiers: ['private'], format: ['PascalCase'], prefix: ['m'] },
+			// { selector: 'property', modifiers: ['private'], format: ['PascalCase'], prefix: ['m'] },
 			{ selector: 'property', modifiers: ['static', 'readonly'], format: ['UPPER_CASE'] },
 			{ selector: 'property', modifiers: ['private', 'static', 'readonly'], format: ['UPPER_CASE'] },
 			{ selector: 'enumMember', format: ['UPPER_CASE'] },
@@ -148,7 +114,9 @@ module.exports = {
 		'@typescript-eslint/no-extra-non-null-assertion': ['error'],
 		'@typescript-eslint/no-floating-promises': 'error',
 		'@typescript-eslint/no-implied-eval': 'error',
+		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
+		'@typescript-eslint/no-non-null-assertion': 'off',
 		'@typescript-eslint/no-require-imports': 'error',
 		'@typescript-eslint/no-throw-literal': 'error',
 		'@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
@@ -168,7 +136,7 @@ module.exports = {
 		'@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
 		'@typescript-eslint/strict-boolean-expressions': 'error',
 		'@typescript-eslint/switch-exhaustiveness-check': 'error',
-		'@typescript-eslint/unified-signatures': 'error',
+		// '@typescript-eslint/unified-signatures': 'error',
 
 		// Formatting
 		'array-bracket-newline': ['error', 'consistent'],
@@ -217,7 +185,6 @@ module.exports = {
 		'multiline-ternary': ['error', 'always-multiline'],
 		'new-parens': 'error',
 		'newline-per-chained-call': ['error', { ignoreChainWithDepth: 4 }],
-		'no-bitwise': 'error',
 		'no-continue': 'error',
 		'no-mixed-operators': 'error',
 		'no-mixed-spaces-and-tabs': ['error', 'smart-tabs'],

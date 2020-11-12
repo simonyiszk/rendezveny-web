@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../src/AppModule';
 
 describe('AppController (e2e)', () => {
 	const SUCCESS = 200;
@@ -16,8 +16,10 @@ describe('AppController (e2e)', () => {
 		await app.init();
 	});
 
-	it('/ (GET)', async() => request(app.getHttpServer())
-		.get('/')
-		.expect(SUCCESS)
-		.expect('Hello World!'));
+	it('/ (POST)', async() => request(app.getHttpServer())
+		.post('/api/v1')
+		.send({ operationName: 'IntrospectionQuery',
+			variables: {},
+			query: 'query IntrospectionQuery { __schema { queryType { name } }' })
+		.expect(SUCCESS));
 });
