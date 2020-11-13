@@ -19,6 +19,8 @@ import { AuthManager } from '../../business/auth/AuthManager';
 import { EventManager } from '../../business/events/EventManager';
 import { JwtService } from '@nestjs/jwt';
 import { AccessContext, AccessToken } from '../../business/auth/tokens/AccessToken';
+import { FormQuestion, FormQuestionType } from '../models/FormQuestion';
+import { FormQuestionAnswer } from '../models/FormQuestionAnswer';
 
 @Injectable()
 export class SeedService {
@@ -31,6 +33,8 @@ export class SeedService {
 		@InjectRepository(RefreshToken) private readonly refreshTokenRepository: Repository<RefreshToken>,
 		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
 		@InjectRepository(Registration) private readonly registrationRepository: Repository<Registration>,
+		@InjectRepository(FormQuestion) private readonly formQuestionRepository: Repository<FormQuestion>,
+		@InjectRepository(FormQuestionAnswer) private readonly formAnswerRepository: Repository<FormQuestionAnswer>,
 		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
 		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
 		private readonly authManager: AuthManager,
@@ -48,6 +52,8 @@ export class SeedService {
 			await this.refreshTokenRepository.clear();
 			await this.eventRepository.clear();
 			await this.registrationRepository.clear();
+			await this.formQuestionRepository.clear();
+			await this.formAnswerRepository.clear();
 			await this.tempIdentityRepository.clear();
 			await this.organizerRepository.clear();
 		}
@@ -157,12 +163,63 @@ export class SeedService {
 			event: galaDinner, user: emily, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
 		}));
 
-		await this.registrationRepository.save(new Registration({
+		const johnGalaDinner = new Registration({
 			event: galaDinner,
 			user: john,
 			registrationDate: new Date(),
 			notificationSettings: RegistrationNotificationSettings.ALL
-		}));
+		});
+		await this.registrationRepository.save(johnGalaDinner);
+
+		const foodPreference = new FormQuestion({
+			question: 'Food preference',
+			event: galaDinner,
+			order: 0,
+			type: FormQuestionType.MULTIPLE_CHOICE,
+			typeMetadata: {
+				type: 'multiple_choice',
+				multipleAnswers: false,
+				options: [
+					{ id: 'regular', text: 'Regular' },
+					{ id: 'vegi', text: 'Vegetarian' }
+				]
+			},
+			isRequired: true
+		});
+
+		const nickName = new FormQuestion({
+			question: 'Nickname',
+			event: galaDinner,
+			order: 1,
+			type: FormQuestionType.TEXT,
+			typeMetadata: {
+				type: 'text',
+				maxLength: 25
+			},
+			isRequired: true
+		});
+
+		await this.formQuestionRepository.save([foodPreference, nickName]);
+
+		const johnFoodPreference = new FormQuestionAnswer({
+			formQuestion: foodPreference,
+			registration: johnGalaDinner,
+			answer: {
+				type: 'multiple_choice',
+				options: ['regular']
+			}
+		});
+
+		const johnNickName = new FormQuestionAnswer({
+			formQuestion: nickName,
+			registration: johnGalaDinner,
+			answer: {
+				type: 'text',
+				text: 'Johnny'
+			}
+		});
+
+		await this.formAnswerRepository.save([johnFoodPreference, johnNickName]);
 
 		/* Postman environment */
 

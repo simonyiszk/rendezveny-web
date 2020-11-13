@@ -1,6 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { Field, ObjectType } from '@nestjs/graphql';
 import { PaginatedDTO } from '../utils/PaginatedDTO';
+import { EventRegistrationFormDTO } from './EventRegistrationFormDTO';
 
 @ObjectType({
 	description: 'The data of an event'
@@ -62,6 +63,11 @@ export class EventDTO {
 		defaultValue: false
 	})
 	public isClosedEvent: boolean = false;
+
+	@Field(_ => EventRegistrationFormDTO, {
+		description: 'The registration form of the event'
+	})
+	public registrationForm?: EventRegistrationFormDTO;
 }
 
 @ObjectType({

@@ -10,6 +10,8 @@ import { Organizer } from './models/Organizer';
 import { Registration } from './models/Registration';
 import { Tag } from './models/Tag';
 import { TemporaryIdentity } from './models/TemporaryIdentity';
+import { FormQuestion } from './models/FormQuestion';
+import { FormQuestionAnswer } from './models/FormQuestionAnswer';
 
 @Module({
 	imports: [
@@ -17,6 +19,8 @@ import { TemporaryIdentity } from './models/TemporaryIdentity';
 			Club,
 			ClubMembership,
 			Event,
+			FormQuestion,
+			FormQuestionAnswer,
 			LocalIdentity,
 			Organizer,
 			RefreshToken,

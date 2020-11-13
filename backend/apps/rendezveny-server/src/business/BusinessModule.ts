@@ -11,6 +11,7 @@ import { AuthAccessJwtStrategy } from './auth/passport/AuthAccessJwtStrategy';
 import { EventManager } from './events/EventManager';
 import { AuthEventJwtStrategy } from './auth/passport/AuthEventJwtStrategy';
 import { RegistrationManager } from './events/RegistrationManager';
+import { FormManager } from './events/FormManager';
 
 @Module({
 	imports: [
@@ -25,6 +26,7 @@ import { RegistrationManager } from './events/RegistrationManager';
 		UserManager,
 		EventManager,
 		RegistrationManager,
+		FormManager,
 		AuthManager,
 		AuthRefreshJwtStrategy,
 		AuthAccessJwtStrategy,
@@ -36,6 +38,7 @@ import { RegistrationManager } from './events/RegistrationManager';
 		UserManager,
 		EventManager,
 		RegistrationManager,
+		FormManager,
 		AuthManager
 	]
 })

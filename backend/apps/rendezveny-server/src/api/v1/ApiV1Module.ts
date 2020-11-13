@@ -7,6 +7,7 @@ import { LoginResolver } from './resolvers/LoginResolver';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { EventResolver } from './resolvers/EventResolver';
+import { RegistrationResolver } from './resolvers/RegistrationResolver';
 
 @Module({
 	imports: [
@@ -17,7 +18,8 @@ import { EventResolver } from './resolvers/EventResolver';
 		ClubsResolver,
 		MembershipResolver,
 		LoginResolver,
-		EventResolver
+		EventResolver,
+		RegistrationResolver
 	]
 })
 export class ApiV1Module {

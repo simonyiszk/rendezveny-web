@@ -6,11 +6,13 @@ import 'reflect-metadata';
 import { AccessContext } from './tokens/AccessToken';
 import { UnauthorizedException } from '../utils/permissions/UnauthorizedException';
 import { EventContext } from './tokens/EventToken';
+import { Registration } from '../../data/models/Registration';
 
 const contextMetadataKey = Symbol('context');
 const userMetadataKey = Symbol('user');
 const clubMetadataKey = Symbol('club');
 const eventMetadataKey = Symbol('event');
+const registrationMetadataKey = Symbol('registration');
 
 export function AuthContext(): ParameterDecorator {
 	return function(target: Object, propertyKey: string | symbol, parameterIndex: number): void {
@@ -56,6 +58,20 @@ export function AuthEvent(name?: string): ParameterDecorator {
 		eventParams[name ?? 'default'] = parameterIndex;
 		Reflect.defineMetadata(
 			eventMetadataKey,
+			eventParams,
+			target,
+			propertyKey
+		);
+	};
+}
+
+export function AuthRegistration(name?: string): ParameterDecorator {
+	return function(target: Object, propertyKey: string | symbol, parameterIndex: number): void {
+		const eventParams: {[key: string]: number} = Reflect
+			.getOwnMetadata(registrationMetadataKey, target, propertyKey) ?? [];
+		eventParams[name ?? 'default'] = parameterIndex;
+		Reflect.defineMetadata(
+			registrationMetadataKey,
 			eventParams,
 			target,
 			propertyKey
@@ -116,6 +132,7 @@ export function AuthorizeGuard(...guards: Guard[]): MethodDecorator {
 			const users = Reflect.getOwnMetadata(userMetadataKey, target, propertyKey);
 			const clubs = Reflect.getOwnMetadata(clubMetadataKey, target, propertyKey);
 			const events = Reflect.getOwnMetadata(eventMetadataKey, target, propertyKey);
+			const registrations = Reflect.getOwnMetadata(registrationMetadataKey, target, propertyKey);
 
 			for(const guard of guards) {
 				let isAuthorized = false;
@@ -156,6 +173,11 @@ export function AuthorizeGuard(...guards: Guard[]): MethodDecorator {
 						if(context instanceof EventContext) {
 							const event = args[events[guard.event]] as Event;
 							isAuthorized = context.isRegistered(event);
+							if(typeof registrations !== 'undefined') {
+								const registration = args[registrations[guard.event]] as Registration;
+								isAuthorized = !context.isRegistered(event)
+									|| context.getRegistrationId() === registration.id;
+							}
 						}
 						break;
 					}
