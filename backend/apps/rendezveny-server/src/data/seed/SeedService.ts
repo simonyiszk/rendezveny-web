@@ -21,6 +21,9 @@ import { JwtService } from '@nestjs/jwt';
 import { AccessContext, AccessToken } from '../../business/auth/tokens/AccessToken';
 import { FormQuestion, FormQuestionType } from '../models/FormQuestion';
 import { FormQuestionAnswer } from '../models/FormQuestionAnswer';
+import { HRTable } from '../models/HRTable';
+import { HRTask } from '../models/HRTask';
+import { HRSegment } from '../models/HRSegment';
 
 @Injectable()
 export class SeedService {
@@ -37,6 +40,9 @@ export class SeedService {
 		@InjectRepository(FormQuestionAnswer) private readonly formAnswerRepository: Repository<FormQuestionAnswer>,
 		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
 		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
+		@InjectRepository(HRTable) private readonly hrTableRepository: Repository<HRTable>,
+		@InjectRepository(HRTask) private readonly hrTaskRepository: Repository<HRTask>,
+		@InjectRepository(HRSegment) private readonly hrSegmentRepository: Repository<HRSegment>,
 		private readonly authManager: AuthManager,
 		private readonly eventManager: EventManager,
 		private readonly jwtService: JwtService
@@ -56,6 +62,9 @@ export class SeedService {
 			await this.formAnswerRepository.clear();
 			await this.tempIdentityRepository.clear();
 			await this.organizerRepository.clear();
+			await this.hrTableRepository.clear();
+			await this.hrTaskRepository.clear();
+			await this.hrSegmentRepository.clear();
 		}
 		finally {
 			await this.entityManager.query('SET FOREIGN_KEY_CHECKS = 1');
@@ -155,13 +164,15 @@ export class SeedService {
 		});
 		await this.eventRepository.save(galaDinner);
 
-		await this.organizerRepository.save(new Organizer({
+		const aprilGalaDinner = new Organizer({
 			event: galaDinner, user: april, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
-		}));
+		});
+		await this.organizerRepository.save(aprilGalaDinner);
 
-		await this.organizerRepository.save(new Organizer({
+		const emilyGalaDinner = new Organizer({
 			event: galaDinner, user: emily, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
-		}));
+		});
+		await this.organizerRepository.save(emilyGalaDinner);
 
 		const johnGalaDinner = new Registration({
 			event: galaDinner,
@@ -170,6 +181,8 @@ export class SeedService {
 			notificationSettings: RegistrationNotificationSettings.ALL
 		});
 		await this.registrationRepository.save(johnGalaDinner);
+
+		/* Form */
 
 		const foodPreference = new FormQuestion({
 			question: 'Food preference',
@@ -220,6 +233,63 @@ export class SeedService {
 		});
 
 		await this.formAnswerRepository.save([johnFoodPreference, johnNickName]);
+
+		/* HR Table */
+
+		const galaHRTable = new HRTable({ event: galaDinner, isLocked: false });
+		await this.hrTableRepository.save(galaHRTable);
+
+		const setTablesTask = new HRTask({
+			name: 'Set table',
+			start: new Date(),
+			end: new Date(),
+			order: 0,
+			isLocked: false,
+			hrTable: galaHRTable
+		});
+
+		const waiteringTask = new HRTask({
+			name: 'Waitering',
+			start: new Date(),
+			end: new Date(),
+			order: 0,
+			isLocked: false,
+			hrTable: galaHRTable
+		});
+
+		await this.hrTaskRepository.save([setTablesTask, waiteringTask]);
+
+		const setTablesSegment = new HRSegment({
+			capacity: 1,
+			start: new Date(),
+			end: new Date(),
+			isRequired: true,
+			isLocked: false,
+			hrTask: setTablesTask,
+			organizers: [aprilGalaDinner]
+		});
+
+		const waiteringPrecourseSegment = new HRSegment({
+			capacity: 2,
+			start: new Date(),
+			end: new Date(),
+			isRequired: true,
+			isLocked: false,
+			hrTask: waiteringTask,
+			organizers: [aprilGalaDinner, emilyGalaDinner]
+		});
+
+		const waiteringMaincourseSegment = new HRSegment({
+			capacity: 1,
+			start: new Date(),
+			end: new Date(),
+			isRequired: false,
+			isLocked: false,
+			hrTask: waiteringTask,
+			organizers: []
+		});
+
+		await this.hrSegmentRepository.save([setTablesSegment, waiteringPrecourseSegment, waiteringMaincourseSegment]);
 
 		/* Postman environment */
 

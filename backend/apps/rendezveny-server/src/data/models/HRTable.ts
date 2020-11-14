@@ -1,7 +1,8 @@
-import { Column, Entity, Generated, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Generated, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { HRTask } from './HRTask';
 import { Event } from './Event';
 import { BaseEntity } from '../utils/BaseEntity';
+import { nameof } from '../../utils/nameof';
 
 @Entity()
 export class HRTable extends BaseEntity<HRTable> {
@@ -16,6 +17,7 @@ export class HRTable extends BaseEntity<HRTable> {
 	public readonly eventId!: string;
 
 	@OneToOne(_ => Event, event => event.hrTable)
+	@JoinColumn({ name: nameof<HRTable>('eventId') })
 	public event!: Event;
 
 	@OneToMany(_ => HRTask, hrTask => hrTask.hrTable, {

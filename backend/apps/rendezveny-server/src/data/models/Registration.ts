@@ -56,6 +56,7 @@ export class Registration extends BaseEntity<Registration> {
 		notificationSettings: RegistrationNotificationSettings,
 		formAnswers?: FormQuestionAnswer[]
 	}) {
+		super();
 		if(params) {
 			this.event = params.event;
 			if(params.user) {

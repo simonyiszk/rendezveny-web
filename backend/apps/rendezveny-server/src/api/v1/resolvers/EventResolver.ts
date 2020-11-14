@@ -16,13 +16,16 @@ import { EventRelation } from '../../../business/events/EventRelation';
 import { nameof } from '../../../utils/nameof';
 import { EventRegistrationFormDTO, EventRegistrationFormQuestionMetadataDTO } from '../dtos/EventRegistrationFormDTO';
 import { FormManager } from '../../../business/registration/FormManager';
+import { HRTableDTO } from '../dtos/HRTableDTO';
+import { HRTableManager } from '../../../business/organizing/HRTableManager';
 
 @Resolver((_: never) => EventDTO)
 export class EventResolver {
 	public constructor(
 		private readonly userManager: UserManager,
 		private readonly eventManager: EventManager,
-		private readonly formManager: FormManager
+		private readonly formManager: FormManager,
+		private readonly hrTableManager: HRTableManager
 	) {}
 
 	@Query(_ => PaginatedEventDTO, {
@@ -275,6 +278,30 @@ export class EventResolver {
 				isRequired: question.isRequired,
 				question: question.question,
 				metadata: question.data as typeof EventRegistrationFormQuestionMetadataDTO
+			}))
+		};
+	}
+
+	@ResolveField(nameof<EventDTO>('hrTable'), _ => HRTableDTO)
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthEventGuard)
+	public async getHRTable(
+		@EventCtx() eventContext: EventContext,
+		@Parent() eventDTO: EventDTO
+	): Promise<HRTableDTO> {
+		const event = await this.eventManager.getEventById(eventDTO.id);
+		const hrTableState = await this.hrTableManager.getHRTable(eventContext, event);
+		return {
+			...hrTableState,
+			tasks: hrTableState.tasks.map(task => ({
+				...task,
+				segments: task.segments.map(segment => ({
+					...segment,
+					organizers: segment.organizers.map(organizer => ({
+						id: organizer.id,
+						isChiefOrganizer: organizer.isChief
+					}))
+				}))
 			}))
 		};
 	}
