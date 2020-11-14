@@ -7,13 +7,13 @@ import { UserManager } from '../../../business/users/UserManager';
 import { EventContext } from '../../../business/auth/tokens/EventToken';
 import { AuthEventGuard, EventCtx } from '../../../business/auth/passport/AuthEventJwtStrategy';
 import { nameof } from '../../../utils/nameof';
-import { FormManager } from '../../../business/events/FormManager';
+import { FormManager } from '../../../business/registration/FormManager';
 import { EventRegistrationDTO } from '../dtos/EventRegistrationDTO';
 import {
 	EventRegistrationFormAnswerMetadataDTO,
 	EventRegistrationFormAnswersDTO
 } from '../dtos/EventRegistrationFormAnswerDTO';
-import { RegistrationManager } from '../../../business/events/RegistrationManager';
+import { RegistrationManager } from '../../../business/registration/RegistrationManager';
 
 @Resolver((_: never) => EventRegistrationDTO)
 export class RegistrationResolver {

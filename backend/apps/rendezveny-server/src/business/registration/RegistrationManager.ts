@@ -5,7 +5,7 @@ import { Event } from '../../data/models/Event';
 import { Repository, Transaction, TransactionRepository } from 'typeorm';
 import { UserManager } from '../users/UserManager';
 import { Registration } from '../../data/models/Registration';
-import { EventManager } from './EventManager';
+import { EventManager } from '../events/EventManager';
 import { RegistrationClosedEventException } from './exceptions/RegistrationClosedEventException';
 import { RegistrationAllreadyRegisteredException } from './exceptions/RegistrationAllreadyRegisteredException';
 import { DEFAULT, RegistrationNotificationSettings } from '../../data/models/RegistrationNotificationSettings';

@@ -15,7 +15,7 @@ import { User } from '../../../data/models/User';
 import { EventRelation } from '../../../business/events/EventRelation';
 import { nameof } from '../../../utils/nameof';
 import { EventRegistrationFormDTO, EventRegistrationFormQuestionMetadataDTO } from '../dtos/EventRegistrationFormDTO';
-import { FormManager } from '../../../business/events/FormManager';
+import { FormManager } from '../../../business/registration/FormManager';
 
 @Resolver((_: never) => EventDTO)
 export class EventResolver {

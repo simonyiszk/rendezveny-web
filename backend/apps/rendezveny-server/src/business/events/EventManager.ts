@@ -38,6 +38,7 @@ import { EventRelation, EventRelationType } from './EventRelation';
 import { nameof } from '../../utils/nameof';
 import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
 import { Registration } from '../../data/models/Registration';
+import { Tag } from '../../data/models/Tag';
 
 /* eslint-enable max-len */
 
@@ -71,6 +72,37 @@ export class EventManager extends BaseManager {
 		const [events, count] = await this.eventRepository.findAndCount({
 			take: pageSize,
 			skip: offset * pageSize
+		});
+
+		return { events, count };
+	}
+
+	@AuthorizeGuard(IsUser(), IsAdmin())
+	public async findEventsPaginated(
+		@AuthContext() accessContext: AccessContext,
+		pageSize: number, offset: number,
+		criteria: { tags?: [Tag], name?: string }
+	): Promise<{ events: Event[], count: number}> {
+		checkPagination(pageSize, offset);
+
+		let whereCriteria = {};
+		if(criteria.tags) {
+			whereCriteria = {
+				...whereCriteria,
+				tags: In(criteria.tags)
+			};
+		}
+		if(typeof criteria.name === 'string') {
+			whereCriteria = {
+				...whereCriteria,
+				name: Like(`%${criteria.name}%`)
+			};
+		}
+
+		const [events, count] = await this.eventRepository.findAndCount({
+			take: pageSize,
+			skip: offset * pageSize,
+			where: whereCriteria
 		});
 
 		return { events, count };
