@@ -10,8 +10,9 @@ import { AuthRefreshJwtStrategy } from './auth/passport/AuthRefreshJwtStrategy';
 import { AuthAccessJwtStrategy } from './auth/passport/AuthAccessJwtStrategy';
 import { EventManager } from './events/EventManager';
 import { AuthEventJwtStrategy } from './auth/passport/AuthEventJwtStrategy';
-import { RegistrationManager } from './events/RegistrationManager';
-import { FormManager } from './events/FormManager';
+import { RegistrationManager } from './registration/RegistrationManager';
+import { FormManager } from './registration/FormManager';
+import { FormTemplateManager } from './registration/FormTemplateManager';
 
 @Module({
 	imports: [
@@ -27,6 +28,7 @@ import { FormManager } from './events/FormManager';
 		EventManager,
 		RegistrationManager,
 		FormManager,
+		FormTemplateManager,
 		AuthManager,
 		AuthRefreshJwtStrategy,
 		AuthAccessJwtStrategy,
@@ -39,6 +41,7 @@ import { FormManager } from './events/FormManager';
 		EventManager,
 		RegistrationManager,
 		FormManager,
+		FormTemplateManager,
 		AuthManager
 	]
 })
