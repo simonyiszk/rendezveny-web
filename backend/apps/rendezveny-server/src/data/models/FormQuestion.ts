@@ -2,6 +2,7 @@ import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany, PrimaryCol
 import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
 import { FormQuestionAnswer } from './FormQuestionAnswer';
+import { BaseEntity } from '../utils/BaseEntity';
 
 export enum FormQuestionType {
 	TEXT,
@@ -22,7 +23,7 @@ export interface MultipleChoiceFormQuestionMetadata {
 export type FormQuestionMetadata = TextFormQuestionMetadata | MultipleChoiceFormQuestionMetadata;
 
 @Entity()
-export class FormQuestion {
+export class FormQuestion extends BaseEntity<FormQuestion> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -60,6 +61,7 @@ export class FormQuestion {
 		order: number,
 		event: Event
 	}) {
+		super();
 		if(params) {
 			this.question = params.question;
 			this.isRequired = params.isRequired;

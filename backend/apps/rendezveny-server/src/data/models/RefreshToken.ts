@@ -1,9 +1,10 @@
 import { Entity, Generated, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from './User';
 import { nameof } from '../../utils/nameof';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class RefreshToken {
+export class RefreshToken extends BaseEntity<RefreshToken> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -18,6 +19,7 @@ export class RefreshToken {
 	public constructor(params?: {
 		user: User
 	}) {
+		super();
 		if(params) {
 			this.user = params.user;
 		}

@@ -1,9 +1,10 @@
 import { Column, Entity, Generated, ManyToMany, PrimaryColumn } from 'typeorm';
 import { FormQuestionMetadata, FormQuestionType } from './FormQuestion';
 import { Tag } from './Tag';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class FormQuestionTemplate {
+export class FormQuestionTemplate extends BaseEntity<FormQuestionTemplate> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -26,6 +27,7 @@ export class FormQuestionTemplate {
 		typeMetadata: FormQuestionMetadata,
 		tags?: Tag[]
 	}) {
+		super();
 		if(params) {
 			this.question = params.question;
 			this.type = params.type;

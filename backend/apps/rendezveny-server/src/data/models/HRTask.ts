@@ -2,9 +2,10 @@ import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany, PrimaryCol
 import { HRSegment } from './HRSegment';
 import { nameof } from '../../utils/nameof';
 import { HRTable } from './HRTable';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class HRTask {
+export class HRTask extends BaseEntity<HRTask> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -45,6 +46,7 @@ export class HRTask {
 		hrTable: HRTable,
 		hrSegments?: HRSegment[]
 	}) {
+		super();
 		if(params) {
 			this.name = params.name;
 			this.start = params.start;

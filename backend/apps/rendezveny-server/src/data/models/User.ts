@@ -5,9 +5,10 @@ import { ClubMembership } from './ClubMembership';
 import { RefreshToken } from './RefreshToken';
 import { Registration } from './Registration';
 import { Organizer } from './Organizer';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class User {
+export class User extends BaseEntity<User> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -53,6 +54,7 @@ export class User {
 		localIdentity?: LocalIdentity,
 		memberships?: ClubMembership[]
 	}) {
+		super();
 		if(params) {
 			this.name = params.name;
 			this.role = params.role ?? UserRole.USER;

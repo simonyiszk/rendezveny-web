@@ -2,9 +2,10 @@ import { Column, Entity, Generated, JoinColumn, JoinTable, ManyToMany, ManyToOne
 import { Organizer } from './Organizer';
 import { HRTask } from './HRTask';
 import { nameof } from '../../utils/nameof';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class HRSegment {
+export class HRSegment extends BaseEntity<HRSegment> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -44,6 +45,7 @@ export class HRSegment {
 		hrTask: HRTask,
 		organizers?: Organizer[]
 	}) {
+		super();
 		if(params) {
 			this.capacity = params.capacity;
 			this.isRequired = params.isRequired;

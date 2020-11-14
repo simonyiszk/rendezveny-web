@@ -4,9 +4,10 @@ import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
 import { OrganizerNotificationSettings } from './OrganizerNotificationSettings';
 import { HRSegment } from './HRSegment';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class Organizer {
+export class Organizer extends BaseEntity<Organizer> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -42,6 +43,7 @@ export class Organizer {
 		isChief?: boolean,
 		notificationSettings: OrganizerNotificationSettings
 	}) {
+		super();
 		if(params) {
 			this.event = params.event;
 			this.user = params.user;

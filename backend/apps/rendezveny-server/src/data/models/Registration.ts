@@ -5,9 +5,10 @@ import { Event } from './Event';
 import { RegistrationNotificationSettings } from './RegistrationNotificationSettings';
 import { TemporaryIdentity } from './TemporaryIdentity';
 import { FormQuestionAnswer } from './FormQuestionAnswer';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class Registration {
+export class Registration extends BaseEntity<Registration> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;

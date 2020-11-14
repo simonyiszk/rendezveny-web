@@ -1,9 +1,10 @@
 import { Column, Entity, Generated, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { HRTask } from './HRTask';
 import { Event } from './Event';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class HRTable {
+export class HRTable extends BaseEntity<HRTable> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -27,6 +28,7 @@ export class HRTable {
 		event: Event,
 		hrTasks?: HRTask[]
 	}) {
+		super();
 		if(params) {
 			this.isLocked = params.isLocked;
 			this.event = params.event;
