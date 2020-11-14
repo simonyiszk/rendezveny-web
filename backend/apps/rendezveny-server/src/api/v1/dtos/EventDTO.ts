@@ -2,6 +2,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { PaginatedDTO } from '../utils/PaginatedDTO';
 import { EventRegistrationFormDTO } from './EventRegistrationFormDTO';
+import { HRTableDTO } from './HRTableDTO';
 
 @ObjectType({
 	description: 'The data of an event'
@@ -68,6 +69,12 @@ export class EventDTO {
 		description: 'The registration form of the event'
 	})
 	public registrationForm?: EventRegistrationFormDTO;
+
+	@Field(_ => HRTableDTO, {
+		description: 'The HRTable of the event',
+		nullable: true
+	})
+	public hrTable?: HRTableDTO;
 }
 
 @ObjectType({

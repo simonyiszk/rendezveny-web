@@ -12,6 +12,10 @@ import { Tag } from './models/Tag';
 import { TemporaryIdentity } from './models/TemporaryIdentity';
 import { FormQuestion } from './models/FormQuestion';
 import { FormQuestionAnswer } from './models/FormQuestionAnswer';
+import { FormQuestionTemplate } from './models/FormQuestionTemplate';
+import { HRSegment } from './models/HRSegment';
+import { HRTable } from './models/HRTable';
+import { HRTask } from './models/HRTask';
 
 @Module({
 	imports: [
@@ -21,6 +25,10 @@ import { FormQuestionAnswer } from './models/FormQuestionAnswer';
 			Event,
 			FormQuestion,
 			FormQuestionAnswer,
+			FormQuestionTemplate,
+			HRSegment,
+			HRTable,
+			HRTask,
 			LocalIdentity,
 			Organizer,
 			RefreshToken,

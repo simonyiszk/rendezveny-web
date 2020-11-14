@@ -295,6 +295,7 @@ export class EventResolver {
 					: undefined,
 				organizer: relation.isOrganizer()
 					? {
+						id: relation.getOrganizer().id,
 						isChiefOrganizer: relation.isChiefOrganizer()
 					}
 					: undefined

@@ -1,10 +1,11 @@
-import { Column, Entity, Generated, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Generated, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { Club } from './Club';
 import { Tag } from './Tag';
 import { Registration } from './Registration';
 import { Organizer } from './Organizer';
 import { BaseEntity } from '../utils/BaseEntity';
 import { FormQuestion } from './FormQuestion';
+import { HRTable } from './HRTable';
 
 @Entity()
 export class Event extends BaseEntity<Event> {
@@ -61,6 +62,12 @@ export class Event extends BaseEntity<Event> {
 	})
 	public formQuestions!: FormQuestion[];
 
+	@OneToOne(_ => HRTable, hrTable => hrTable.event, {
+		onDelete: 'CASCADE',
+		nullable: true
+	})
+	public hrTable?: HRTable;
+
 	public constructor(params?: {
 		name: string,
 		description: string,
@@ -73,7 +80,8 @@ export class Event extends BaseEntity<Event> {
 		isClosedEvent?: boolean,
 		hostingClubs?: Club[],
 		tags?: Tag[],
-		formQuestions?: FormQuestion[]
+		formQuestions?: FormQuestion[],
+		hrTable?: HRTable
 	}) {
 		super();
 		if(params) {
@@ -95,6 +103,7 @@ export class Event extends BaseEntity<Event> {
 			if(params.formQuestions) {
 				this.formQuestions = params.formQuestions;
 			}
+			this.hrTable = params.hrTable;
 		}
 	}
 }

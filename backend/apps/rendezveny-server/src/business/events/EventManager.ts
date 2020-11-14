@@ -405,6 +405,7 @@ export class EventManager extends BaseManager {
 		const relations = users.map((user) => {
 			let relation = EventRelationType.NONE;
 			let registration: Registration | undefined;
+			let organizer: Organizer | undefined;
 
 			if(event.registrations.some(reg => reg.user?.id === user.id)) {
 				relation = relation | EventRelationType.REGISTERED;
@@ -413,21 +414,23 @@ export class EventManager extends BaseManager {
 			if(event.registrations.some(reg => reg.user?.id === user.id && reg.attendDate)) {
 				relation = relation | EventRelationType.ATTENDED;
 			}
-			if(event.organizers.some(organizer => organizer.user.id === user.id)) {
+			if(event.organizers.some(org => org.user.id === user.id)) {
 				relation = relation | EventRelationType.ORGANIZER;
+				organizer = event.organizers.find(org => org.user.id === user.id)!;
 			}
-			if(event.organizers.some(organizer => organizer.user.id === user.id && organizer.isChief)) {
+			if(event.organizers.some(org => org.user.id === user.id && org.isChief)) {
 				relation = relation | EventRelationType.CHIEF_ORGANIZER;
 			}
 			if(user.memberships.some(membership => event.hostingClubs.some(club => club.id === membership.club.id))) {
 				relation = relation | EventRelationType.HOSTING_MEMBER;
 			}
-			return new EventRelation(user, relation, registration);
+			return new EventRelation(user, relation, registration, organizer);
 		});
 
 		const temporaryRelations = temporaryIdentities.map((temporaryIdentity) => {
 			const relation = EventRelationType.REGISTERED;
-			return new EventRelation(temporaryIdentity, relation);
+			const registration = event.registrations.find(reg => reg.temporaryIdentity === temporaryIdentity)!;
+			return new EventRelation(temporaryIdentity, relation, registration);
 		});
 
 		return { relations: [...relations, ...temporaryRelations], count: count };
