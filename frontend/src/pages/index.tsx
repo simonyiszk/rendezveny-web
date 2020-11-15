@@ -1,3 +1,4 @@
+import { gql, useQuery } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../components/Button';
@@ -5,13 +6,24 @@ import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import SectionHeader from '../components/SectionHeader';
 import { Event } from '../interfaces';
+import { getToken } from '../utils/TokenContainer';
+
+const userQueryGQL = gql`
+  query {
+    clubs_getAll {
+      nodes {
+        name
+      }
+    }
+  }
+`;
 
 export default function IndexPage(): JSX.Element {
   const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
   const [appliedEvents, setAppliedEvents] = useState<Event[]>([]);
   const [otherEvents, setOtherEvents] = useState<Event[]>([]);
 
-  useEffect(() => {
+  /* useEffect(() => {
     setOrganizedEvents([
       { id: 1, name: 'Test event 1', startDate: '2020-11-10' },
       { id: 4, name: 'Test event 4', startDate: '2020-11-10' },
@@ -20,9 +32,23 @@ export default function IndexPage(): JSX.Element {
       { id: 2, name: 'Test event 2', startDate: '2020-11-10' },
     ]);
     setOtherEvents([{ id: 3, name: 'Test event 3', startDate: '2020-11-10' }]);
-  }, []);
+  }, []); */
+  const { called, loading, error, data } = useQuery(userQueryGQL);
+  if (called && loading) return <div>Loading</div>;
+
+  // Show error message if lazy query fails
+  if (error) return <div>Error::{error.message}</div>;
 
   return (
+    <Layout>
+      <p>Success</p>
+      {data.clubs_getAll.nodes.map((c) => (
+        <div>{c.name}</div>
+      ))}
+    </Layout>
+  );
+
+  /* return (
     <Layout>
       <Button
         text="Rendezvény létrehozása"
@@ -38,5 +64,5 @@ export default function IndexPage(): JSX.Element {
       />
       <EventSection text="Közelgő rendezvények" listOfEvents={otherEvents} />
     </Layout>
-  );
+  ); */
 }

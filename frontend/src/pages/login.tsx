@@ -1,31 +1,44 @@
-import { gql, useQuery } from '@apollo/client';
-import React from 'react';
+import { gql, useMutation } from '@apollo/client';
+import React, { useState } from 'react';
 
 import { Layout } from '../components/Layout';
-
-const userQueryGQL = gql`
-  query {
-    clubs_getAll {
-      nodes {
-        name
-      }
-    }
-  }
-`;
+import { useLoginMutation } from '../utils/LoginMutation';
+import { getToken } from '../utils/TokenContainer';
 
 export default function LoginPage(): JSX.Element {
-  const { called, loading, error, data } = useQuery(userQueryGQL);
-  if (called && loading) return <div>Loading</div>;
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  // Show error message if lazy query fails
-  if (error) return <div>{error.message}</div>;
+  const [loginMutation, _] = useLoginMutation();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    loginMutation(username, password).then(() => {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    });
+  };
 
   return (
     <Layout>
-      <p>Please login</p>
-      {data.clubs_getAll.nodes.map((c) => (
-        <div>{c.name}</div>
-      ))}
+      <div style={{ margin: 'auto', padding: '100px' }}>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <input
+              name="username"
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div>
+            <input
+              name="password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
     </Layout>
   );
 }
