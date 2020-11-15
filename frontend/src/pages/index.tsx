@@ -7,34 +7,27 @@ import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import SectionHeader from '../components/SectionHeader';
 import { Event } from '../interfaces';
-import { getToken } from '../utils/TokenContainer';
+import ProtectedComponent from '../utils/protection/ProtectedComponent';
+import { getToken } from '../utils/token/TokenContainer';
 
 const userQueryGQL = gql`
   query {
-    clubs_getAll {
+    events_getAll {
       nodes {
         id
         name
+        description
+        place
+        start
+        end
+        registrationStart
+        registrationEnd
       }
     }
   }
 `;
 
 export default function IndexPage(): JSX.Element {
-  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
-  const [appliedEvents, setAppliedEvents] = useState<Event[]>([]);
-  const [otherEvents, setOtherEvents] = useState<Event[]>([]);
-
-  /* useEffect(() => {
-    setOrganizedEvents([
-      { id: 1, name: 'Test event 1', startDate: '2020-11-10' },
-      { id: 4, name: 'Test event 4', startDate: '2020-11-10' },
-    ]);
-    setAppliedEvents([
-      { id: 2, name: 'Test event 2', startDate: '2020-11-10' },
-    ]);
-    setOtherEvents([{ id: 3, name: 'Test event 3', startDate: '2020-11-10' }]);
-  }, []); */
   const { called, loading, error, data } = useQuery(userQueryGQL);
   if (called && loading) return <div>Loading</div>;
 
@@ -43,31 +36,39 @@ export default function IndexPage(): JSX.Element {
     navigate('/login');
     return <div>Error {error.message}</div>;
   }
+  const organizedEvents = (events) => {
+    return events;
+  };
+  const appliedEvents = (events) => {
+    return events;
+  };
+  const otherEvents = (events) => {
+    return events;
+  };
 
   return (
     <Layout>
-      <p>Success</p>
-      {data.clubs_getAll.nodes.map((c) => (
-        <div key={c.id}>{c.name}</div>
-      ))}
-    </Layout>
-  );
-
-  /* return (
-    <Layout>
-      <Button
-        text="Rendezvény létrehozása"
-        width={['100%', null, '15rem']}
-        onClick={() => {
-          console.log('Clicked');
-        }}
+      <ProtectedComponent>
+        <Button
+          text="Rendezvény létrehozása"
+          width={['100%', null, '15rem']}
+          onClick={() => {
+            console.log('Clicked');
+          }}
+        />
+      </ProtectedComponent>
+      <EventSection
+        text="Kezelt rendezvények"
+        listOfEvents={organizedEvents(data.events_getAll.nodes)}
       />
-      <EventSection text="Kezelt rendezvények" listOfEvents={organizedEvents} />
       <EventSection
         text="Regisztrált rendezvények"
-        listOfEvents={appliedEvents}
+        listOfEvents={appliedEvents(data.events_getAll.nodes)}
       />
-      <EventSection text="Közelgő rendezvények" listOfEvents={otherEvents} />
+      <EventSection
+        text="Közelgő rendezvények"
+        listOfEvents={otherEvents(data.events_getAll.nodes)}
+      />
     </Layout>
-  ); */
+  );
 }
