@@ -2,8 +2,8 @@ import { gql, useMutation } from '@apollo/client';
 import React, { useState } from 'react';
 
 import { Layout } from '../components/Layout';
-import { useLoginMutation } from '../utils/LoginMutation';
-import { getToken } from '../utils/TokenContainer';
+import { useLoginMutation } from '../utils/token/LoginMutation';
+import { getToken } from '../utils/token/TokenContainer';
 
 export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');
