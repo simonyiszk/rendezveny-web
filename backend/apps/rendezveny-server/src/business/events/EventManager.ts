@@ -30,7 +30,7 @@ import {
 	AuthorizeGuard,
 	IsAdmin, IsChiefOrganizer,
 	IsManager,
-	IsOrganizer,
+	IsOrganizer, IsRegistered,
 	IsUser
 } from '../auth/AuthorizeGuard';
 import { UnauthorizedException } from '../utils/permissions/UnauthorizedException';
@@ -39,6 +39,7 @@ import { nameof } from '../../utils/nameof';
 import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
 import { Registration } from '../../data/models/Registration';
 import { Tag } from '../../data/models/Tag';
+import { BusinessException } from '../utils/BusinessException';
 
 /* eslint-enable max-len */
 
@@ -47,6 +48,7 @@ export class EventManager extends BaseManager {
 	public constructor(
 		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
 		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
+		@InjectRepository(Registration) private readonly registrationRepository: Repository<Registration>,
 		@InjectRepository(User) private readonly userRepository: Repository<User>,
 		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
 		private readonly jwtService: JwtService
@@ -428,6 +430,39 @@ export class EventManager extends BaseManager {
 		}
 		else {
 			return this.returnRelatedUsers(event, users, [], count);
+		}
+	}
+
+	@AuthorizeGuard(IsRegistered(), IsOrganizer())
+	public async getSelfRelation(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event
+	): Promise<EventRelation> {
+		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
+
+		const organizer = eventContext.isOrganizer(event)
+			? (await this.userRepository.findByIds([eventContext.getUserId()], {
+				relations: [nameof<Club>('memberships')]
+			}))[0]
+			: null;
+
+		const registration = eventContext.isRegistered(event)
+			? (await this.registrationRepository.findByIds([eventContext.getRegistrationId()]))[0]
+			: null;
+
+		if(organizer) {
+			return (await this.returnRelatedUsers(event, [organizer], [], 1)).relations[0];
+		}
+		else if(registration) {
+			return (await this.returnRelatedUsers(
+				event,
+				registration.user ? [registration.user] : [],
+				registration.temporaryIdentity ? [registration.temporaryIdentity] : [],
+				1
+			)).relations[0];
+		}
+		else {
+			throw new BusinessException('UNKNOWN_ERROR', 'Should not happen');
 		}
 	}
 

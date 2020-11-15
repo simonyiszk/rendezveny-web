@@ -51,6 +51,18 @@ export class UsersResolver {
 		return this.userManager.getUserById(accessContext, id);
 	}
 
+	@Query(_ => UserDTO, {
+		name: 'users_getSelf',
+		description: 'Gets the current user'
+	})
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthAccessGuard)
+	public async getSelf(
+		@AccessCtx() accessContext: AccessContext
+	): Promise<UserDTO> {
+		return this.userManager.getUserById(accessContext, accessContext.getUserId());
+	}
+
 	@ResolveField(nameof<UserDTO>('clubMemberships'), _ => PaginatedMembershipDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)

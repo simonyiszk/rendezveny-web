@@ -6,9 +6,10 @@ import { HRSegmentDTO } from './HRTableDTO';
 })
 export class EventOrganizerDTO {
 	@Field({
-		description: 'The id of the organizer'
+		description: 'The id of the organizer',
+		nullable: true
 	})
-	public id: string = '';
+	public id?: string;
 
 	@Field({
 		description: 'Indicates whether the user is a chief organizer for the event'

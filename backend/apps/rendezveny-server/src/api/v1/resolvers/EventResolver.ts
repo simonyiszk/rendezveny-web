@@ -8,7 +8,7 @@ import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { EventManager } from '../../../business/events/EventManager';
 import { UserManager } from '../../../business/users/UserManager';
 import { GraphQLString } from 'graphql';
-import { PaginatedEventRelationDTO } from '../dtos/EventRelationDTO';
+import { EventRelationDTO, PaginatedEventRelationDTO } from '../dtos/EventRelationDTO';
 import { EventContext } from '../../../business/auth/tokens/EventToken';
 import { AuthEventGuard, EventCtx } from '../../../business/auth/passport/AuthEventJwtStrategy';
 import { User } from '../../../data/models/User';
@@ -60,6 +60,18 @@ export class EventResolver {
 		return this.eventManager.getEventById(id);
 	}
 
+	@Query(_ => EventDTO, {
+		name: 'events_getCurrent',
+		description: 'Gets the current event'
+	})
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthEventGuard)
+	public async getCurrent(
+		@EventCtx() eventContext: EventContext
+	): Promise<EventDTO> {
+		return this.eventManager.getEventById(eventContext.getEventId());
+	}
+
 	@Mutation(_ => GraphQLString, {
 		name: 'events_getToken',
 		description: 'Gets one event based on its id'
@@ -74,195 +86,60 @@ export class EventResolver {
 		return this.eventManager.getEventToken(accessContext, event);
 	}
 
-	/* User relations */
-
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getRegistered',
-		description: 'Gets the list of registered users'
-	})
+	@ResolveField(nameof<EventDTO>('relations'), _ => PaginatedEventRelationDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
-	public async getRegistered(
+	public async getRelations(
 		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
+		@Parent() eventDTO: EventDTO,
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
+		@Args('registered', {
+			description: 'Indicates whether only registered or not registered users should be shown',
+			nullable: true
+		}) registered?: boolean,
+		@Args('attended', {
+			description: 'Indicates whether only attended or not registered but not attended users should be shown',
+			nullable: true
+		}) attended?: boolean,
+		@Args('organizer', {
+			description: 'Indicates whether only organizers or potential organizers should be shown',
+			nullable: true
+		}) organizer?: boolean,
+		@Args('chiefOrganizer', {
+			description: 'Indicates whether only chief organizers or potential chief organizers should be shown',
+			nullable: true
+		}) chiefOrganizer?: boolean,
 		@Args('name', {
 			description: 'The name to search for (empty if list all)',
 			nullable: true
 		}) name?: string
 	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
+		const event = await this.eventManager.getEventById(eventDTO.id);
 		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
 			eventContext, event, pageSize, offset, {
-				registered: true,
-				name: name
+				registered, attended, organizer, chiefOrganizer, name
 			}
 		);
 
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
+		return {
+			nodes: relations.map(relation => this.returnEventRelationDTO(relation)),
+			totalCount: count,
+			pageSize: pageSize,
+			offset: offset
+		};
 	}
 
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getAttended',
-		description: 'Gets the list of users who attended the event'
-	})
+	@ResolveField(nameof<EventDTO>('selfRelation'), _ => EventRelationDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
-	public async getAttended(
+	public async getSelfRelation(
 		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@PageSize() pageSize: number,
-		@Offset() offset: number,
-		@Args('name', {
-			description: 'The name to search for (empty if list all)',
-			nullable: true
-		}) name?: string
-	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
-		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				attended: true,
-				name: name
-			}
-		);
-
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
-	}
-
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getDidNotAttend',
-		description: 'Gets the list of users who registered but did not attend the event'
-	})
-	@UseFilters(BusinessExceptionFilter)
-	@UseGuards(AuthEventGuard)
-	public async getDidNotAttend(
-		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@PageSize() pageSize: number,
-		@Offset() offset: number,
-		@Args('name', {
-			description: 'The name to search for (empty if list all)',
-			nullable: true
-		}) name?: string
-	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
-		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				attended: false,
-				name: name
-			}
-		);
-
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
-	}
-
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getOrganizers',
-		description: 'Gets the list of organizers for the event'
-	})
-	@UseFilters(BusinessExceptionFilter)
-	@UseGuards(AuthEventGuard)
-	public async getOrganizers(
-		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@PageSize() pageSize: number,
-		@Offset() offset: number,
-		@Args('name', {
-			description: 'The name to search for (empty if list all)',
-			nullable: true
-		}) name?: string
-	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
-		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				organizer: true,
-				name: name
-			}
-		);
-
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
-	}
-
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getChiefOrganizers',
-		description: 'Gets the list of chief organizers for the event'
-	})
-	@UseFilters(BusinessExceptionFilter)
-	@UseGuards(AuthEventGuard)
-	public async getChiefOrganizers(
-		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@PageSize() pageSize: number,
-		@Offset() offset: number,
-		@Args('name', {
-			description: 'The name to search for (empty if list all)',
-			nullable: true
-		}) name?: string
-	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
-		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				chiefOrganizer: true,
-				name: name
-			}
-		);
-
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
-	}
-
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getUnregistered',
-		description: 'Gets the list of users that are eligible to register for the event'
-	})
-	@UseFilters(BusinessExceptionFilter)
-	@UseGuards(AuthEventGuard)
-	public async getUnregistered(
-		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@PageSize() pageSize: number,
-		@Offset() offset: number,
-		@Args('name', {
-			description: 'The name to search for (empty if list all)',
-			nullable: true
-		}) name?: string
-	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
-		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				registered: false,
-				name: name
-			}
-		);
-
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
-	}
-
-	@Query(_ => PaginatedEventRelationDTO, {
-		name: 'events_getPotentialOrganizers',
-		description: 'Gets the list of users that are eligible to organize the event'
-	})
-	@UseFilters(BusinessExceptionFilter)
-	@UseGuards(AuthEventGuard)
-	public async getPotentialOrganizers(
-		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@PageSize() pageSize: number,
-		@Offset() offset: number,
-		@Args('name', {
-			description: 'The name to search for (empty if list all)',
-			nullable: true
-		}) name?: string
-	): Promise<PaginatedEventRelationDTO> {
-		const event = await this.eventManager.getEventById(id);
-		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				organizer: false,
-				name: name
-			}
-		);
-
-		return this.returnEventRelationDTO(relations, count, pageSize, offset);
+		@Parent() eventDTO: EventDTO
+	): Promise<EventRelationDTO> {
+		const event = await this.eventManager.getEventById(eventDTO.id);
+		const eventRelation = await this.eventManager.getSelfRelation(eventContext, event);
+		return this.returnEventRelationDTO(eventRelation);
 	}
 
 	@ResolveField(nameof<EventDTO>('registrationForm'), _ => EventRegistrationFormDTO)
@@ -306,30 +183,25 @@ export class EventResolver {
 		};
 	}
 
-	private returnEventRelationDTO(relations: EventRelation[], count: number, pageSize: number, offset: number) {
+	private returnEventRelationDTO(relation: EventRelation) {
 		return {
-			nodes: relations.map(relation => ({
-				name: relation.user.name,
+			name: relation.user.name,
 				email: relation.user.name,
-				// eslint-disable-next-line no-undefined
-				userId: relation.user instanceof User ? relation.user.id : undefined,
-				isMemberOfHostingClub: relation.isHostingClubMember(),
-				registration: relation.isRegistered()
-					? {
-						id: relation.getRegistration().id,
-						didAttend: relation.didAttend()
-					}
-					: undefined,
-				organizer: relation.isOrganizer()
-					? {
-						id: relation.getOrganizer().id,
-						isChiefOrganizer: relation.isChiefOrganizer()
-					}
-					: undefined
-			})),
-			totalCount: count,
-			pageSize: pageSize,
-			offset: offset
+			// eslint-disable-next-line no-undefined
+			userId: relation.user instanceof User ? relation.user.id : undefined,
+			isMemberOfHostingClub: relation.isHostingClubMember(),
+			registration: relation.isRegistered()
+			? {
+				id: relation.getRegistration().id,
+				didAttend: relation.didAttend()
+			}
+			: undefined,
+			organizer: relation.isOrganizer()
+			? {
+				id: relation.getOrganizerId(),
+				isChiefOrganizer: relation.isChiefOrganizer()
+			}
+			: undefined
 		};
 	}
 }

@@ -49,8 +49,8 @@ export class EventRelation {
 		return (this.relation & EventRelationType.ORGANIZER) === EventRelationType.ORGANIZER;
 	}
 
-	public getOrganizer(): Organizer {
-		return this.organizer!;
+	public getOrganizerId(): string | undefined {
+		return this.organizer?.id;
 	}
 
 	public isChiefOrganizer(): boolean {
