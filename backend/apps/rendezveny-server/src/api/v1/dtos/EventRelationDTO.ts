@@ -1,31 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { Field, ObjectType } from '@nestjs/graphql';
 import { PaginatedDTO } from '../utils/PaginatedDTO';
-
-@ObjectType({
-	description: 'The data of a registration for an event'
-})
-export class EventRegistrationDTO {
-	@Field({
-		description: 'The registration id'
-	})
-	public id: string = '';
-
-	@Field({
-		description: 'Indicates whether the user attended the event'
-	})
-	public didAttend: boolean = false;
-}
-
-@ObjectType({
-	description: 'The data of an organizer for an event'
-})
-export class EventOrganizerDTO {
-	@Field({
-		description: 'Indicates whether the user is a chief organizer for the event'
-	})
-	public isChiefOrganizer: boolean = false;
-}
+import { EventRegistrationDTO } from './EventRegistrationDTO';
+import { EventOrganizerDTO } from './EventOrganizerDTO';
 
 @ObjectType({
 	description: 'The data of a user in relation to an event'

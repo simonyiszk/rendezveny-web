@@ -7,6 +7,7 @@ import { LoginResolver } from './resolvers/LoginResolver';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { EventResolver } from './resolvers/EventResolver';
+import { RegistrationResolver } from './resolvers/RegistrationResolver';
 
 @Module({
 	imports: [
@@ -17,7 +18,8 @@ import { EventResolver } from './resolvers/EventResolver';
 		ClubsResolver,
 		MembershipResolver,
 		LoginResolver,
-		EventResolver
+		EventResolver,
+		RegistrationResolver
 	]
 })
 export class ApiV1Module {
@@ -27,7 +29,9 @@ export class ApiV1Module {
 				debug: true,
 				playground: true,
 				path: '/api/v1',
+
 				context: ({ req }) => ({ req }),
+				fieldResolverEnhancers: ['guards'],
 
 				autoSchemaFile: join(process.cwd(), 'apps/rendezveny-server/src/api/v1/schema.gql'),
 				sortSchema: true

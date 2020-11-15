@@ -1,12 +1,14 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { User } from './User';
 import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
 import { RegistrationNotificationSettings } from './RegistrationNotificationSettings';
 import { TemporaryIdentity } from './TemporaryIdentity';
+import { FormQuestionAnswer } from './FormQuestionAnswer';
+import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
-export class Registration {
+export class Registration extends BaseEntity<Registration> {
 	@PrimaryColumn()
 	@Generated('uuid')
 	public readonly id!: string;
@@ -42,14 +44,19 @@ export class Registration {
 	@Column({ type: 'enum', enum: RegistrationNotificationSettings })
 	public notificationSettings!: RegistrationNotificationSettings;
 
+	@OneToMany(_ => FormQuestionAnswer, answer => answer.registration)
+	public formAnswers!: FormQuestionAnswer[];
+
 	public constructor(params?: (
 		{ user?: User, temporaryIdentity: TemporaryIdentity } | { user: User, temporaryIdentity?: TemporaryIdentity }
 	) & {
 		event: Event,
 		registrationDate: Date,
 		attendDate?: Date,
-		notificationSettings: RegistrationNotificationSettings
+		notificationSettings: RegistrationNotificationSettings,
+		formAnswers?: FormQuestionAnswer[]
 	}) {
+		super();
 		if(params) {
 			this.event = params.event;
 			if(params.user) {
@@ -63,6 +70,9 @@ export class Registration {
 				this.attendDate = params.attendDate;
 			}
 			this.notificationSettings = params.notificationSettings;
+			if(params.formAnswers) {
+				this.formAnswers = params.formAnswers;
+			}
 		}
 	}
 }

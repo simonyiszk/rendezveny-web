@@ -4,10 +4,8 @@ import { In, Like, Not, Repository, Transaction, TransactionRepository } from 't
 import { Event } from '../../data/models/Event';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { EventDoesNotExistsException } from './exceptions/EventDoesNotExistsException';
-import { UserManager } from '../users/UserManager';
 import { checkArgument } from '../../utils/preconditions';
 import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, minDate } from 'class-validator';
-import { ClubManager } from '../clubs/ClubManager';
 import { Organizer } from '../../data/models/Organizer';
 import { OrganizerNotificationSettings } from '../../data/models/OrganizerNotificationSettings';
 import { EventStartDateValidationException } from './exceptions/EventStartDateValidationException';
@@ -40,6 +38,7 @@ import { EventRelation, EventRelationType } from './EventRelation';
 import { nameof } from '../../utils/nameof';
 import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
 import { Registration } from '../../data/models/Registration';
+import { Tag } from '../../data/models/Tag';
 
 /* eslint-enable max-len */
 
@@ -50,8 +49,6 @@ export class EventManager extends BaseManager {
 		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
 		@InjectRepository(User) private readonly userRepository: Repository<User>,
 		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
-		private readonly userManager: UserManager,
-		private readonly clubManager: ClubManager,
 		private readonly jwtService: JwtService
 	) {
 		super();
@@ -75,6 +72,37 @@ export class EventManager extends BaseManager {
 		const [events, count] = await this.eventRepository.findAndCount({
 			take: pageSize,
 			skip: offset * pageSize
+		});
+
+		return { events, count };
+	}
+
+	@AuthorizeGuard(IsUser(), IsAdmin())
+	public async findEventsPaginated(
+		@AuthContext() accessContext: AccessContext,
+		pageSize: number, offset: number,
+		criteria: { tags?: [Tag], name?: string }
+	): Promise<{ events: Event[], count: number}> {
+		checkPagination(pageSize, offset);
+
+		let whereCriteria = {};
+		if(criteria.tags) {
+			whereCriteria = {
+				...whereCriteria,
+				tags: In(criteria.tags)
+			};
+		}
+		if(typeof criteria.name === 'string') {
+			whereCriteria = {
+				...whereCriteria,
+				name: Like(`%${criteria.name}%`)
+			};
+		}
+
+		const [events, count] = await this.eventRepository.findAndCount({
+			take: pageSize,
+			skip: offset * pageSize,
+			where: whereCriteria
 		});
 
 		return { events, count };
@@ -161,6 +189,56 @@ export class EventManager extends BaseManager {
 		await organizerRepository!.save(organizers);
 
 		return event;
+	}
+
+	@Transaction()
+	@AuthorizeGuard(IsChiefOrganizer())
+	public async editEvent(
+		@AuthContext() accessContext: AccessContext,
+		@AuthEvent() event: Event,
+		name: string,
+		description: string,
+		isClosedEvent: boolean,
+		hostingClubs: Club[],
+		settings: {
+			place?: string, start?: string, end?: string, isDateOrTime?: boolean,
+			registrationStart?: string, registrationEnd?: string
+		},
+		@TransactionRepository(Event) eventRepository?: Repository<Event>
+	): Promise<Event> {
+		checkArgument(isNotEmpty(name), EventNameValidationException);
+		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
+		checkArgument(
+			isArray(hostingClubs) && arrayMinSize(hostingClubs, 1),
+			EventHostingClubsValidationException
+		);
+		const { start: startDate, end: endDate } = EventManager.validateDatePair(settings.start, settings.end);
+		const { start: registrationStartDate, end: registrationEndDate }
+			= EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
+
+		event.name = name;
+		event.description = description;
+		event.isClosedEvent = isClosedEvent;
+		event.place = settings.place;
+		event.start = startDate;
+		event.end = endDate;
+		event.isDateOrTime = settings.isDateOrTime ?? event.isDateOrTime;
+		event.registrationStart = registrationStartDate;
+		event.registrationEnd = registrationEndDate;
+
+		await eventRepository!.save(event);
+
+		return event;
+	}
+
+	@Transaction()
+	@AuthorizeGuard(IsChiefOrganizer())
+	public async deleteEvent(
+		@AuthContext() accessContext: AccessContext,
+		@AuthEvent() event: Event,
+		@TransactionRepository(Event) eventRepository?: Repository<Event>
+	): Promise<void> {
+		await eventRepository!.remove(event);
 	}
 
 	@Transaction()
@@ -301,7 +379,12 @@ export class EventManager extends BaseManager {
 						name: typeof options.name === 'string' ? Like(`%${options.name}%`) : undefined
 					}
 					: null
-			].filter(condition => condition !== null)
+			].filter(condition => condition !== null).map((condition) => {
+				if(typeof condition!.name === 'undefined') {
+					delete condition!.name;
+				}
+				return condition;
+			})
 		});
 
 		if(
@@ -354,6 +437,7 @@ export class EventManager extends BaseManager {
 		const relations = users.map((user) => {
 			let relation = EventRelationType.NONE;
 			let registration: Registration | undefined;
+			let organizer: Organizer | undefined;
 
 			if(event.registrations.some(reg => reg.user?.id === user.id)) {
 				relation = relation | EventRelationType.REGISTERED;
@@ -362,21 +446,23 @@ export class EventManager extends BaseManager {
 			if(event.registrations.some(reg => reg.user?.id === user.id && reg.attendDate)) {
 				relation = relation | EventRelationType.ATTENDED;
 			}
-			if(event.organizers.some(organizer => organizer.user.id === user.id)) {
+			if(event.organizers.some(org => org.user.id === user.id)) {
 				relation = relation | EventRelationType.ORGANIZER;
+				organizer = event.organizers.find(org => org.user.id === user.id)!;
 			}
-			if(event.organizers.some(organizer => organizer.user.id === user.id && organizer.isChief)) {
+			if(event.organizers.some(org => org.user.id === user.id && org.isChief)) {
 				relation = relation | EventRelationType.CHIEF_ORGANIZER;
 			}
 			if(user.memberships.some(membership => event.hostingClubs.some(club => club.id === membership.club.id))) {
 				relation = relation | EventRelationType.HOSTING_MEMBER;
 			}
-			return new EventRelation(user, relation, registration);
+			return new EventRelation(user, relation, registration, organizer);
 		});
 
 		const temporaryRelations = temporaryIdentities.map((temporaryIdentity) => {
 			const relation = EventRelationType.REGISTERED;
-			return new EventRelation(temporaryIdentity, relation);
+			const registration = event.registrations.find(reg => reg.temporaryIdentity === temporaryIdentity)!;
+			return new EventRelation(temporaryIdentity, relation, registration);
 		});
 
 		return { relations: [...relations, ...temporaryRelations], count: count };
