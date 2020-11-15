@@ -1,4 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
+import { navigate } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../components/Button';
@@ -12,6 +13,7 @@ const userQueryGQL = gql`
   query {
     clubs_getAll {
       nodes {
+        id
         name
       }
     }
@@ -37,13 +39,16 @@ export default function IndexPage(): JSX.Element {
   if (called && loading) return <div>Loading</div>;
 
   // Show error message if lazy query fails
-  if (error) return <div>Error::{error.message}</div>;
+  if (error) {
+    navigate('/login');
+    return <div>Error {error.message}</div>;
+  }
 
   return (
     <Layout>
       <p>Success</p>
       {data.clubs_getAll.nodes.map((c) => (
-        <div>{c.name}</div>
+        <div key={c.id}>{c.name}</div>
       ))}
     </Layout>
   );

@@ -11,13 +11,10 @@ export default function LoginPage(): JSX.Element {
 
   const [loginMutation, _] = useLoginMutation();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    loginMutation(username, password).then(() => {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
-      }
-    });
+    await loginMutation(username, password);
+    window.location.href = '/';
   };
 
   return (
