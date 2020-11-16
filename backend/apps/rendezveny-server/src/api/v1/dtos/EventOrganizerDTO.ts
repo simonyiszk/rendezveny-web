@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { HRSegmentDTO } from './HRTableDTO';
+import { GraphQLString } from 'graphql';
 
 @ObjectType({
 	description: 'The data of an organizer for an event'
@@ -16,8 +16,8 @@ export class EventOrganizerDTO {
 	})
 	public isChiefOrganizer: boolean = false;
 
-	@Field(_ => [HRSegmentDTO], {
+	@Field(_ => [GraphQLString], {
 		description: 'The segments the organizer is assigned to'
 	})
-	public hrSegments?: HRSegmentDTO;
+	public hrSegmentIds?: string[];
 }

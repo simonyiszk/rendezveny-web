@@ -1,4 +1,3 @@
-import { Repository, Transaction, TransactionRepository } from 'typeorm';
 import { Club } from '../../data/models/Club';
 import { checkArgument } from '../../utils/preconditions';
 import { ClubWithNameExistsException } from './exceptions/ClubWithNameExistsException';
@@ -11,12 +10,14 @@ import { ClubNameValidationException } from './exceptions/ClubNameValidationExce
 import { AccessContext } from '../auth/tokens/AccessToken';
 import { BaseManager, Manager } from '../utils/BaseManager';
 import { AuthClub, AuthContext, AuthorizeGuard, IsAdmin, IsManagerOfClub, IsUser } from '../auth/AuthorizeGuard';
+import { ClubMembershipRepository, ClubRepository } from '../../data/repositories/repositories';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 @Manager()
 export class ClubManager extends BaseManager {
 	public constructor(
-		@InjectRepository(Club) private readonly clubRepository: Repository<Club>,
-		@InjectRepository(ClubMembership) private readonly membershipRepository: Repository<ClubMembership>
+		@InjectRepository(ClubRepository) private readonly clubRepository: ClubRepository,
+		@InjectRepository(ClubMembershipRepository) private readonly membershipRepository: ClubMembershipRepository
 	) {
 		super();
 	}
@@ -74,47 +75,46 @@ export class ClubManager extends BaseManager {
 		throw new ClubDoesNotExistsException(id);
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async addClub(
 		@AuthContext() accessContext: AccessContext,
-		name: string,
-		@TransactionRepository(Club) clubRepository?: Repository<Club>
+		name: string
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
 
-		const clubWithName = await clubRepository!.findOne({ name });
+		const clubWithName = await this.clubRepository.findOne({ name });
 
 		if(clubWithName) {
 			throw new ClubWithNameExistsException(name);
 		}
 		else {
 			const club = new Club({ name });
-			return clubRepository!.save(club);
+			return this.clubRepository.save(club);
 		}
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async editClub(
 		@AuthContext() accessContext: AccessContext,
 		@AuthClub() club: Club,
-		name: string,
-		@TransactionRepository(Club) clubRepository?: Repository<Club>
+		name: string
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
 
-		const clubWithName = await clubRepository!.findOne({ name });
+		const clubWithName = await this.clubRepository.findOne({ name });
 
 		if(clubWithName && club.id !== clubWithName.id) {
 			throw new ClubWithNameExistsException(name);
 		}
 		else {
 			club.name = name;
-			return clubRepository!.save(club);
+			return this.clubRepository.save(club);
 		}
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async deleteClub(
 		@AuthContext() accessContext: AccessContext,

@@ -6,6 +6,7 @@ import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { AuthRefreshGuard, RefreshCtx } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
 import { LoginDTO } from '../dtos/LoginDTO';
 import { RefreshContext } from '../../../business/auth/tokens/RefreshToken';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 @Resolver()
 export class LoginResolver {
@@ -18,6 +19,7 @@ export class LoginResolver {
 		description: 'Logs the user in with username and password'
 	})
 	@UseFilters(BusinessExceptionFilter)
+	@Transactional()
 	public async loginWithLocalIdentity(
 		@Args('username', { description: 'The username of the user' }) username: string,
 		@Args('password', { description: 'The password of the user' }) password: string
@@ -31,6 +33,7 @@ export class LoginResolver {
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthRefreshGuard)
+	@Transactional()
 	public async loginWithRefreshToken(
 		@RefreshCtx() refreshContext: RefreshContext
 	): Promise<string> {
@@ -43,6 +46,7 @@ export class LoginResolver {
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthRefreshGuard)
+	@Transactional()
 	public async logout(
 		@RefreshCtx() refreshContext: RefreshContext
 	): Promise<boolean> {

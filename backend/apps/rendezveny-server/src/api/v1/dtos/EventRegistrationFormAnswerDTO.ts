@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { createUnionType, Field, ObjectType } from '@nestjs/graphql';
+import { createUnionType, Field, InputType, ObjectType } from '@nestjs/graphql';
 import { GraphQLString } from 'graphql';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -75,4 +75,29 @@ export class EventRegistrationFormAnswersDTO {
 		description: 'The answers'
 	})
 	public answers?: EventRegistrationFormAnswerDTO[];
+}
+
+@InputType({
+	description: 'The answer for one question of the registration form for an event'
+})
+export class EventRegistrationFormAnswerInput {
+	@Field({
+		description: 'The id of the question'
+	})
+	public id: string = '';
+
+	@Field({
+		description: 'The metadata of the answer type (JSON stringified)'
+	})
+	public answer: string = '';
+}
+
+@InputType({
+	description: 'The data of the answers for a registration form of an event'
+})
+export class EventRegistrationFormAnswersInput {
+	@Field(_ => [EventRegistrationFormAnswerInput], {
+		description: 'The answers'
+	})
+	public answers!: EventRegistrationFormAnswerInput[];
 }

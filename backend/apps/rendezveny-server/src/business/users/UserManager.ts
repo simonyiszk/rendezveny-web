@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-import { Repository, Transaction, TransactionRepository } from 'typeorm';
 import { User } from '../../data/models/User';
 import { checkArgument } from '../../utils/preconditions';
 import { UserDoesNotExistsException } from './exceptions/UserDoesNotExistsException';
@@ -28,14 +27,20 @@ import {
 	IsSameUser
 } from '../auth/AuthorizeGuard';
 import { Event } from '../../data/models/Event';
+import {
+	ClubMembershipRepository,
+	LocalIdentityRepository,
+	UserRepository
+} from '../../data/repositories/repositories';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 /* eslint-enable max-len */
 
 @Manager()
 export class UserManager extends BaseManager {
 	public constructor(
-		@InjectRepository(User) private readonly userRepository: Repository<User>,
-		@InjectRepository(LocalIdentity) private readonly localIdentityRepository: Repository<LocalIdentity>,
-		@InjectRepository(ClubMembership) private readonly membershipRepository: Repository<ClubMembership>,
+		@InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+		@InjectRepository(LocalIdentityRepository) private readonly localIdentityRepository: LocalIdentityRepository,
+		@InjectRepository(ClubMembershipRepository) private readonly membershipRepository: ClubMembershipRepository,
 		private readonly cryptoService: CryptoService
 	) {
 		super();
@@ -97,31 +102,29 @@ export class UserManager extends BaseManager {
 		throw new UserDoesNotExistsException(id);
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async addUserWithLocalIdentity(
 		@AuthContext() accessContext: AccessContext,
-		name: string, username: string, email: string, password: string,
-		@TransactionRepository(User) userRepository?: Repository<User>,
-		@TransactionRepository(LocalIdentity) localIdentityRepository?: Repository<LocalIdentity>
+		name: string, username: string, email: string, password: string
 	): Promise<User> {
 		checkArgument(isNotEmpty(name), UserNameValidationException);
 		checkArgument(isNotEmpty(username), UserUserNameValidationException);
 		checkArgument(isEmail(email), UserEmailValidationException);
 		UserManager.checkPassword(password);
 
-		const identityWithEmail = await localIdentityRepository!.findOne({ email });
+		const identityWithEmail = await this.localIdentityRepository.findOne({ email });
 		if(!identityWithEmail) {
 			throw new LocalIdentityUserExistsWithEmailException(email);
 		}
 
-		const identityWithUsername = await localIdentityRepository!.findOne({ username });
+		const identityWithUsername = await this.localIdentityRepository.findOne({ username });
 		if(!identityWithUsername) {
 			throw new LocalIdentityUserExistsWithUsernameException(username);
 		}
 
 		const user = new User({ name });
-		await userRepository!.save(user);
+		await this.userRepository.save(user);
 
 		const { hashedPassword, salt } = await this.cryptoService.hashPassword(password, 1);
 		const localIdentity = new LocalIdentity({
@@ -132,11 +135,12 @@ export class UserManager extends BaseManager {
 			passwordVersion: 1,
 			user: user
 		});
-		await localIdentityRepository!.save(localIdentity);
+		await this.localIdentityRepository.save(localIdentity);
 
 		return user;
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsSameUser(), IsAdmin())
 	public async editUser(
 		@AuthContext() _accessContext: AccessContext,
@@ -149,6 +153,7 @@ export class UserManager extends BaseManager {
 		return this.userRepository.save(user);
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async editUserRole(
 		@AuthContext() _accessContext: AccessContext,
@@ -159,6 +164,7 @@ export class UserManager extends BaseManager {
 		return this.userRepository.save(user);
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async suspendUser(
 		@AuthContext() _accessContext: AccessContext,
@@ -168,6 +174,7 @@ export class UserManager extends BaseManager {
 		await this.userRepository.save(user);
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async unsuspendUser(
 		@AuthContext() _accessContext: AccessContext,

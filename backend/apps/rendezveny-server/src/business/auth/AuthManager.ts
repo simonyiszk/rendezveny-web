@@ -6,7 +6,6 @@ import { AuthUserNameValidationException } from './exceptions/AuthUserNameValida
 import { AuthPasswordValidationException } from './exceptions/AuthPasswordValidationException';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../data/models/User';
-import { EntityManager, Repository, Transaction, TransactionManager } from 'typeorm';
 import { LocalIdentity } from '../../data/models/LocalIdentity';
 import { nameof } from '../../utils/nameof';
 import { ClubMembership } from '../../data/models/ClubMembership';
@@ -17,21 +16,22 @@ import { RefreshToken as RefreshTokenEntity } from '../../data/models/RefreshTok
 import { AuthUserSuspendedException } from './exceptions/AuthUserSuspendedException';
 import { RefreshContext, RefreshToken } from './tokens/RefreshToken';
 import { AccessToken } from './tokens/AccessToken';
+import { LocalIdentityRepository, RefreshTokenRepository, UserRepository } from '../../data/repositories/repositories';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 @Injectable()
 export class AuthManager {
 	public constructor(
-		@InjectRepository(User) private readonly userRepository: Repository<User>,
-		@InjectRepository(LocalIdentity) private readonly localIdentityRepository: Repository<LocalIdentity>,
-		@InjectRepository(RefreshTokenEntity) private readonly refreshTokenRepository: Repository<RefreshTokenEntity>,
+		@InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+		@InjectRepository(LocalIdentityRepository) private readonly localIdentityRepository: LocalIdentityRepository,
+		@InjectRepository(RefreshTokenRepository) private readonly refreshTokenRepository: RefreshTokenRepository,
 		private readonly jwtService: JwtService,
 		private readonly cryptoService: CryptoService
 	) {}
 
-	@Transaction()
+	@Transactional()
 	public async loginWithLocalIdentity(
-		username: string, password: string,
-		@TransactionManager() _entityManager?: EntityManager
+		username: string, password: string
 	): Promise<{ refresh: string, access: string }> {
 		checkArgument(isNotEmpty(username), AuthUserNameValidationException);
 		checkArgument(isNotEmpty(password), AuthPasswordValidationException);
@@ -75,6 +75,7 @@ export class AuthManager {
 		throw new AuthInvalidUsernameOrPasswordException();
 	}
 
+	@Transactional()
 	public async loginWithRefreshToken(
 		refreshContext: RefreshContext
 	): Promise<string> {
@@ -112,10 +113,9 @@ export class AuthManager {
 		throw new AuthInvalidTokenException();
 	}
 
-	@Transaction()
+	@Transactional()
 	public async logout(
-		refreshContext: RefreshContext,
-		@TransactionManager() _entityManager?: EntityManager
+		refreshContext: RefreshContext
 	): Promise<void> {
 		await this.refreshTokenRepository.delete({ id: refreshContext.getTokenId() });
 	}

@@ -2,18 +2,19 @@ import { BaseManager, Manager } from '../utils/BaseManager';
 import { AuthContext, AuthorizeGuard, IsAdmin, IsUser } from '../auth/AuthorizeGuard';
 import { AccessContext } from '../auth/tokens/AccessToken';
 import { Tag } from '../../data/models/Tag';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { checkArgument } from '../../utils/preconditions';
 import { isNotEmpty } from 'class-validator';
 import { TagInvalidNameException } from './exceptions/TagInvalidNameException';
 import { TagAlreadyExistsException } from './exceptions/TagAlreadyExistsException';
 import { TagDoesNotExistException } from './exceptions/TagDoesNotExistException';
+import { TagRepository } from '../../data/repositories/repositories';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 @Manager()
 export class TagManager extends BaseManager {
 	public constructor(
-		@InjectRepository(Tag) private readonly tagRepository: Repository<Tag>
+		@InjectRepository(TagRepository) private readonly tagRepository: TagRepository
 	) {
 		super();
 	}
@@ -25,6 +26,7 @@ export class TagManager extends BaseManager {
 		return this.tagRepository.find();
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async addTag(
 		@AuthContext() _accessContext: AccessContext,
@@ -42,6 +44,7 @@ export class TagManager extends BaseManager {
 		return newTag;
 	}
 
+	@Transactional()
 	@AuthorizeGuard(IsAdmin())
 	public async deleteTag(
 		@AuthContext() _accessContext: AccessContext,

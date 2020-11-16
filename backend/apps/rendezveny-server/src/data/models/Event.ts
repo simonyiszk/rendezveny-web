@@ -19,7 +19,7 @@ export class Event extends BaseEntity<Event> {
 	@Column()
 	public description!: string;
 
-	@Column()
+	@Column({ nullable: true })
 	public place?: string;
 
 	@Column({ type: 'timestamp', nullable: true })

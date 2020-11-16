@@ -20,14 +20,14 @@ export class FormQuestionAnswer {
 	@PrimaryColumn()
 	public readonly formQuestionId?: string;
 
-	@ManyToOne(_ => FormQuestion, formQuestion => formQuestion.answers, { eager: true })
+	@ManyToOne(_ => FormQuestion, formQuestion => formQuestion.answers, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<FormQuestionAnswer>('formQuestionId') })
 	public formQuestion!: FormQuestion;
 
 	@PrimaryColumn()
 	public readonly registrationId?: string;
 
-	@ManyToOne(_ => Registration, registration => registration.formAnswers, { eager: true })
+	@ManyToOne(_ => Registration, registration => registration.formAnswers, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<FormQuestionAnswer>('registrationId') })
 	public registration!: Registration;
 

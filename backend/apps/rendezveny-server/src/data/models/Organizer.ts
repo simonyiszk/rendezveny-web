@@ -15,14 +15,14 @@ export class Organizer extends BaseEntity<Organizer> {
 	@Column()
 	public readonly eventId?: string;
 
-	@ManyToOne(_ => Event, event => event.organizers, { eager: true })
+	@ManyToOne(_ => Event, event => event.organizers, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<Organizer>('eventId') })
 	public event!: Event;
 
 	@Column()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.organizing, { eager: true })
+	@ManyToOne(_ => User, user => user.organizing, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<Organizer>('userId') })
 	public user!: User;
 
@@ -32,9 +32,7 @@ export class Organizer extends BaseEntity<Organizer> {
 	@Column({ type: 'enum', enum: OrganizerNotificationSettings })
 	public notificationSettings!: OrganizerNotificationSettings;
 
-	@ManyToMany(_ => HRSegment, hrSegment => hrSegment.organizers, {
-		onDelete: 'CASCADE'
-	})
+	@ManyToMany(_ => HRSegment, hrSegment => hrSegment.organizers)
 	public hrSegments!: HRSegment[];
 
 	public constructor(params?: {
