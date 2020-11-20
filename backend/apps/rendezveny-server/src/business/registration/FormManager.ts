@@ -1,10 +1,6 @@
 import { BaseManager, Manager } from '../utils/BaseManager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from '../../data/models/Event';
-import { Repository, Transaction, TransactionRepository } from 'typeorm';
-import { Organizer } from '../../data/models/Organizer';
-import { User } from '../../data/models/User';
-import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
 import { FilledInForm, Form, ModifiedForm } from './Form';
 import { FormQuestion, FormQuestionMetadata, FormQuestionType } from '../../data/models/FormQuestion';
 import { FormQuestionAnswer, FormQuestionAnswerObject } from '../../data/models/FormQuestionAnswer';
@@ -22,16 +18,20 @@ import { Registration } from '../../data/models/Registration';
 import { FormRequiredQuestionNotAnsweredException } from './exceptions/FormRequiredQuestionNotAnsweredException';
 import { FormInvalidFormAnswerException } from './exceptions/FormInvalidFormAnswerException';
 import { checkPermission } from '../utils/permissions/CheckPermissions';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
+import {
+	EventRepository,
+	FormQuestionAnswerRepository,
+	FormQuestionRepository
+} from '../../data/repositories/repositories';
 
 @Manager()
 export class FormManager extends BaseManager {
 	public constructor(
-		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
-		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
-		@InjectRepository(User) private readonly userRepository: Repository<User>,
-		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
-		@InjectRepository(FormQuestion) private readonly formQuestionRepository: Repository<FormQuestion>,
-		@InjectRepository(FormQuestionAnswer) private readonly formAnswerRepository: Repository<FormQuestionAnswer>
+		@InjectRepository(EventRepository) private readonly eventRepository: EventRepository,
+		@InjectRepository(FormQuestionRepository) private readonly formQuestionRepository: FormQuestionRepository,
+		@InjectRepository(FormQuestionAnswerRepository)
+		private readonly formAnswerRepository: FormQuestionAnswerRepository
 	) {
 		super();
 	}
@@ -50,18 +50,17 @@ export class FormManager extends BaseManager {
 		};
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsChiefOrganizer())
 	public async modifyForm(
 		@AuthContext() _eventContext: EventContext,
 		@AuthEvent() event: Event,
-		form: ModifiedForm,
-		@TransactionRepository(FormQuestion) formQuestionRepository?: Repository<FormQuestion>
+		form: ModifiedForm
 	): Promise<Form> {
-		const questions = (await formQuestionRepository!.find({ event })).sort((q1, q2) => q1.order - q2.order);
+		const questions = (await this.formQuestionRepository.find({ event })).sort((q1, q2) => q1.order - q2.order);
 
 		const deletedQuestions = questions.filter(q => !form.questions.map(q2 => q2.id).some(id => id === q.id));
-		await formQuestionRepository!.remove(deletedQuestions);
+		await this.formQuestionRepository.remove(deletedQuestions);
 
 		const modifiedQuestions: FormQuestion[] = [];
 		for(const question of form.questions) {
@@ -92,7 +91,7 @@ export class FormManager extends BaseManager {
 			question.order = idx;
 		}
 
-		await formQuestionRepository!.save(modifiedQuestions);
+		await this.formQuestionRepository.save(modifiedQuestions);
 
 		return {
 			questions: modifiedQuestions.map(question => ({
@@ -123,40 +122,34 @@ export class FormManager extends BaseManager {
 		};
 	}
 
-	@Transaction()
+	@Transactional()
 	public async fillInForm(
 		event: Event,
 		registration: Registration,
-		form: FilledInForm,
-		@TransactionRepository(FormQuestion) formQuestionRepository?: Repository<FormQuestion>,
-		@TransactionRepository(FormQuestionAnswer) formAnswerRepository?: Repository<FormQuestionAnswer>
+		form: FilledInForm
 	): Promise<FilledInForm> {
-		return this.doFillInForm(event, registration, form, formQuestionRepository, formAnswerRepository);
+		return this.doFillInForm(event, registration, form);
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsRegistered(), IsOrganizer(), IsChiefOrganizer())
 	public async modifyFilledInForm(
 		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
 		@AuthRegistration() registration: Registration,
-		form: FilledInForm,
-		@TransactionRepository(FormQuestion) formQuestionRepository?: Repository<FormQuestion>,
-		@TransactionRepository(FormQuestionAnswer) formAnswerRepository?: Repository<FormQuestionAnswer>
+		form: FilledInForm
 	): Promise<FilledInForm> {
-		await formAnswerRepository!.delete({ registration });
+		await this.formAnswerRepository.delete({ registration });
 
-		return this.doFillInForm(event, registration, form, formQuestionRepository, formAnswerRepository);
+		return this.doFillInForm(event, registration, form);
 	}
 
 	private async doFillInForm(
 		event: Event,
 		registration: Registration,
-		form: FilledInForm,
-		formQuestionRepository?: Repository<FormQuestion>,
-		formAnswerRepository?: Repository<FormQuestionAnswer>
+		form: FilledInForm
 	): Promise<FilledInForm> {
-		const questions = (await formQuestionRepository!.find({ event })).sort((q1, q2) => q1.order - q2.order);
+		const questions = (await this.formQuestionRepository.find({ event })).sort((q1, q2) => q1.order - q2.order);
 
 		if(questions.filter(q => q.isRequired).some(q => !form.answers.map(a => a.id).some(id => q.id === id))) {
 			throw new FormRequiredQuestionNotAnsweredException();
@@ -177,7 +170,7 @@ export class FormManager extends BaseManager {
 			}
 		}
 
-		await formAnswerRepository!.save(answers);
+		await this.formAnswerRepository.save(answers);
 
 		return {
 			answers: answers.map(answer => ({

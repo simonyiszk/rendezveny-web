@@ -16,14 +16,14 @@ export class Registration extends BaseEntity<Registration> {
 	@Column()
 	public readonly eventId?: string;
 
-	@ManyToOne(_ => Event, event => event.registrations, { eager: true })
+	@ManyToOne(_ => Event, event => event.registrations, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<Registration>('eventId') })
 	public event!: Event;
 
 	@Column()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.registrations, { eager: true, nullable: true })
+	@ManyToOne(_ => User, user => user.registrations, { eager: true, nullable: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<Registration>('userId') })
 	public user?: User;
 
@@ -44,7 +44,9 @@ export class Registration extends BaseEntity<Registration> {
 	@Column({ type: 'enum', enum: RegistrationNotificationSettings })
 	public notificationSettings!: RegistrationNotificationSettings;
 
-	@OneToMany(_ => FormQuestionAnswer, answer => answer.registration)
+	@OneToMany(_ => FormQuestionAnswer, answer => answer.registration, {
+		onDelete: 'CASCADE'
+	})
 	public formAnswers!: FormQuestionAnswer[];
 
 	public constructor(params?: (

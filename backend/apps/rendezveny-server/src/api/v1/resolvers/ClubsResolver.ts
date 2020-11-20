@@ -10,6 +10,7 @@ import { Offset, PageSize } from '../utils/PaginatedDTO';
 import { MembershipResolver } from './MembershipResolver';
 import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessContext } from '../../../business/auth/tokens/AccessToken';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 @Resolver((_: never) => ClubDTO)
 export class ClubsResolver {
@@ -57,6 +58,7 @@ export class ClubsResolver {
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
+	@Transactional()
 	public async addClub(
 		@AccessCtx() accessContext: AccessContext,
 		@Args('name', { description: 'The name of the club' }) name: string
@@ -70,6 +72,7 @@ export class ClubsResolver {
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
+	@Transactional()
 	public async editClub(
 		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string,
@@ -97,6 +100,7 @@ export class ClubsResolver {
 	@ResolveField(nameof<ClubDTO>('clubMemberships'), _ => PaginatedMembershipDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
+	@Transactional()
 	public async getUserMemberships(
 		@AccessCtx() accessContext: AccessContext,
 		@Parent() clubDTO: ClubDTO,

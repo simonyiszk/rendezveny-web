@@ -28,7 +28,7 @@ export class HRTask extends BaseEntity<HRTask> {
 	@Column()
 	public readonly hrTableId!: string;
 
-	@ManyToOne(_ => HRTable, hrTable => hrTable.hrTasks)
+	@ManyToOne(_ => HRTable, hrTable => hrTable.hrTasks, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<HRTask>('hrTableId') })
 	public hrTable!: HRTable;
 

@@ -1,16 +1,18 @@
 import { BaseManager, Manager } from '../utils/BaseManager';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In } from 'typeorm';
 import { AuthContext, AuthorizeGuard, IsAdmin, IsManager } from '../auth/AuthorizeGuard';
 import { FormQuestionTemplate } from '../../data/models/FormQuestionTemplate';
 import { AccessContext } from '../auth/tokens/AccessToken';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { Tag } from '../../data/models/Tag';
+import { FormQuestionTemplateRepository } from '../../data/repositories/repositories';
 
 @Manager()
 export class FormTemplateManager extends BaseManager {
 	public constructor(
-		@InjectRepository(FormQuestionTemplate) private readonly templateRepository: Repository<FormQuestionTemplate>
+		@InjectRepository(FormQuestionTemplateRepository)
+		private readonly templateRepository: FormQuestionTemplateRepository
 	) {
 		super();
 	}

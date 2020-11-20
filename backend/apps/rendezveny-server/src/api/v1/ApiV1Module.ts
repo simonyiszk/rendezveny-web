@@ -8,6 +8,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { EventResolver } from './resolvers/EventResolver';
 import { RegistrationResolver } from './resolvers/RegistrationResolver';
+import { OrganizerResolver } from './resolvers/OrganizerResolver';
 
 @Module({
 	imports: [
@@ -19,7 +20,8 @@ import { RegistrationResolver } from './resolvers/RegistrationResolver';
 		MembershipResolver,
 		LoginResolver,
 		EventResolver,
-		RegistrationResolver
+		RegistrationResolver,
+		OrganizerResolver
 	]
 })
 export class ApiV1Module {

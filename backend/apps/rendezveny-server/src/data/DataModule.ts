@@ -1,42 +1,45 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './models/User';
-import { LocalIdentity } from './models/LocalIdentity';
-import { Club } from './models/Club';
-import { ClubMembership } from './models/ClubMembership';
-import { RefreshToken } from './models/RefreshToken';
-import { Event } from './models/Event';
-import { Organizer } from './models/Organizer';
-import { Registration } from './models/Registration';
-import { Tag } from './models/Tag';
-import { TemporaryIdentity } from './models/TemporaryIdentity';
-import { FormQuestion } from './models/FormQuestion';
-import { FormQuestionAnswer } from './models/FormQuestionAnswer';
-import { FormQuestionTemplate } from './models/FormQuestionTemplate';
-import { HRSegment } from './models/HRSegment';
-import { HRTable } from './models/HRTable';
-import { HRTask } from './models/HRTask';
+import {
+	ClubMembershipRepository,
+	ClubRepository,
+	EventRepository,
+	FormQuestionAnswerRepository,
+	FormQuestionRepository,
+	FormQuestionTemplateRepository,
+	HRSegmentRepository,
+	HRTableRepository,
+	HRTaskRepository,
+	LocalIdentityRepository,
+	OrganizerRepository,
+	RefreshTokenRepository,
+	RegistrationRepository,
+	TagRepository,
+	TemporaryIdentityRepository, UserRepository
+} from './repositories/repositories';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([
-			Club,
-			ClubMembership,
-			Event,
-			FormQuestion,
-			FormQuestionAnswer,
-			FormQuestionTemplate,
-			HRSegment,
-			HRTable,
-			HRTask,
-			LocalIdentity,
-			Organizer,
-			RefreshToken,
-			Registration,
-			Tag,
-			TemporaryIdentity,
-			User
+			ClubRepository,
+			ClubMembershipRepository,
+			EventRepository,
+			FormQuestionRepository,
+			FormQuestionAnswerRepository,
+			FormQuestionTemplateRepository,
+			HRSegmentRepository,
+			HRTableRepository,
+			HRTaskRepository,
+			LocalIdentityRepository,
+			OrganizerRepository,
+			RefreshTokenRepository,
+			RegistrationRepository,
+			TagRepository,
+			TemporaryIdentityRepository,
+			UserRepository
 		])
+	],
+	providers: [
 	],
 	exports: [
 		TypeOrmModule

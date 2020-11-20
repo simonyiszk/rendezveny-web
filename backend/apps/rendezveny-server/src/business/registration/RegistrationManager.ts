@@ -2,7 +2,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from '../../data/models/Event';
-import { Repository, Transaction, TransactionRepository } from 'typeorm';
 import { UserManager } from '../users/UserManager';
 import { Registration } from '../../data/models/Registration';
 import { EventManager } from '../events/EventManager';
@@ -17,7 +16,6 @@ import { RegistrationNameValidationException } from './exceptions/RegistrationNa
 import { RegistrationEmailValidationException } from './exceptions/RegistrationEmailValidationException';
 import { AccessContext } from '../auth/tokens/AccessToken';
 import { EventContext } from '../auth/tokens/EventToken';
-import { User } from '../../data/models/User';
 import {
 	AuthContext,
 	AuthEvent,
@@ -30,14 +28,24 @@ import {
 import { FilledInForm } from './Form';
 import { FormManager } from './FormManager';
 import { RegistrationDoesNotExistsException } from './exceptions/RegistrationDoesNotExistsException';
+import { UserDoesNotExistsException } from '../users/exceptions/UserDoesNotExistsException';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
+import {
+	EventRepository,
+	RegistrationRepository,
+	TemporaryIdentityRepository,
+	UserRepository
+} from '../../data/repositories/repositories';
 /* eslint-enable max-len */
 
 @Injectable()
 export class RegistrationManager {
 	public constructor(
-		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
-		@InjectRepository(Registration) private readonly registrationRepository: Repository<Registration>,
-		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
+		@InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+		@InjectRepository(EventRepository) private readonly eventRepository: EventRepository,
+		@InjectRepository(RegistrationRepository) private readonly registrationRepository: RegistrationRepository,
+		@InjectRepository(TemporaryIdentityRepository)
+		private readonly tempIdentityRepository: TemporaryIdentityRepository,
 		private readonly eventManager: EventManager,
 		private readonly userManager: UserManager,
 		private readonly formManager: FormManager
@@ -74,18 +82,16 @@ export class RegistrationManager {
 		throw new RegistrationDoesNotExistsException(id);
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsUser(), IsAdmin())
 	public async registerSelf(
 		@AuthContext() accessContext: AccessContext,
 		@AuthEvent() event: Event,
-		filledInForm: FilledInForm,
-		@TransactionRepository(Event) eventRepository?: Repository<Event>,
-		@TransactionRepository(Registration) registrationRepository?: Repository<Registration>
+		filledInForm: FilledInForm
 	): Promise<Registration> {
 		const user = await this.userManager.getUserById(accessContext, accessContext.getUserId());
 
-		await event.loadRelation(eventRepository!, 'hostingClubs');
+		await event.loadRelation(this.eventRepository, 'hostingClubs');
 		if(event.isClosedEvent && !event.hostingClubs.some(club => accessContext.isMemberOfClub(club))) {
 			throw new RegistrationClosedEventException(event.hostingClubs);
 		}
@@ -98,7 +104,7 @@ export class RegistrationManager {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
 
-		const registration = await registrationRepository!.findOne({ user });
+		const registration = await this.registrationRepository.findOne({ user });
 		if(registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}
@@ -109,32 +115,29 @@ export class RegistrationManager {
 			notificationSettings: DEFAULT,
 			registrationDate: new Date()
 		});
-		await registrationRepository!.save(newRegistration);
+		await this.registrationRepository.save(newRegistration);
 
 		await this.formManager.fillInForm(event, newRegistration, filledInForm);
 
 		return newRegistration;
 	}
 
-	@Transaction()
+	@Transactional()
 	public async registerTemporarySelf(
 		event: Event,
 		name: string,
 		email: string,
-		filledInForm: FilledInForm,
-		@TransactionRepository(Event) eventRepository?: Repository<Event>,
-		@TransactionRepository(TemporaryIdentity) temporaryIdentityRepository?: Repository<TemporaryIdentity>,
-		@TransactionRepository(Registration) registrationRepository?: Repository<Registration>
+		filledInForm: FilledInForm
 	): Promise<Registration> {
 		checkArgument(isNotEmpty(name), RegistrationNameValidationException);
 		checkArgument(isNotEmpty(email) && isEmail(email), RegistrationEmailValidationException);
 
-		await event.loadRelation(eventRepository!, 'hostingClubs');
+		await event.loadRelation(this.eventRepository, 'hostingClubs');
 		if(event.isClosedEvent) {
 			throw new RegistrationClosedEventException(event.hostingClubs);
 		}
 
-		const registration = await registrationRepository!.findOne({
+		const registration = await this.registrationRepository.findOne({
 			event: event, temporaryIdentity: { email }
 		});
 		if(registration) {
@@ -150,7 +153,7 @@ export class RegistrationManager {
 		}
 
 		const temporaryIdentity = new TemporaryIdentity({ email, name });
-		await temporaryIdentityRepository!.save(temporaryIdentity);
+		await this.tempIdentityRepository.save(temporaryIdentity);
 
 		const newRegistration = new Registration({
 			temporaryIdentity: temporaryIdentity,
@@ -158,24 +161,27 @@ export class RegistrationManager {
 			notificationSettings: DEFAULT,
 			registrationDate: new Date()
 		});
-		await registrationRepository!.save(newRegistration);
+		await this.registrationRepository.save(newRegistration);
 
 		await this.formManager.fillInForm(event, newRegistration, filledInForm);
 
 		return newRegistration;
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsOrganizer())
 	public async registerUserByOrganizer(
 		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
-		user: User,
-		filledInForm?: FilledInForm,
-		@TransactionRepository(Event) eventRepository?: Repository<Event>,
-		@TransactionRepository(Registration) registrationRepository?: Repository<Registration>
+		userId: string,
+		filledInForm?: FilledInForm
 	): Promise<Registration> {
-		const registration = await registrationRepository!.findOne({ user });
+		const user = await this.userRepository.findOne({ id: userId });
+		if(!user) {
+			throw new UserDoesNotExistsException(userId);
+		}
+
+		const registration = await this.registrationRepository.findOne({ user });
 		if(registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}
@@ -186,7 +192,7 @@ export class RegistrationManager {
 			notificationSettings: DEFAULT,
 			registrationDate: new Date()
 		});
-		await registrationRepository!.save(newRegistration);
+		await this.registrationRepository.save(newRegistration);
 
 		if(filledInForm) {
 			await this.formManager.fillInForm(event, newRegistration, filledInForm);
@@ -195,41 +201,49 @@ export class RegistrationManager {
 		return newRegistration;
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsOrganizer())
 	public async attendRegistree(
+		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
-		@AuthRegistration() registration: Registration,
-		@TransactionRepository(Registration) registrationRepository?: Repository<Registration>
+		@AuthRegistration() registration: Registration
 	): Promise<Registration> {
 		registration.attendDate = new Date();
-		await registrationRepository!.save(registration);
+		await this.registrationRepository.save(registration);
 		return registration;
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsOrganizer())
 	public async unattendRegistree(
+		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
-		@AuthRegistration() registration: Registration,
-		@TransactionRepository(Registration) registrationRepository?: Repository<Registration>
+		@AuthRegistration() registration: Registration
 	): Promise<Registration> {
 		registration.attendDate = undefined;
-		await registrationRepository!.save(registration);
+		await this.registrationRepository.save(registration);
 		return registration;
 	}
 
-	@Transaction()
+	@Transactional()
+	@AuthorizeGuard(IsRegistered(), IsOrganizer())
+	public async deleteRegistration(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event,
+		@AuthRegistration() registration: Registration
+	): Promise<void> {
+		await this.registrationRepository.remove(registration);
+	}
+
+	@Transactional()
 	@AuthorizeGuard(IsOrganizer())
 	public async updateNotificationSettings(
 		@AuthEvent() event: Event,
 		@AuthRegistration() registration: Registration,
-		notificationsSettings: RegistrationNotificationSettings,
-		@TransactionRepository(Registration) registrationRepository?: Repository<Registration>
+		notificationsSettings: RegistrationNotificationSettings
 	): Promise<Registration> {
-		registration.attendDate = undefined;
 		registration.notificationSettings = notificationsSettings;
-		await registrationRepository!.save(registration);
+		await this.registrationRepository.save(registration);
 		return registration;
 	}
 }

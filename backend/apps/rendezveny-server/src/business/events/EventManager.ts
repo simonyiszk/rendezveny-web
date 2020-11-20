@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Like, Not, Repository, Transaction, TransactionRepository } from 'typeorm';
+import { In, Like, Not } from 'typeorm';
 import { Event } from '../../data/models/Event';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { EventDoesNotExistsException } from './exceptions/EventDoesNotExistsException';
@@ -30,7 +30,7 @@ import {
 	AuthorizeGuard,
 	IsAdmin, IsChiefOrganizer,
 	IsManager,
-	IsOrganizer,
+	IsOrganizer, IsRegistered,
 	IsUser
 } from '../auth/AuthorizeGuard';
 import { UnauthorizedException } from '../utils/permissions/UnauthorizedException';
@@ -39,16 +39,28 @@ import { nameof } from '../../utils/nameof';
 import { TemporaryIdentity } from '../../data/models/TemporaryIdentity';
 import { Registration } from '../../data/models/Registration';
 import { Tag } from '../../data/models/Tag';
+import { BusinessException } from '../utils/BusinessException';
+import {
+	ClubRepository,
+	EventRepository,
+	OrganizerRepository,
+	RegistrationRepository, TemporaryIdentityRepository,
+	UserRepository
+} from '../../data/repositories/repositories';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 /* eslint-enable max-len */
 
 @Manager()
 export class EventManager extends BaseManager {
 	public constructor(
-		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
-		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
-		@InjectRepository(User) private readonly userRepository: Repository<User>,
-		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
+		@InjectRepository(EventRepository) private readonly eventRepository: EventRepository,
+		@InjectRepository(OrganizerRepository) private readonly organizerRepository: OrganizerRepository,
+		@InjectRepository(RegistrationRepository) private readonly registrationRepository: RegistrationRepository,
+		@InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+		@InjectRepository(ClubRepository) private readonly clubRepository: ClubRepository,
+		@InjectRepository(TemporaryIdentityRepository)
+		private readonly tempIdentityRepository: TemporaryIdentityRepository,
 		private readonly jwtService: JwtService
 	) {
 		super();
@@ -133,7 +145,7 @@ export class EventManager extends BaseManager {
 		throw new EventDoesNotExistsException(id);
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsManager(), IsAdmin())
 	public async addEvent(
 		@AuthContext() accessContext: AccessContext,
@@ -145,9 +157,7 @@ export class EventManager extends BaseManager {
 		settings: {
 			place?: string, start?: string, end?: string, isDateOrTime?: boolean,
 			registrationStart?: string, registrationEnd?: string
-		},
-		@TransactionRepository(Event) eventRepository?: Repository<Event>,
-		@TransactionRepository(Organizer) organizerRepository?: Repository<Organizer>
+		}
 	): Promise<Event> {
 		checkArgument(isNotEmpty(name), EventNameValidationException);
 		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
@@ -180,36 +190,35 @@ export class EventManager extends BaseManager {
 			hostingClubs: hostingClubs
 		});
 
-		await eventRepository!.save(event);
+		await this.eventRepository.save(event);
 
 		const organizers = chiefOrganizers
 			.map(user => new Organizer({
 				event: event, user: user, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
 			}));
-		await organizerRepository!.save(organizers);
+		await this.organizerRepository.save(organizers);
 
 		return event;
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsChiefOrganizer())
 	public async editEvent(
-		@AuthContext() accessContext: AccessContext,
+		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
 		name: string,
 		description: string,
 		isClosedEvent: boolean,
-		hostingClubs: Club[],
+		hostingClubsIds: string[],
 		settings: {
 			place?: string, start?: string, end?: string, isDateOrTime?: boolean,
 			registrationStart?: string, registrationEnd?: string
-		},
-		@TransactionRepository(Event) eventRepository?: Repository<Event>
+		}
 	): Promise<Event> {
 		checkArgument(isNotEmpty(name), EventNameValidationException);
 		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
 		checkArgument(
-			isArray(hostingClubs) && arrayMinSize(hostingClubs, 1),
+			isArray(hostingClubsIds) && arrayMinSize(hostingClubsIds, 1),
 			EventHostingClubsValidationException
 		);
 		const { start: startDate, end: endDate } = EventManager.validateDatePair(settings.start, settings.end);
@@ -225,30 +234,29 @@ export class EventManager extends BaseManager {
 		event.isDateOrTime = settings.isDateOrTime ?? event.isDateOrTime;
 		event.registrationStart = registrationStartDate;
 		event.registrationEnd = registrationEndDate;
+		event.hostingClubs = await this.clubRepository.findByIds(hostingClubsIds);
 
-		await eventRepository!.save(event);
+		await this.eventRepository.save(event);
 
 		return event;
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsChiefOrganizer())
 	public async deleteEvent(
-		@AuthContext() accessContext: AccessContext,
-		@AuthEvent() event: Event,
-		@TransactionRepository(Event) eventRepository?: Repository<Event>
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event
 	): Promise<void> {
-		await eventRepository!.remove(event);
+		await this.eventRepository.remove(event);
 	}
 
-	@Transaction()
+	@Transactional()
 	@AuthorizeGuard(IsUser(), IsAdmin())
 	public async getEventToken(
 		@AuthContext() accessContext: AccessContext,
-		@AuthEvent() event: Event,
-		@TransactionRepository(Event) eventRepository?: Repository<Event>
+		@AuthEvent() event: Event
 	): Promise<string> {
-		await event.loadRelation(eventRepository!, 'hostingClubs', 'organizers', 'registrations');
+		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
 
 		const registered = event.registrations
 			.find(registration => registration.user?.id === accessContext.getUserId());
@@ -429,6 +437,52 @@ export class EventManager extends BaseManager {
 		else {
 			return this.returnRelatedUsers(event, users, [], count);
 		}
+	}
+
+	@AuthorizeGuard(IsRegistered(), IsOrganizer())
+	public async getSelfRelation(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event
+	): Promise<EventRelation> {
+		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
+
+		const organizer = eventContext.isOrganizer(event)
+			? (await this.userRepository.findByIds([eventContext.getUserId()], {
+				relations: [nameof<Club>('memberships')]
+			}))[0]
+			: null;
+
+		const registration = eventContext.isRegistered(event)
+			? (await this.registrationRepository.findByIds([eventContext.getRegistrationId()]))[0]
+			: null;
+
+		if(organizer) {
+			return (await this.returnRelatedUsers(event, [organizer], [], 1)).relations[0];
+		}
+		else if(registration) {
+			return (await this.returnRelatedUsers(
+				event,
+				registration.user ? [registration.user] : [],
+				registration.temporaryIdentity ? [registration.temporaryIdentity] : [],
+				1
+			)).relations[0];
+		}
+		else {
+			throw new BusinessException('UNKNOWN_ERROR', 'Should not happen');
+		}
+	}
+
+	@AuthorizeGuard(IsOrganizer())
+	public async getUserRelation(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event,
+		users: User[]
+	): Promise<EventRelation[]> {
+		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
+		const users2 = await this.userRepository.findByIds(users.map(u => u.id), {
+			relations: [nameof<User>('memberships')]
+		});
+		return (await this.returnRelatedUsers(event, users2, [], users.length)).relations;
 	}
 
 	private async returnRelatedUsers(

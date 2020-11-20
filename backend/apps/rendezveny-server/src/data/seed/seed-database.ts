@@ -1,6 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { SeedModule } from './SeedModule';
 import { SeedService } from './SeedService';
+import { initializeTransactionalContext } from 'typeorm-transactional-cls-hooked';
+
+initializeTransactionalContext();
 
 async function bootstrap() {
 	const appContext = await NestFactory.createApplicationContext(SeedModule);

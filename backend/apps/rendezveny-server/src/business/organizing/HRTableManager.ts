@@ -1,7 +1,4 @@
-import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Organizer } from '../../data/models/Organizer';
-import { Repository, Transaction, TransactionRepository } from 'typeorm';
 import { HRTable } from '../../data/models/HRTable';
 import { HRTask } from '../../data/models/HRTask';
 import { HRSegment } from '../../data/models/HRSegment';
@@ -12,22 +9,34 @@ import { HRTableModifiedStructure, HRTableState, HRTableTaskModifiedStructure } 
 import { HRTableDoesNotExistsException } from './exceptions/HRTableDoesNotExistsException';
 import { nameof } from '../../utils/nameof';
 import { HRTableInvalidStructureException } from './exceptions/HRTableInvalidStructureException';
+import { BaseManager, Manager } from '../utils/BaseManager';
+import {
+	EventRepository,
+	HRSegmentRepository,
+	HRTableRepository,
+	HRTaskRepository,
+	OrganizerRepository
+} from '../../data/repositories/repositories';
+import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { HRTableAlreadyExistsException } from './exceptions/HRTableAlreadyExistsException';
 
-@Injectable()
-export class HRTableManager {
+@Manager()
+export class HRTableManager extends BaseManager {
 	public constructor(
-		@InjectRepository(HRTable) private readonly hrTableRepository: Repository<HRTable>,
-		@InjectRepository(HRTask) private readonly hrTaskRepository: Repository<HRTask>,
-		@InjectRepository(HRSegment) private readonly hrSegmentRepository: Repository<HRSegment>,
-		@InjectRepository(Organizer) private readonly organizerRepository: Repository<Organizer>,
+		@InjectRepository(EventRepository) private readonly eventRepository: EventRepository,
+		@InjectRepository(HRTableRepository) private readonly hrTableRepository: HRTableRepository,
+		@InjectRepository(HRTaskRepository) private readonly hrTaskRepository: HRTaskRepository,
+		@InjectRepository(HRSegmentRepository) private readonly hrSegmentRepository: HRSegmentRepository,
+		@InjectRepository(OrganizerRepository) private readonly organizerRepository: OrganizerRepository,
 	) {
+		super();
 	}
 
 	@AuthorizeGuard(IsOrganizer())
 	public async getHRTable(
 		@AuthContext() _eventContext: EventContext,
 		@AuthEvent() event: Event,
-	): Promise<HRTableState> {
+	): Promise<HRTableState | undefined> {
 		const hrTable = await this.hrTableRepository.findOne({ event }, {
 			relations: [
 				`${nameof<HRTable>('hrTasks')}`,
@@ -36,23 +45,38 @@ export class HRTableManager {
 			]
 		});
 		if(!hrTable) {
-			throw new HRTableDoesNotExistsException(event.id);
+			return undefined;
 		}
 
 		return this.returnHrTableState(hrTable);
 	}
 
-	@Transaction()
+	@Transactional()
+	@AuthorizeGuard(IsChiefOrganizer())
+	public async createHRTable(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event,
+		hrTableStructure: HRTableModifiedStructure
+	): Promise<HRTableState> {
+		await event.loadRelation(this.eventRepository, 'hrTable');
+		if(event.hrTable) {
+			throw new HRTableAlreadyExistsException();
+		}
+
+		const hrTable = new HRTable({ isLocked: false, event: event });
+		await this.hrTableRepository.save(hrTable);
+
+		return this.modifyHRTable(eventContext, event, hrTableStructure);
+	}
+
+	@Transactional()
 	@AuthorizeGuard(IsChiefOrganizer())
 	public async modifyHRTable(
 		@AuthContext() _eventContext: EventContext,
 		@AuthEvent() event: Event,
-		hrTableStructure: HRTableModifiedStructure,
-		@TransactionRepository(HRTable) hrTableRepository?: Repository<HRTable>,
-		@TransactionRepository(HRTask) hrTaskRepository?: Repository<HRTask>,
-		@TransactionRepository(HRSegment) hrSegmentRepository?: Repository<HRSegment>
+		hrTableStructure: HRTableModifiedStructure
 	): Promise<HRTableState> {
-		const hrTable = await hrTableRepository!.findOne({ event }, {
+		const hrTable = await this.hrTableRepository.findOne({ event }, {
 			relations: [
 				`${nameof<HRTable>('hrTasks')}`,
 				`${nameof<HRTable>('hrTasks')}.${nameof<HRTask>('hrSegments')}`,
@@ -66,14 +90,14 @@ export class HRTableManager {
 		const deletedTasks = hrTable.hrTasks.filter(
 			task => !hrTableStructure.tasks.map(t => t.id).some(id => id === task.id)
 		);
-		await hrTaskRepository!.remove(deletedTasks);
+		await this.hrTaskRepository.remove(deletedTasks);
 
 		const modifiedTasks: HRTask[] = [];
 		for(const task of hrTableStructure.tasks) {
 			if(typeof task.id === 'string') {
 				const origTask = hrTable.hrTasks.find(t => t.id === task.id);
 				if(origTask) {
-					modifiedTasks.push(await this.modifyTask(origTask, task, hrSegmentRepository!));
+					modifiedTasks.push(await this.modifyTask(origTask, task));
 				}
 				else {
 					throw new HRTableInvalidStructureException();
@@ -88,17 +112,31 @@ export class HRTableManager {
 			task.order = idx;
 		}
 
-		await hrTaskRepository!.save(modifiedTasks);
+		await this.hrTaskRepository.save(modifiedTasks);
 
 		hrTable.isLocked = hrTableStructure.isLocked;
-		await hrTableRepository!.save(hrTable);
+		hrTable.hrTasks = modifiedTasks;
+		await this.hrTableRepository.save(hrTable);
 
 		return this.returnHrTableState(hrTable);
 	}
 
+	@Transactional()
+	@AuthorizeGuard(IsChiefOrganizer())
+	public async deleteHRTable(
+		@AuthContext() _eventContext: EventContext,
+		@AuthEvent() event: Event
+	): Promise<void> {
+		await event.loadRelation(this.eventRepository, 'hrTable');
+		if(!event.hrTable) {
+			throw new HRTableDoesNotExistsException(event.id);
+		}
+
+		await this.hrTableRepository.remove(event.hrTable);
+	}
+
 	private async modifyTask(
-		origTask: HRTask, task: HRTableTaskModifiedStructure,
-		hrSegmentRepository: Repository<HRSegment>
+		origTask: HRTask, task: HRTableTaskModifiedStructure
 	): Promise<HRTask> {
 		origTask.name = task.name;
 		origTask.start = task.start;
@@ -108,7 +146,7 @@ export class HRTableManager {
 		const deletedSegments = origTask.hrSegments.filter(
 			segment => !task.segments.map(s => s.id).some(id => id === segment.id)
 		);
-		await hrSegmentRepository.remove(deletedSegments);
+		await this.hrSegmentRepository.remove(deletedSegments);
 
 		const modifiedSegments: HRSegment[] = [];
 		for(const segment of task.segments) {
@@ -138,7 +176,7 @@ export class HRTableManager {
 			}
 		}
 
-		await hrSegmentRepository.save(modifiedSegments);
+		await this.hrSegmentRepository.save(modifiedSegments);
 
 		return origTask;
 	}
@@ -154,6 +192,7 @@ export class HRTableManager {
 			order: -1,
 			hrTable: hrTable
 		});
+		await this.hrTaskRepository.save(newTask);
 
 		const newSegments: HRSegment[] = [];
 		for(const segment of task.segments) {
@@ -166,6 +205,7 @@ export class HRTableManager {
 				hrTask: newTask
 			}));
 		}
+		await this.hrSegmentRepository.save(newSegments);
 
 		newTask.hrSegments = newSegments;
 

@@ -46,11 +46,13 @@ export class FormQuestion extends BaseEntity<FormQuestion> {
 	@Column()
 	public readonly eventId?: string;
 
-	@ManyToOne(_ => Event, event => event.formQuestions, { eager: true })
+	@ManyToOne(_ => Event, event => event.formQuestions, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<FormQuestion>('eventId') })
 	public event!: Event;
 
-	@OneToMany(_ => FormQuestionAnswer, answer => answer.formQuestion)
+	@OneToMany(_ => FormQuestionAnswer, answer => answer.formQuestion, {
+		onDelete: 'CASCADE'
+	})
 	public answers!: FormQuestionAnswer[];
 
 	public constructor(params?: {

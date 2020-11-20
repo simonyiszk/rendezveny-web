@@ -3,6 +3,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { PaginatedDTO } from '../utils/PaginatedDTO';
 import { EventRegistrationFormDTO } from './EventRegistrationFormDTO';
 import { HRTableDTO } from './HRTableDTO';
+import { EventRelationDTO } from './EventRelationDTO';
 
 @ObjectType({
 	description: 'The data of an event'
@@ -64,6 +65,16 @@ export class EventDTO {
 		defaultValue: false
 	})
 	public isClosedEvent: boolean = false;
+
+	@Field(_ => [EventRelationDTO], {
+		description: 'The users in relation with the event'
+	})
+	public relations?: EventRelationDTO[];
+
+	@Field(_ => EventRelationDTO, {
+		description: 'The current user\'s relation with the event'
+	})
+	public selfRelation?: EventRelationDTO;
 
 	@Field(_ => EventRegistrationFormDTO, {
 		description: 'The registration form of the event'

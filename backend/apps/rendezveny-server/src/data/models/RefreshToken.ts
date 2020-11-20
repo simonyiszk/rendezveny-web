@@ -12,7 +12,7 @@ export class RefreshToken extends BaseEntity<RefreshToken> {
 	@PrimaryColumn()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.refreshTokens, { eager: true })
+	@ManyToOne(_ => User, user => user.refreshTokens, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<RefreshToken>('userId') })
 	public user!: User;
 

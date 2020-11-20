@@ -9,14 +9,14 @@ export class ClubMembership {
 	@PrimaryColumn()
 	public readonly clubId?: string;
 
-	@ManyToOne(_ => Club, club => club.memberships, { eager: true })
+	@ManyToOne(_ => Club, club => club.memberships, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<ClubMembership>('clubId') })
 	public club!: Club;
 
 	@PrimaryColumn()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.memberships, { eager: true })
+	@ManyToOne(_ => User, user => user.memberships, { eager: true, onDelete: 'CASCADE' })
 	@JoinColumn({ name: nameof<ClubMembership>('userId') })
 	public user!: User;
 
