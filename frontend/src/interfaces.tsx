@@ -10,6 +10,18 @@ export interface Event {
   isClosedEvent: boolean;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  clubs: Club[];
+}
+
+export interface Club {
+  id: number;
+  name: string;
+  users: User[];
+}
+
 export interface HistoryYear {
   year: number;
   events: Event[];
