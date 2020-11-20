@@ -1,5 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
-import { Flex } from '@chakra-ui/core';
+import { Flex, Heading } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -26,6 +26,9 @@ export default function ManagePage({
   console.log(event);
   return (
     <Layout>
+      <Heading textAlign="center" mb="2rem">
+        {event.name} kezelése
+      </Heading>
       <Flex flexDir="column" alignItems="center">
         <ProtectedComponent>
           <Button
