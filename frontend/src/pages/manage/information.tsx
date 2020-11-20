@@ -40,8 +40,12 @@ export default function InformationPage({
   ] as User[]).concat(orgUsers);
 
   const [eventName, setEventName] = useState(event?.name || '');
-  const [eventStart, setEventStart] = useState(new Date(event?.start || ''));
-  const [eventEnd, setEventEnd] = useState(new Date(event?.end || ''));
+  const [eventStart, setEventStart] = useState(
+    event?.start ? new Date(event.start) : new Date(),
+  );
+  const [eventEnd, setEventEnd] = useState(
+    event?.end ? new Date(event.end) : new Date(),
+  );
   const [eventPlace, setEventPlace] = useState(event?.place || '');
   const [eventOrganizers, setEventOrganizers] = useState<User[]>(orgUsers);
   // const [eventLimit, setEventLimit] = useState(event?.limit || 0);
@@ -58,7 +62,11 @@ export default function InformationPage({
       eventOrganizers,
       eventClosed,
     );
-    navigate('/manage', { state: { event } });
+    if (event) {
+      navigate('/manage', { state: { event } });
+    } else {
+      navigate('/');
+    }
   };
   const onChangeOrganizers = (
     selectedList: User[],
@@ -132,7 +140,7 @@ export default function InformationPage({
               <option value="Nyílt">Nyílt</option>
             </Select>
           </Box>
-          <button type="submit">Submit</button>
+          <button type="submit">{event ? 'Edit' : 'Create'}</button>
         </form>
       </Flex>
     </Layout>

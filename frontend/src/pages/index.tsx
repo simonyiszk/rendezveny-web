@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import Button from '../components/Button';
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
+import LinkButton from '../components/LinkButton';
 import SectionHeader from '../components/SectionHeader';
 import { Event } from '../interfaces';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
@@ -49,12 +50,11 @@ export default function IndexPage(): JSX.Element {
   return (
     <Layout>
       <ProtectedComponent>
-        <Button
+        <LinkButton
           text="Rendezvény létrehozása"
           width={['100%', null, '15rem']}
-          onClick={() => {
-            console.log('Clicked');
-          }}
+          to="/manage/information"
+          state={{ event: null }}
         />
       </ProtectedComponent>
       <EventSection
