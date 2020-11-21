@@ -1,6 +1,6 @@
 import { gql, useMutation } from '@apollo/client';
 
-import { setToken } from './TokenContainer';
+import { setToken } from '../token/TokenContainer';
 
 export const loginMutationGQL = gql`
   mutation {
