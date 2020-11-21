@@ -18,7 +18,9 @@ import LinkButton from '../components/LinkButton';
 import {
   Event,
   EventRegistrationForm,
+  EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
+  EventRegistrationFormTextAnswer,
   EventRegistrationFormTextQuestion,
   User,
 } from '../interfaces';
@@ -67,6 +69,26 @@ export default function RegistrationPage({
             }
           }
         }
+        selfRelation {
+          email
+          registration {
+            formAnswer {
+              answers {
+                answer {
+                  ... on EventRegistrationFormMultipleChoiceAnswerDTO {
+                    type
+                    options
+                  }
+                  ... on EventRegistrationFormTextAnswerDTO {
+                    type
+                    text
+                  }
+                }
+                id
+              }
+            }
+          }
+        }
       }
     }
   `;
@@ -75,42 +97,42 @@ export default function RegistrationPage({
   }
   const [getEvent, { called, loading, data, error }] = useLazyQuery<
     QueryResult
-  >(eventQueryGQL);
+  >(eventQueryGQL, {
+    onCompleted: (queryData) => {
+      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
+        (acc, curr) => {
+          if (curr.answer.type === 'multiple_choice') {
+            return {
+              ...acc,
+              [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
+                .options,
+            };
+          }
+          if (curr.answer.type === 'text') {
+            return {
+              ...acc,
+              [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
+            };
+          }
+          return acc;
+        },
+        {},
+      );
+      console.log('RES', res);
+      setAnswers(res);
+    },
+  });
 
   const [getEventTokenMutation, _] = useEventTokenMutation();
   useEffect(() => {
     const fetchEventData = async () => {
       await getEventTokenMutation(event.id);
-      getEvent({ variables: { id: event.id } });
+      return getEvent({ variables: { id: event.id } });
     };
     fetchEventData().then(() =>
       console.log('eventdata: ', data, 'error: ', error),
     );
-  }, [event.id, data]);
-
-  /* const registrationForm = {
-    questions: [
-      {
-        id: '123',
-        isRequired: false,
-        question: 'Becenév',
-        metadata: { maxLength: 20, type: 'text' },
-      },
-      {
-        id: '456',
-        isRequired: false,
-        question: 'Ételérzékenység',
-        metadata: {
-          multipleAnswers: true,
-          options: [
-            { id: '0', text: 'Glutén' },
-            { id: '1', text: 'Laktoz' },
-          ],
-          type: 'multiplechoice',
-        },
-      },
-    ],
-  } as EventRegistrationForm; */
+  }, [event.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
 
@@ -123,15 +145,20 @@ export default function RegistrationPage({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setAnswer('2101603f-2228-4b3d-8812-62119ae0670b', ['regular']);
     console.log('Submitted', answers);
   };
 
-  if (called && loading) return <div>Loading</div>;
+  if (called && loading) {
+    console.log('Render loading');
+    return <div>Loading</div>;
+  }
 
   if (error) {
+    console.log('Render error');
     return <div>Error {error.message}</div>;
   }
-  if (data) console.log('DATA', data.events_getOne.registrationForm.questions);
+  if (data) console.log('DATA', data);
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
@@ -142,18 +169,18 @@ export default function RegistrationPage({
                 <Box>{q.question}</Box>
                 {q.metadata.type === 'text' && (
                   <Input
-                    value={getAnswer(q.id)}
+                    value={getAnswer(q.id) || ''}
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                   />
                 )}
                 {q.metadata.type === 'multiple_choice' && (
                   <CheckboxGroup
-                    value={getAnswer(q.id)}
+                    value={getAnswer(q.id) || []}
                     onChange={(e: string[]) => setAnswer(q.id, e)}
                   >
                     {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
                       (option) => (
-                        <Checkbox key={option.id} value={option.text}>
+                        <Checkbox key={option.id} value={option.id}>
                           {option.text}
                         </Checkbox>
                       ),

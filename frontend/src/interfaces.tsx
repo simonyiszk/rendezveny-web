@@ -10,6 +10,9 @@ export interface Event {
   registrationForm: EventRegistrationForm;
   isClosedEvent: boolean;
   relations: EventRelation[];
+  selfRelation: {
+    registration: EventRegistration;
+  };
 }
 
 export interface User {
@@ -73,7 +76,7 @@ export interface EventRegistrationFormMultipleChoiceOption {
 
 // ANSWERS
 export interface EventRegistrationFormAnswers {
-  answers: EventRegistrationFormAnswer;
+  answers: EventRegistrationFormAnswer[];
 }
 export interface EventRegistrationFormAnswer {
   id: string;
