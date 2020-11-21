@@ -7,7 +7,9 @@ export interface Event {
   end: string;
   registrationStart: string;
   registrationEnd: string;
+  registrationForm: EventRegistrationForm;
   isClosedEvent: boolean;
+  relations: EventRelation[];
 }
 
 export interface User {
@@ -27,10 +29,64 @@ export interface HistoryYear {
   events: Event[];
 }
 
-export interface FormQuestion {
-  question: string;
+export interface EventRelation {
+  email: string;
+  isMemberOfHostingClub: boolean;
+  name: string;
+  // organizer: EventOrganizerDTO
+  registration: EventRegistration;
+  userId: string;
+}
+
+export interface EventRegistration {
+  id: number;
+  didAttend: boolean;
+  formAnswer: EventRegistrationFormAnswers;
+}
+
+// QUESTIONS
+export interface EventRegistrationForm {
+  questions: EventRegistrationFormQuestion[];
+}
+export interface EventRegistrationFormQuestion {
+  id: number;
   isRequired: boolean;
+  metadata: EventRegistrationFormQuestionMetadata;
+  question: string;
+}
+export type EventRegistrationFormQuestionMetadata =
+  | EventRegistrationFormMultipleChoiceQuestion
+  | EventRegistrationFormTextQuestion;
+export interface EventRegistrationFormMultipleChoiceQuestion {
+  multipleAnswers: boolean;
+  options: EventRegistrationFormMultipleChoiceOption[];
   type: string;
-  order: number;
-  possibleAnswers?: string[];
+}
+export interface EventRegistrationFormTextQuestion {
+  maxLength: number;
+  type: string;
+}
+export interface EventRegistrationFormMultipleChoiceOption {
+  id: number;
+  text: string;
+}
+
+// ANSWERS
+export interface EventRegistrationFormAnswers {
+  answers: EventRegistrationFormAnswer;
+}
+export interface EventRegistrationFormAnswer {
+  id: number;
+  answer: EventRegistrationFormAnswerMetadata;
+}
+export type EventRegistrationFormAnswerMetadata =
+  | EventRegistrationFormMultipleChoiceAnswer
+  | EventRegistrationFormTextAnswer;
+export interface EventRegistrationFormMultipleChoiceAnswer {
+  type: string;
+  options: string[];
+}
+export interface EventRegistrationFormTextAnswer {
+  type: string;
+  text: string;
 }
