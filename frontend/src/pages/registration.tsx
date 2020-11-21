@@ -1,6 +1,4 @@
-import 'react-datepicker/dist/react-datepicker.css';
-
-import { gql, useQuery } from '@apollo/client';
+import { gql, useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
   Box,
   Checkbox,
@@ -11,9 +9,7 @@ import {
 } from '@chakra-ui/core';
 import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
-import { Multiselect } from 'multiselect-react-dropdown';
 import React, { useEffect, useState } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
 
 import Button from '../components/Button';
 import EventSection from '../components/EventSection';
@@ -26,9 +22,8 @@ import {
   EventRegistrationFormTextQuestion,
   User,
 } from '../interfaces';
+import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
-
-registerLocale('hu', hu);
 
 interface PageState {
   event: Event;
@@ -42,9 +37,58 @@ interface AnswerState {
 }
 
 export default function RegistrationPage({
-  location: { state },
+  location: {
+    state: { event },
+  },
 }: Props): JSX.Element {
-  const registrationForm = {
+  console.log('EVENT', event);
+  const eventQueryGQL = gql`
+    query eventGetOne($id: String!) {
+      events_getOne(id: $id) {
+        name
+        registrationForm {
+          questions {
+            id
+            question
+            isRequired
+            metadata {
+              ... on EventRegistrationFormMultipleChoiceQuestionDTO {
+                type
+                multipleAnswers
+                options {
+                  id
+                  text
+                }
+              }
+              ... on EventRegistrationFormTextQuestionDTO {
+                type
+                maxLength
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+  interface QueryResult {
+    events_getOne: Event;
+  }
+  const [getEvent, { called, loading, data, error }] = useLazyQuery<
+    QueryResult
+  >(eventQueryGQL);
+
+  const [getEventTokenMutation, _] = useEventTokenMutation();
+  useEffect(() => {
+    const fetchEventData = async () => {
+      await getEventTokenMutation(event.id);
+      getEvent({ variables: { id: event.id } });
+    };
+    fetchEventData().then(() =>
+      console.log('eventdata: ', data, 'error: ', error),
+    );
+  }, [event.id, data]);
+
+  /* const registrationForm = {
     questions: [
       {
         id: '123',
@@ -66,7 +110,7 @@ export default function RegistrationPage({
         },
       },
     ],
-  } as EventRegistrationForm;
+  } as EventRegistrationForm; */
 
   const [answers, setAnswers] = useState<AnswerState>({});
 
@@ -82,35 +126,42 @@ export default function RegistrationPage({
     console.log('Submitted', answers);
   };
 
+  if (called && loading) return <div>Loading</div>;
+
+  if (error) {
+    return <div>Error {error.message}</div>;
+  }
+  if (data) console.log('DATA', data.events_getOne.registrationForm.questions);
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
         <form onSubmit={handleSubmit}>
-          {registrationForm.questions.map((q) => (
-            <Box key={q.id}>
-              <Box>{q.question}</Box>
-              {q.metadata.type === 'text' && (
-                <Input
-                  value={getAnswer(q.id)}
-                  onChange={(e) => setAnswer(q.id, e.target.value)}
-                />
-              )}
-              {q.metadata.type === 'multiplechoice' && (
-                <CheckboxGroup
-                  value={getAnswer(q.id)}
-                  onChange={(e: string[]) => setAnswer(q.id, e)}
-                >
-                  {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                    (option) => (
-                      <Checkbox key={option.id} value={option.text}>
-                        {option.text}
-                      </Checkbox>
-                    ),
-                  )}
-                </CheckboxGroup>
-              )}
-            </Box>
-          ))}
+          {data &&
+            data.events_getOne.registrationForm.questions.map((q) => (
+              <Box key={q.id}>
+                <Box>{q.question}</Box>
+                {q.metadata.type === 'text' && (
+                  <Input
+                    value={getAnswer(q.id)}
+                    onChange={(e) => setAnswer(q.id, e.target.value)}
+                  />
+                )}
+                {q.metadata.type === 'multiple_choice' && (
+                  <CheckboxGroup
+                    value={getAnswer(q.id)}
+                    onChange={(e: string[]) => setAnswer(q.id, e)}
+                  >
+                    {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                      (option) => (
+                        <Checkbox key={option.id} value={option.text}>
+                          {option.text}
+                        </Checkbox>
+                      ),
+                    )}
+                  </CheckboxGroup>
+                )}
+              </Box>
+            ))}
           <button type="submit">Submit</button>
         </form>
       </Flex>

@@ -20,7 +20,7 @@ export default function EventBox({ event, withControls }: Props): JSX.Element {
       </Box>
       {withControls && (
         <Flex flexGrow={1} justifyContent="flex-end">
-          <Button text="R" onClick={(e: any) => console.log('R')} />
+          <LinkButton text="R" to="/registration" state={{ event }} />
           <LinkButton text="E" to="/manage" state={{ event }} ml="1rem" />
         </Flex>
       )}
