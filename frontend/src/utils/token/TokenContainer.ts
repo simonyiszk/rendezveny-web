@@ -1,9 +1,20 @@
-const token = 'AUTH_TOKEN';
+const authToken = 'SIMONYI_RENDEZVENY_AUTH_TOKEN';
+const eventToken = 'SIMONYI_RENDEZVENY_EVENT_TOKEN';
 
-export function getToken(): string | null {
-  return localStorage.getItem(token);
+export function getAuthToken(): string | null {
+  return localStorage.getItem(authToken);
 }
 
-export function setToken(_token: string): void {
-  localStorage.setItem(token, _token);
+export function setAuthToken(_token: string): void {
+  console.log('Set auth ', _token);
+  localStorage.setItem(authToken, _token);
+}
+
+export function getEventToken(): string | null {
+  return localStorage.getItem(eventToken);
+}
+
+export function setEventToken(_token: string): void {
+  console.log('Set event ', _token);
+  localStorage.setItem(eventToken, _token);
 }

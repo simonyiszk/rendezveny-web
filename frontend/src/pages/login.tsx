@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 
 import { Layout } from '../components/Layout';
 import { useLoginMutation } from '../utils/api/LoginWithLocalIdentityMutation';
-import { getToken } from '../utils/token/TokenContainer';
 
 export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');
@@ -14,7 +13,7 @@ export default function LoginPage(): JSX.Element {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await loginMutation(username, password);
-    window.location.href = '/';
+    // window.location.href = '/';
   };
 
   return (

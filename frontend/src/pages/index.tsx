@@ -9,10 +9,9 @@ import LinkButton from '../components/LinkButton';
 import SectionHeader from '../components/SectionHeader';
 import { Event } from '../interfaces';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
-import { getToken } from '../utils/token/TokenContainer';
 
 const userQueryGQL = gql`
-  query {
+  query eventsGetAll {
     events_getAll {
       nodes {
         id
