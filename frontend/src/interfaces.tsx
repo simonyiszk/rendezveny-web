@@ -49,7 +49,7 @@ export interface EventRegistrationForm {
   questions: EventRegistrationFormQuestion[];
 }
 export interface EventRegistrationFormQuestion {
-  id: number;
+  id: string;
   isRequired: boolean;
   metadata: EventRegistrationFormQuestionMetadata;
   question: string;
@@ -76,7 +76,7 @@ export interface EventRegistrationFormAnswers {
   answers: EventRegistrationFormAnswer;
 }
 export interface EventRegistrationFormAnswer {
-  id: number;
+  id: string;
   answer: EventRegistrationFormAnswerMetadata;
 }
 export type EventRegistrationFormAnswerMetadata =
