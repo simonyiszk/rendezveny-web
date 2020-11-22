@@ -36,6 +36,12 @@ export class EventDTO {
 	public place?: string;
 
 	@Field({
+		description: 'The capacity of the event',
+		nullable: true
+	})
+	public capacity?: number;
+
+	@Field({
 		description: 'The start of the event',
 		nullable: true
 	})
@@ -64,6 +70,12 @@ export class EventDTO {
 		nullable: true
 	})
 	public registrationEnd?: Date;
+
+	@Field({
+		description: 'Indicates whether registration is allowed for the event',
+		nullable: true
+	})
+	public registrationAllowed?: boolean;
 
 	@Field({
 		description: 'Describes whether the event is closed',
