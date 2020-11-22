@@ -1,4 +1,5 @@
-import { gql, useMutation } from '@apollo/client';
+import { gql, useApolloClient, useMutation } from '@apollo/client';
+import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 
 import { Layout } from '../components/Layout';
@@ -8,12 +9,13 @@ export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const [loginMutation, _] = useLoginMutation();
+  const client = useApolloClient();
+  const [loginMutation, _] = useLoginMutation(client);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await loginMutation(username, password);
-    // window.location.href = '/';
+    navigate('/');
   };
 
   return (

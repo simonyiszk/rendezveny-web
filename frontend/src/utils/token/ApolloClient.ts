@@ -1,9 +1,11 @@
 import {
   ApolloClient,
   ApolloLink,
+  from,
   HttpLink,
   InMemoryCache,
 } from '@apollo/client';
+import { setContext } from 'apollo-link-context';
 
 import { getAuthToken, getEventToken } from './TokenContainer';
 
@@ -11,25 +13,34 @@ const httpLink = new HttpLink({ uri: 'http://localhost:3000/api/v1' });
 
 const eventQueries = ['eventGetOne'];
 
+export const resetContext = (client: ApolloClient<object>) => {
+  client.setLink(
+    from([authMiddleware(getAuthToken(), getEventToken()), httpLink]),
+  );
+};
+
 const authMiddleware = (authToken, eventToken) =>
-  new ApolloLink((operation, forward) => {
-    // add the authorization to the headers
-    console.log('operation', operation);
-    console.log('forward', forward);
+  setContext((operation) => {
+    console.log(operation);
     if (!eventQueries.includes(operation.operationName) && authToken) {
-      operation.setContext({
+      console.log('operation auth');
+      return {
         headers: {
           authorization: `Bearer ${authToken}`,
         },
-      });
-    } else if (eventToken) {
-      operation.setContext({
+      };
+    }
+    if (eventToken) {
+      console.log('operation event');
+      return {
         headers: {
           authorization: `Bearer ${eventToken}`,
         },
-      });
+      };
     }
-    return forward(operation);
+    return {
+      headers: {},
+    };
   });
 
 const cache = new InMemoryCache({});
@@ -40,7 +51,7 @@ const useAppApolloClient = () => {
   console.log('APOLLO AUTH', authToken);
   console.log('APOLLO EVENT', eventToken);
   return new ApolloClient({
-    link: authMiddleware(authToken, eventToken).concat(httpLink),
+    link: from([authMiddleware(authToken, eventToken), httpLink]),
     cache,
   });
 };

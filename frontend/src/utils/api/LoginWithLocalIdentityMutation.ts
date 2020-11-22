@@ -1,5 +1,6 @@
 import { gql, useMutation } from '@apollo/client';
 
+import { resetContext } from '../token/ApolloClient';
 import { setAuthToken } from '../token/TokenContainer';
 
 export const loginMutationGQL = gql`
@@ -11,10 +12,11 @@ export const loginMutationGQL = gql`
   }
 `;
 
-export const useLoginMutation = () => {
+export const useLoginMutation = (client: ApolloClient<object>) => {
   const [mutation, mutationResults] = useMutation(loginMutationGQL, {
     onCompleted: (data) => {
       setAuthToken(data.login_withLocalIdentity.access);
+      resetContext(client);
     },
   });
 

@@ -1,4 +1,11 @@
-import { gql, useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import {
+  getApolloContext,
+  gql,
+  useApolloClient,
+  useLazyQuery,
+  useMutation,
+  useQuery,
+} from '@apollo/client';
 import {
   Box,
   Checkbox,
@@ -120,10 +127,12 @@ export default function RegistrationPage({
       );
       console.log('RES', res);
       setAnswers(res);
+      client.resetStore();
     },
   });
 
-  const [getEventTokenMutation, _] = useEventTokenMutation();
+  const client = useApolloClient();
+  const [getEventTokenMutation, _] = useEventTokenMutation(client);
   useEffect(() => {
     const fetchEventData = async () => {
       await getEventTokenMutation(event.id);
@@ -159,6 +168,7 @@ export default function RegistrationPage({
     return <div>Error {error.message}</div>;
   }
   if (data) console.log('DATA', data);
+  console.log(client);
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">

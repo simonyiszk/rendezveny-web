@@ -1,5 +1,6 @@
-import { gql, useMutation } from '@apollo/client';
+import { ApolloClient, gql, useMutation } from '@apollo/client';
 
+import { resetContext } from '../token/ApolloClient';
 import { setEventToken } from '../token/TokenContainer';
 
 export const eventTokenMutationGQL = gql`
@@ -8,10 +9,11 @@ export const eventTokenMutationGQL = gql`
   }
 `;
 
-export const useEventTokenMutation = () => {
+export const useEventTokenMutation = (client: ApolloClient<object>) => {
   const [mutation, mutationResults] = useMutation(eventTokenMutationGQL, {
     onCompleted: (data) => {
       setEventToken(data.events_getToken);
+      resetContext(client);
     },
   });
 
