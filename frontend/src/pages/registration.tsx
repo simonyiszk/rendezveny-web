@@ -31,7 +31,7 @@ import {
   EventRegistrationFormTextQuestion,
   User,
 } from '../interfaces';
-import { useEventGetOneQuery } from '../utils/api/EventGetOneQuery';
+import { useEventGetRegistrationQuery } from '../utils/api/EventGetRegistrationQuery';
 import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
@@ -53,35 +53,35 @@ export default function RegistrationPage({
 }: Props): JSX.Element {
   console.log('EVENT', event);
 
-  const [getEvent, { called, loading, data, error }] = useEventGetOneQuery(
-    (queryData) => {
-      if (queryData.events_getOne.selfRelation.registration) {
-        const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
-          (acc, curr) => {
-            if (curr.answer.type === 'multiple_choice') {
-              return {
-                ...acc,
-                [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
-                  .options,
-              };
-            }
-            if (curr.answer.type === 'text') {
-              return {
-                ...acc,
-                [curr.id]: (curr.answer as EventRegistrationFormTextAnswer)
-                  .text,
-              };
-            }
-            return acc;
-          },
-          {},
-        );
-        console.log('RES', res);
-        setAnswers(res);
-        setRegistered(true);
-      }
-    },
-  );
+  const [
+    getEvent,
+    { called, loading, data, error },
+  ] = useEventGetRegistrationQuery((queryData) => {
+    if (queryData.events_getOne.selfRelation.registration) {
+      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
+        (acc, curr) => {
+          if (curr.answer.type === 'multiple_choice') {
+            return {
+              ...acc,
+              [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
+                .options,
+            };
+          }
+          if (curr.answer.type === 'text') {
+            return {
+              ...acc,
+              [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
+            };
+          }
+          return acc;
+        },
+        {},
+      );
+      console.log('RES', res);
+      setAnswers(res);
+      setRegistered(true);
+    }
+  });
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
