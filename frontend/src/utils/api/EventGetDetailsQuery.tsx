@@ -13,6 +13,7 @@ export const eventGetDetailsQuery = gql`
       id
       name
       uniqueName
+      registrationAllowed
       relations {
         nodes {
           userId

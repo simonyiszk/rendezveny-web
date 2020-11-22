@@ -11,6 +11,7 @@ export interface Event {
   isClosedEvent: boolean;
   uniqueName: string;
   registrationAllowed: boolean;
+  capacity: number;
   relations: {
     nodes: EventRelation[];
   };

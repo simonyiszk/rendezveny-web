@@ -51,6 +51,7 @@ export default function InformationPage({
   const [eventOrganizers, setEventOrganizers] = useState<User[]>([]);
   // const [eventLimit, setEventLimit] = useState(event?.limit || 0);
   const [eventClosed, setEventClosed] = useState(event?.isClosedEvent || false);
+  const [eventCapacity, setEventCapacity] = useState(event?.capacity || 0);
   const [regLink, setRegLink] = useState(event?.uniqueName || '');
 
   const client = useApolloClient();
@@ -69,6 +70,7 @@ export default function InformationPage({
       setEventRegStart(new Date(queryData.events_getOne.registrationStart));
       setEventRegEnd(new Date(queryData.events_getOne.registrationEnd));
       setRegLink(queryData.events_getOne.uniqueName);
+      setEventCapacity(queryData.events_getOne.capacity || 0);
       setEventOrganizers(result);
     },
   );
@@ -93,6 +95,7 @@ export default function InformationPage({
       eventPlace,
       eventOrganizers,
       eventClosed,
+      eventCapacity,
     );
     if (event) {
       navigate('/manage', { state: { event } });
@@ -193,6 +196,15 @@ export default function InformationPage({
               <option value="Zárt">Zárt</option>
               <option value="Nyílt">Nyílt</option>
             </Select>
+          </Box>
+          <Box>
+            <Box>Esemény létszám korlátja</Box>
+            <Input
+              name="capacity"
+              type="number"
+              value={eventCapacity}
+              onChange={(e) => setEventCapacity(e.target.value)}
+            />
           </Box>
           <Box>
             <Box>Esemény meghivó linkje</Box>

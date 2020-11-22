@@ -26,12 +26,12 @@ export default function DetailsPage({
     state: { event },
   },
 }: Props): JSX.Element {
-  const eventRegopen = false;
-
   const [organizers, setOrganizers] = useState<User[]>([]); // TODO: event.organizers
   const [allUsers, setAllUsers] = useState<User[]>([]); // TODO: make it global
   const [reglink, setReglink] = useState(event?.uniqueName || ''); // TODO: event.reglink
-  const [application, setApplication] = useState(eventRegopen); // TODO: event.regopen
+  const [application, setApplication] = useState(
+    event?.registrationAllowed || true,
+  ); // TODO: event.regopen
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
@@ -48,6 +48,7 @@ export default function DetailsPage({
       }, [] as User[]);
     setOrganizers(result);
     setReglink(queryData.events_getOne.uniqueName);
+    setApplication(queryData.events_getOne.registrationAllowed || true);
   });
   useEffect(() => {
     const fetchEventData = async () => {

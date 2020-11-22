@@ -19,6 +19,7 @@ export const eventGetInformationQuery = gql`
       registrationEnd
       place
       isClosedEvent
+      capacity
       relations {
         nodes {
           userId
