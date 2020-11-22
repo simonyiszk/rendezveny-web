@@ -74,7 +74,7 @@ export class SeedService {
 	public async seedDatabase(): Promise<void> {
 		/* Users */
 
-		const john = new User({ name: 'John' });
+		const john = new User({ name: 'John', role: UserRole.ADMIN });
 		await this.userRepository.save(john);
 		await this.localIdentityRepository.save(new LocalIdentity({
 			username: 'john',
@@ -149,20 +149,95 @@ export class SeedService {
 		await this.membershipRepository.save(new ClubMembership({
 			user: emily, club: bookClub
 		}));
+		await this.membershipRepository.save(new ClubMembership({
+			user: admin, club: geekClub
+		}));
 
 		/* Events */
 
-		const galaDinner = new Event({
+		const galaDinner = new Event({ // John already registered
 			name: 'Gala dinner',
 			description: 'Gala dinner',
 			place: 'SCH',
-			start: new Date(2020, 10, 23, 18, 0),
-			end: new Date(2020, 10, 23, 23, 59),
+			start: new Date(2020, 12, 23, 18, 0),
+			end: new Date(2020, 12, 23, 23, 59),
+			registrationStart: new Date(2020, 10, 20, 18, 0),
+			registrationEnd: new Date(2020, 12, 20, 12, 0),
 			isDateOrTime: false,
 			isClosedEvent: true,
 			hostingClubs: [geekClub, bookClub]
 		});
 		await this.eventRepository.save(galaDinner);
+
+		const semesterEndDinner = new Event({ // John can attend
+			name: 'Semester end dinner',
+			description: 'Semester end dinner',
+			place: 'SCH',
+			start: new Date(2020, 12, 24, 18, 0),
+			end: new Date(2020, 12, 24, 23, 59),
+			registrationStart: new Date(2020, 10, 20, 18, 0),
+			registrationEnd: new Date(2020, 12, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: true,
+			hostingClubs: [geekClub]
+		});
+		await this.eventRepository.save(semesterEndDinner);
+
+		const privateParty = new Event({ // John can not attend
+			name: 'Private party',
+			description: 'Private party',
+			place: 'SCH',
+			start: new Date(2020, 12, 24, 18, 0),
+			end: new Date(2020, 12, 24, 23, 59),
+			registrationStart: new Date(2020, 10, 20, 18, 0),
+			registrationEnd: new Date(2020, 12, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: true,
+			hostingClubs: [bookClub]
+		});
+		await this.eventRepository.save(privateParty);
+
+		const birthdayParty = new Event({ // Public event, John can attend
+			name: 'Birthday party',
+			description: 'Birthday party',
+			place: 'SCH',
+			start: new Date(2020, 12, 26, 18, 0),
+			end: new Date(2020, 12, 26, 23, 59),
+			registrationStart: new Date(2020, 10, 20, 18, 0),
+			registrationEnd: new Date(2020, 12, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: false,
+			hostingClubs: [geekClub, bookClub]
+		});
+		await this.eventRepository.save(birthdayParty);
+
+		const johnsParty = new Event({ // John is chief organizer
+			name: 'John\' party',
+			description: 'John\' party',
+			place: 'SCH',
+			start: new Date(2020, 12, 26, 18, 0),
+			end: new Date(2020, 12, 26, 23, 59),
+			registrationStart: new Date(2020, 10, 20, 18, 0),
+			registrationEnd: new Date(2020, 12, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: false,
+			hostingClubs: [geekClub]
+		});
+		await this.eventRepository.save(johnsParty);
+
+		const emilysParty = new Event({ // John is organizer
+			name: 'Emily\'s party',
+			description: 'Emily\'s party',
+			place: 'SCH',
+			start: new Date(2020, 12, 26, 18, 0),
+			end: new Date(2020, 12, 26, 23, 59),
+			registrationStart: new Date(2020, 10, 20, 18, 0),
+			registrationEnd: new Date(2020, 12, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: false,
+			hostingClubs: [geekClub]
+		});
+		await this.eventRepository.save(emilysParty);
 
 		const aprilGalaDinner = new Organizer({
 			event: galaDinner, user: april, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
@@ -173,6 +248,16 @@ export class SeedService {
 			event: galaDinner, user: emily, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
 		});
 		await this.organizerRepository.save(emilyGalaDinner);
+
+		const johnJohnParty = new Organizer({
+			event: johnsParty, user: john, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
+		});
+		await this.organizerRepository.save(johnJohnParty);
+		
+		const johnEmilyParty = new Organizer({
+			event: emilysParty, user: john, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
+		});
+		await this.organizerRepository.save(johnEmilyParty);
 
 		const johnGalaDinner = new Registration({
 			event: galaDinner,
@@ -213,6 +298,34 @@ export class SeedService {
 		});
 
 		await this.formQuestionRepository.save([foodPreference, nickName]);
+
+		const nickName2 = new FormQuestion({
+			question: 'Nickname',
+			event: semesterEndDinner,
+			order: 1,
+			type: FormQuestionType.TEXT,
+			typeMetadata: {
+				type: 'text',
+				maxLength: 25
+			},
+			isRequired: true
+		});
+
+		await this.formQuestionRepository.save([nickName2]);
+
+		const nickName3 = new FormQuestion({
+			question: 'Nickname',
+			event: privateParty,
+			order: 1,
+			type: FormQuestionType.TEXT,
+			typeMetadata: {
+				type: 'text',
+				maxLength: 25
+			},
+			isRequired: true
+		});
+
+		await this.formQuestionRepository.save([nickName3]);
 
 		const johnFoodPreference = new FormQuestionAnswer({
 			formQuestion: foodPreference,
