@@ -106,28 +106,30 @@ export default function RegistrationPage({
     QueryResult
   >(eventQueryGQL, {
     onCompleted: (queryData) => {
-      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
-        (acc, curr) => {
-          if (curr.answer.type === 'multiple_choice') {
-            return {
-              ...acc,
-              [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
-                .options,
-            };
-          }
-          if (curr.answer.type === 'text') {
-            return {
-              ...acc,
-              [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
-            };
-          }
-          return acc;
-        },
-        {},
-      );
-      console.log('RES', res);
-      setAnswers(res);
-      client.resetStore();
+      if (queryData.events_getOne.selfRelation.registration) {
+        const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
+          (acc, curr) => {
+            if (curr.answer.type === 'multiple_choice') {
+              return {
+                ...acc,
+                [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
+                  .options,
+              };
+            }
+            if (curr.answer.type === 'text') {
+              return {
+                ...acc,
+                [curr.id]: (curr.answer as EventRegistrationFormTextAnswer)
+                  .text,
+              };
+            }
+            return acc;
+          },
+          {},
+        );
+        console.log('RES', res);
+        setAnswers(res);
+      }
     },
   });
 
