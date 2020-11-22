@@ -157,6 +157,7 @@ export class SeedService {
 
 		const galaDinner = new Event({ // John already registered
 			name: 'Gala dinner',
+			uniqueName: 'gala-dinner',
 			description: 'Gala dinner',
 			place: 'SCH',
 			start: new Date(2020, 12, 23, 18, 0),

@@ -135,6 +135,19 @@ export class EventManager extends BaseManager {
 		}
 	}
 
+	public async getEventByUniqueName(
+		uniqueName: string
+	): Promise<Event> {
+		const event = await this.eventRepository.findOne({ uniqueName }, {});
+
+		if(!event) {
+			return this.getEventFail(uniqueName);
+		}
+		else {
+			return this.getEvent(event);
+		}
+	}
+
 	public async getEvent(
 		event: Event
 	): Promise<Event> {
@@ -478,6 +491,19 @@ export class EventManager extends BaseManager {
 		else {
 			throw new BusinessException('UNKNOWN_ERROR', 'Should not happen');
 		}
+	}
+
+	@AuthorizeGuard(IsUser(), IsAdmin())
+	public async getSelfRelation2(
+		@AuthContext() accessContext: AccessContext,
+		@AuthEvent() event: Event
+	): Promise<EventRelation> {
+		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
+		const user = await this.userRepository.findOne(accessContext.getUserId(), {
+			relations: [nameof<Club>('memberships')]
+		});
+
+		return (await this.returnRelatedUsers(event, [user!], [], 1)).relations[0];
 	}
 
 	@AuthorizeGuard(IsOrganizer())

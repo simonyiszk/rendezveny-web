@@ -60,13 +60,23 @@ export class EventResolver {
 
 	@Query(_ => EventDTO, {
 		name: 'events_getOne',
-		description: 'Gets one event based on its id'
+		description: 'Gets one event based on its id',
+		nullable: true
 	})
 	@UseFilters(BusinessExceptionFilter)
 	public async getEvent(
-		@Args('id', { description: 'The id of the event' }) id: string
-	): Promise<EventDTO> {
-		return this.eventManager.getEventById(id);
+		@Args('id', { description: 'The id of the event', nullable: true }) id?: string,
+		@Args('uniqueName', { description: 'The unique name of the event', nullable: true }) uniqueName?: string
+	): Promise<EventDTO | null> {
+		if(typeof id !== 'undefined') {
+			return this.eventManager.getEventById(id);
+		}
+		else if(typeof uniqueName !== 'undefined') {
+			return this.eventManager.getEventByUniqueName(uniqueName);
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Query(_ => EventDTO, {
@@ -302,6 +312,18 @@ export class EventResolver {
 	): Promise<EventRelationDTO> {
 		const event = await this.eventManager.getEventById(eventDTO.id);
 		const eventRelation = await this.eventManager.getSelfRelation(eventContext, event);
+		return this.returnEventRelationDTO(eventRelation);
+	}
+
+	@ResolveField(nameof<EventDTO>('selfRelation2'), _ => EventRelationDTO)
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthAccessGuard)
+	public async getSelfRelation2(
+		@AccessCtx() accessContext: AccessContext,
+		@Parent() eventDTO: EventDTO
+	): Promise<EventRelationDTO> {
+		const event = await this.eventManager.getEventById(eventDTO.id);
+		const eventRelation = await this.eventManager.getSelfRelation2(accessContext, event);
 		return this.returnEventRelationDTO(eventRelation);
 	}
 

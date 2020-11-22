@@ -20,6 +20,11 @@ export class EventDTO {
 	public name: string = '';
 
 	@Field({
+		description: 'The unique name of the event'
+	})
+	public uniqueName: string = '';
+
+	@Field({
 		description: 'The description of the event'
 	})
 	public description: string = '';
@@ -72,9 +77,14 @@ export class EventDTO {
 	public relations?: EventRelationDTO[];
 
 	@Field(_ => EventRelationDTO, {
-		description: 'The current user\'s relation with the event'
+		description: 'The current user\'s relation with the event (event token)'
 	})
 	public selfRelation?: EventRelationDTO;
+
+	@Field(_ => EventRelationDTO, {
+		description: 'The current user\'s relation with the event (access token)'
+	})
+	public selfRelation2?: EventRelationDTO;
 
 	@Field(_ => EventRegistrationFormDTO, {
 		description: 'The registration form of the event'

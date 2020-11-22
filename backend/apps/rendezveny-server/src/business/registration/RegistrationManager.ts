@@ -91,7 +91,10 @@ export class RegistrationManager {
 		@AuthEvent() event: Event,
 		filledInForm: FilledInForm
 	): Promise<Registration> {
-		const user = await this.userManager.getUserById(accessContext, accessContext.getUserId());
+		const user = await this.userRepository.findOne(accessContext.getUserId());
+		if(typeof user === 'undefined') {
+			throw new UserDoesNotExistsException(accessContext.getUserId());
+		}
 
 		await event.loadRelation(this.eventRepository, 'hostingClubs');
 		if(event.isClosedEvent && !event.hostingClubs.some(club => accessContext.isMemberOfClub(club))) {
