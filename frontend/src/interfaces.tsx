@@ -1,5 +1,5 @@
 export interface Event {
-  id: number;
+  id: string;
   name: string;
   description: string;
   place: string;
@@ -19,13 +19,13 @@ export interface Event {
 }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   clubs: Club[];
 }
 
 export interface Club {
-  id: number;
+  id: string;
   name: string;
   users: User[];
 }
@@ -45,7 +45,7 @@ export interface EventRelation {
 }
 
 export interface EventRegistration {
-  id: number;
+  id: string;
   didAttend: boolean;
   formAnswer: EventRegistrationFormAnswers;
 }
@@ -79,7 +79,7 @@ export interface EventRegistrationFormTextQuestion {
   type: string;
 }
 export interface EventRegistrationFormMultipleChoiceOption {
-  id: number;
+  id: string;
   text: string;
 }
 
