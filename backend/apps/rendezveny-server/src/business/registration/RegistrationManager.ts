@@ -36,6 +36,8 @@ import {
 	TemporaryIdentityRepository,
 	UserRepository
 } from '../../data/repositories/repositories';
+import { RegistrationDisabledException } from './exceptions/RegistrationDisabledException';
+import { RegistrationLimitReachedException } from './exceptions/RegistrationLimitReachedException';
 /* eslint-enable max-len */
 
 @Injectable()
@@ -97,11 +99,21 @@ export class RegistrationManager {
 		}
 
 		const now = new Date();
-		if(event.registrationStart && event.registrationStart > now) {
+		if(event.registrationAllowed === false) {
+			throw new RegistrationDisabledException();
+		}
+		if(typeof event.registrationAllowed === 'undefined'
+			&& event.registrationStart && event.registrationStart > now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if(event.registrationEnd && event.registrationEnd < now) {
+		if(typeof event.registrationAllowed === 'undefined'
+			&& event.registrationEnd && event.registrationEnd < now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
+		}
+
+		const alreadyRegistered = await this.registrationRepository.count({ event });
+		if(typeof event.capacity !== 'undefined' && alreadyRegistered >= event.capacity) {
+			throw new RegistrationLimitReachedException();
 		}
 
 		const registration = await this.registrationRepository.findOne({ user });
@@ -145,11 +157,21 @@ export class RegistrationManager {
 		}
 
 		const now = new Date();
-		if(event.registrationStart && event.registrationStart > now) {
+		if(event.registrationAllowed === false) {
+			throw new RegistrationDisabledException();
+		}
+		if(typeof event.registrationAllowed === 'undefined'
+			&& event.registrationStart && event.registrationStart > now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if(event.registrationEnd && event.registrationEnd < now) {
+		if(typeof event.registrationAllowed === 'undefined'
+			&& event.registrationEnd && event.registrationEnd < now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
+		}
+
+		const alreadyRegistered = await this.registrationRepository.count({ event });
+		if(typeof event.capacity !== 'undefined' && alreadyRegistered >= event.capacity) {
+			throw new RegistrationLimitReachedException();
 		}
 
 		const temporaryIdentity = new TemporaryIdentity({ email, name });

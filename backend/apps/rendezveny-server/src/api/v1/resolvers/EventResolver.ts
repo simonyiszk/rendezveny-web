@@ -91,6 +91,7 @@ export class EventResolver {
 	public async addEvent(
 		@AccessCtx() accessContext: AccessContext,
 		@Args('name', { description: 'The name of the event' }) name: string,
+		@Args('uniqueName', { description: 'The unique name of the event' }) uniqueName: string,
 		@Args('description', { description: 'The description of the event' }) description: string,
 		@Args('isClosedEvent', { description: 'Indicates whether the event is closed' }) isClosedEvent: boolean,
 		@Args('hostingClubIds', {
@@ -104,19 +105,23 @@ export class EventResolver {
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
-		}) start?: string,
+		}) start?: Date,
 		@Args('end', {
 			description: 'The end date of the event',
 			nullable: true
-		}) end?: string,
+		}) end?: Date,
 		@Args('registrationStart', {
 			description: 'Indicates start of the registration for the event',
 			nullable: true
-		}) registrationStart?: string,
+		}) registrationStart?: Date,
 		@Args('registrationEnd', {
 			description: 'Indicates end of the registration for the event',
 			nullable: true
-		}) registrationEnd?: string,
+		}) registrationEnd?: Date,
+		@Args('registrationAllowed', {
+			description: 'Indicates end of the registration for the event is allowed',
+			nullable: true
+		}) registrationAllowed?: boolean,
 		@Args('dateOrTime', {
 			description: 'Indicates whether the dates contain times as well',
 			nullable: true
@@ -124,17 +129,22 @@ export class EventResolver {
 		@Args('dateOrTime', {
 			description: 'The place of the event',
 			nullable: true
-		}) place?: string
+		}) place?: string,
+		@Args('capacity', {
+			description: 'The capacity of the event',
+			nullable: true
+		}) capacity?: number
 	): Promise<EventDTO> {
 		return this.eventManager.addEvent(
 			accessContext,
 			name,
+			uniqueName,
 			description,
 			isClosedEvent,
 			await Promise.all(hostingClubIds.map(async id => this.clubManager.getClubById(accessContext, id))),
 			await Promise.all(chiefOrganizerIds.map(async id => this.userManager.getUserById(accessContext, id))),
 			{
-				start, end, registrationEnd, registrationStart, isDateOrTime, place
+				start, end, registrationEnd, registrationStart, registrationAllowed, isDateOrTime, place, capacity
 			}
 		);
 	}
@@ -150,47 +160,61 @@ export class EventResolver {
 		@EventCtx() eventContext: EventContext,
 		@Args('id', { description: 'The id of the event' }) id: string,
 		@Args('name', { description: 'The name of the event' }) name: string,
+		@Args('uniqueName', { description: 'The unique name of the event' }) uniqueName: string,
 		@Args('description', { description: 'The description of the event' }) description: string,
 		@Args('isClosedEvent', { description: 'Indicates whether the event is closed' }) isClosedEvent: boolean,
 		@Args('hostingClubIds', {
 			description: 'The ids of the hosting clubs',
 			type: () => [GraphQLString]
 		}) hostingClubIds: string[],
+		@Args('chiefOrganizerIds', {
+			description: 'The ids of the chief organizers',
+			type: () => [GraphQLString]
+		}) chiefOrganizerIds: string[],
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
-		}) start?: string,
+		}) start?: Date,
 		@Args('end', {
 			description: 'The end date of the event',
 			nullable: true
-		}) end?: string,
+		}) end?: Date,
 		@Args('registrationStart', {
 			description: 'Indicates start of the registration for the event',
 			nullable: true
-		}) registrationStart?: string,
+		}) registrationStart?: Date,
 		@Args('registrationEnd', {
 			description: 'Indicates end of the registration for the event',
 			nullable: true
-		}) registrationEnd?: string,
+		}) registrationEnd?: Date,
+		@Args('registrationAllowed', {
+			description: 'Indicates end of the registration for the event is allowed',
+			nullable: true
+		}) registrationAllowed?: boolean,
 		@Args('dateOrTime', {
 			description: 'Indicates whether the dates contain times as well',
 			nullable: true
 		}) isDateOrTime?: boolean,
-		@Args('place', {
+		@Args('dateOrTime', {
 			description: 'The place of the event',
 			nullable: true
-		}) place?: string
+		}) place?: string,
+		@Args('capacity', {
+			description: 'The capacity of the event',
+			nullable: true
+		}) capacity?: number
 	): Promise<EventDTO> {
 		const event = await this.eventManager.getEventById(id);
 		return this.eventManager.editEvent(
 			eventContext,
 			event,
 			name,
+			uniqueName,
 			description,
 			isClosedEvent,
 			hostingClubIds,
 			{
-				start, end, registrationEnd, registrationStart, isDateOrTime, place
+				start, end, registrationEnd, registrationStart, isDateOrTime, place, capacity
 			}
 		);
 	}

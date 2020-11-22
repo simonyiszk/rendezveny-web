@@ -5,7 +5,7 @@ import { Event } from '../../data/models/Event';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { EventDoesNotExistsException } from './exceptions/EventDoesNotExistsException';
 import { checkArgument } from '../../utils/preconditions';
-import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, minDate } from 'class-validator';
+import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, isPositive, minDate } from 'class-validator';
 import { Organizer } from '../../data/models/Organizer';
 import { OrganizerNotificationSettings } from '../../data/models/OrganizerNotificationSettings';
 import { EventStartDateValidationException } from './exceptions/EventStartDateValidationException';
@@ -48,6 +48,8 @@ import {
 	UserRepository
 } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { EventUniqueNameValidationException } from './exceptions/EventUniqueNameValidationException';
+import { EventCapacityValidationException } from './exceptions/EventCapacityValidationException';
 
 /* eslint-enable max-len */
 
@@ -150,43 +152,44 @@ export class EventManager extends BaseManager {
 	public async addEvent(
 		@AuthContext() accessContext: AccessContext,
 		name: string,
+		uniqueName: string,
 		description: string,
 		isClosedEvent: boolean,
 		hostingClubs: Club[],
 		chiefOrganizers: User[],
 		settings: {
-			place?: string, start?: string, end?: string, isDateOrTime?: boolean,
-			registrationStart?: string, registrationEnd?: string
+			place?: string, capacity?: number,
+			start?: Date, end?: Date, isDateOrTime?: boolean,
+			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		checkArgument(isNotEmpty(name), EventNameValidationException);
-		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
-		checkArgument(
-			isArray(hostingClubs) && arrayMinSize(hostingClubs, 1),
-			EventHostingClubsValidationException
-		);
+		EventManager.validateEvent(name, uniqueName, description, isClosedEvent, hostingClubs, settings);
 		checkArgument(
 			isArray(chiefOrganizers) && arrayMinSize(chiefOrganizers, 1),
 			EventChiefOrganizersValidationException
 		);
-		const { start: startDate, end: endDate } = EventManager.validateDatePair(settings.start, settings.end);
-		const { start: registrationStartDate, end: registrationEndDate }
-			= EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
 
 		if(!accessContext.isAdmin() && !hostingClubs.some(club => accessContext.isManagerOfClub(club))) {
 			throw new UnauthorizedException();
 		}
 
+		if(typeof (await this.eventRepository.findOne({ uniqueName })) !== 'undefined') {
+			throw new EventUniqueNameValidationException();
+		}
+
 		const event = new Event({
 			name: name,
+			uniqueName: uniqueName,
 			description: description,
 			isClosedEvent: isClosedEvent,
 			place: settings.place,
-			start: startDate,
-			end: endDate,
+			capacity: settings.capacity,
+			start: settings.start,
+			end: settings.end,
 			isDateOrTime: settings.isDateOrTime,
-			registrationStart: registrationStartDate,
-			registrationEnd: registrationEndDate,
+			registrationStart: settings.registrationStart,
+			registrationEnd: settings.registrationEnd,
+			registrationAllowed: settings.registrationAllowed,
 			hostingClubs: hostingClubs
 		});
 
@@ -207,34 +210,39 @@ export class EventManager extends BaseManager {
 		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
 		name: string,
+		uniqueName: string,
 		description: string,
 		isClosedEvent: boolean,
 		hostingClubsIds: string[],
 		settings: {
-			place?: string, start?: string, end?: string, isDateOrTime?: boolean,
-			registrationStart?: string, registrationEnd?: string
+			place?: string, capacity?: number,
+			start?: Date, end?: Date, isDateOrTime?: boolean,
+			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		checkArgument(isNotEmpty(name), EventNameValidationException);
-		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
-		checkArgument(
-			isArray(hostingClubsIds) && arrayMinSize(hostingClubsIds, 1),
-			EventHostingClubsValidationException
-		);
-		const { start: startDate, end: endDate } = EventManager.validateDatePair(settings.start, settings.end);
-		const { start: registrationStartDate, end: registrationEndDate }
-			= EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
+		const hostingClubs = await this.clubRepository.findByIds(hostingClubsIds);
+		EventManager.validateEvent(name, uniqueName, description, isClosedEvent, hostingClubs, settings);
+
+		const uniqueNameUsed = await this.eventRepository.findOne({
+			uniqueName: uniqueName,
+			id: Not(event.id)
+		});
+		if(typeof uniqueNameUsed !== 'undefined') {
+			throw new EventUniqueNameValidationException();
+		}
 
 		event.name = name;
 		event.description = description;
 		event.isClosedEvent = isClosedEvent;
 		event.place = settings.place;
-		event.start = startDate;
-		event.end = endDate;
+		event.capacity = settings.capacity;
+		event.start = settings.start;
+		event.end = settings.end;
 		event.isDateOrTime = settings.isDateOrTime ?? event.isDateOrTime;
-		event.registrationStart = registrationStartDate;
-		event.registrationEnd = registrationEndDate;
-		event.hostingClubs = await this.clubRepository.findByIds(hostingClubsIds);
+		event.registrationStart = settings.registrationStart;
+		event.registrationEnd = settings.registrationEnd;
+		event.registrationAllowed = settings.registrationAllowed;
+		event.hostingClubs = hostingClubs;
 
 		await this.eventRepository.save(event);
 
@@ -522,39 +530,62 @@ export class EventManager extends BaseManager {
 		return { relations: [...relations, ...temporaryRelations], count: count };
 	}
 
-	/* eslint-disable no-undefined */
-	private static validateDatePair(start?: string, end?: string): { start: Date | undefined, end: Date | undefined } {
-		checkArgument(!isDefined(start) || isDateString(start), EventStartDateValidationException);
-		checkArgument(!isDefined(end) || isDateString(end), EventEndDateValidationException);
-
-		const startDate = typeof start === 'string' ? new Date(start) : undefined;
-		const endDate = typeof end === 'string' ? new Date(end) : undefined;
+	private static validateDatePair(start?: Date, end?: Date): void {
+		checkArgument(
+			!isDefined(start) || isDateString(start!.toString()), EventStartDateValidationException
+		);
+		checkArgument(
+			!isDefined(end) || isDateString(end!.toString()), EventEndDateValidationException
+		);
 
 		checkArgument(
-			!(startDate !== undefined && endDate !== undefined) || minDate(endDate, startDate),
+			!(start !== undefined && end !== undefined) || minDate(end, start),
 			EventDateIntervalValidationException
 		);
-
-		return { start: startDate, end: endDate };
 	}
-	/* eslint-enable no-undefined */
 
-	/* eslint-disable no-undefined */
 	private static validateRegistrationDatePair(
-		start?: string, end?: string
-	): { start: Date | undefined, end: Date | undefined } {
-		checkArgument(!isDefined(start) || isDateString(start), EventRegistrationStartDateValidationException);
-		checkArgument(!isDefined(end) || isDateString(end), EventRegistrationEndDateValidationException);
-
-		const startDate = typeof start === 'string' ? new Date(start) : undefined;
-		const endDate = typeof end === 'string' ? new Date(end) : undefined;
-
+		start?: Date, end?: Date
+	): void {
 		checkArgument(
-			!(startDate !== undefined && endDate !== undefined) || minDate(endDate, startDate),
-			EventRegistrationDateIntervalValidationException
+			!isDefined(start) || isDateString(start!.toString()), EventRegistrationStartDateValidationException
+		);
+		checkArgument(
+			!isDefined(end) || isDateString(end!.toString()), EventRegistrationEndDateValidationException
 		);
 
-		return { start: startDate, end: endDate };
+		checkArgument(
+			!(start !== undefined && end !== undefined) || minDate(end, start),
+			EventRegistrationDateIntervalValidationException
+		);
 	}
-	/* eslint-enable no-undefined */
+
+	private static validateEvent(
+		name: string,
+		uniqueName: string,
+		description: string,
+		_isClosedEvent: boolean,
+		hostingClubs: Club[],
+		settings: {
+			place?: string, capacity?: number,
+			start?: Date, end?: Date, isDateOrTime?: boolean,
+			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
+		}
+	): void {
+		checkArgument(isNotEmpty(name), EventNameValidationException);
+		checkArgument(
+			isNotEmpty(uniqueName) && uniqueName.match(/^[a-zA-Z0-9](?:-[a-zA-Z0-9]*)$/u) !== null,
+			EventUniqueNameValidationException
+		);
+		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
+		checkArgument(
+			!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
+		);
+		checkArgument(
+			isArray(hostingClubs) && arrayMinSize(hostingClubs, 1),
+			EventHostingClubsValidationException
+		);
+		EventManager.validateDatePair(settings.start, settings.end);
+		EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
+	}
 }
