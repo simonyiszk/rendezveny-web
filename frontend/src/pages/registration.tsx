@@ -31,6 +31,7 @@ import {
   EventRegistrationFormTextQuestion,
   User,
 } from '../interfaces';
+import { useEventGetOneQuery } from '../utils/api/EventGetOneQuery';
 import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
@@ -51,61 +52,9 @@ export default function RegistrationPage({
   },
 }: Props): JSX.Element {
   console.log('EVENT', event);
-  const eventQueryGQL = gql`
-    query eventGetOne($id: String!) {
-      events_getOne(id: $id) {
-        name
-        registrationForm {
-          questions {
-            id
-            question
-            isRequired
-            metadata {
-              ... on EventRegistrationFormMultipleChoiceQuestionDTO {
-                type
-                multipleAnswers
-                options {
-                  id
-                  text
-                }
-              }
-              ... on EventRegistrationFormTextQuestionDTO {
-                type
-                maxLength
-              }
-            }
-          }
-        }
-        selfRelation {
-          email
-          registration {
-            formAnswer {
-              answers {
-                answer {
-                  ... on EventRegistrationFormMultipleChoiceAnswerDTO {
-                    type
-                    options
-                  }
-                  ... on EventRegistrationFormTextAnswerDTO {
-                    type
-                    text
-                  }
-                }
-                id
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-  interface QueryResult {
-    events_getOne: Event;
-  }
-  const [getEvent, { called, loading, data, error }] = useLazyQuery<
-    QueryResult
-  >(eventQueryGQL, {
-    onCompleted: (queryData) => {
+
+  const [getEvent, { called, loading, data, error }] = useEventGetOneQuery(
+    (queryData) => {
       if (queryData.events_getOne.selfRelation.registration) {
         const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
           (acc, curr) => {
@@ -131,7 +80,7 @@ export default function RegistrationPage({
         setAnswers(res);
       }
     },
-  });
+  );
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
