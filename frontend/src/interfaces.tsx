@@ -15,6 +15,9 @@ export interface Event {
   relations: {
     nodes: EventRelation[];
   };
+  organizers: {
+    nodes: EventRelation[];
+  };
   selfRelation: {
     registration: EventRegistration;
   };

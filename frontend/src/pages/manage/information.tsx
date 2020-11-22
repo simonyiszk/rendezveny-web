@@ -57,26 +57,30 @@ export default function InformationPage({
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
 
-  const [getUsers, _getuser] = useUsersGetAllQuery((queryData) => {
-    setAllUsers(queryData.users_getAll.nodes as User[]);
-  });
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
-      const result = queryData.events_getOne.relations.nodes
-        .filter((curr) => curr.organizer && curr.organizer.isChiefOrganizer)
-        .reduce((acc, curr) => {
+      const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
+        (acc, curr) => {
           return [...acc, { id: curr.userId, name: curr.name } as User];
-        }, [] as User[]);
+        },
+        [] as User[],
+      );
+      const resultOrganizers = queryData.events_getOne.organizers.nodes.reduce(
+        (acc, curr) => {
+          return [...acc, { id: curr.userId, name: curr.name } as User];
+        },
+        [] as User[],
+      );
       setEventRegStart(new Date(queryData.events_getOne.registrationStart));
       setEventRegEnd(new Date(queryData.events_getOne.registrationEnd));
       setRegLink(queryData.events_getOne.uniqueName);
       setEventCapacity(queryData.events_getOne.capacity || 0);
-      setEventOrganizers(result);
+      setAllUsers(resultAllUser);
+      setEventOrganizers(resultOrganizers);
     },
   );
   useEffect(() => {
     const fetchEventData = async () => {
-      getUsers();
       if (event) {
         await getEventTokenMutation(event.id);
         getOrganizers({ variables: { id: event.id } });

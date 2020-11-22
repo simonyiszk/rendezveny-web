@@ -14,14 +14,16 @@ export const eventGetDetailsQuery = gql`
       name
       uniqueName
       registrationAllowed
-      relations {
+      organizers: relations(chiefOrganizer: false) {
         nodes {
           userId
           name
-          organizer {
-            id
-            isChiefOrganizer
-          }
+        }
+      }
+      relations(organizer: false) {
+        nodes {
+          userId
+          name
         }
       }
     }
