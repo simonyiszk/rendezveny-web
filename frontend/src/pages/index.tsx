@@ -62,11 +62,11 @@ export default function IndexPage(): JSX.Element {
       />
       <EventSection
         text="Regisztrált rendezvények"
-        listOfEvents={appliedEvents(data.events_getAll.nodes)}
+        listOfEvents={appliedEvents([])}
       />
       <EventSection
         text="Közelgő rendezvények"
-        listOfEvents={otherEvents(data.events_getAll.nodes)}
+        listOfEvents={otherEvents([])}
       />
     </Layout>
   );
