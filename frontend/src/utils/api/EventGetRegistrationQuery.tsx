@@ -10,6 +10,7 @@ import { Event } from '../../interfaces';
 export const eventGetRegistrationQuery = gql`
   query e_eventGetRegistration($id: String!) {
     events_getOne(id: $id) {
+      id
       name
       registrationForm {
         questions {
