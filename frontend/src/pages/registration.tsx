@@ -78,6 +78,7 @@ export default function RegistrationPage({
         );
         console.log('RES', res);
         setAnswers(res);
+        setRegistered(true);
       }
     },
   );
@@ -95,6 +96,7 @@ export default function RegistrationPage({
   }, [event.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
+  const [registered, setRegistered] = useState(false);
 
   const getAnswer = (id: string): string | string[] => {
     return answers[id];
@@ -105,7 +107,6 @@ export default function RegistrationPage({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setAnswer('2101603f-2228-4b3d-8812-62119ae0670b', ['regular']);
     console.log('Submitted', answers);
   };
 
@@ -150,7 +151,30 @@ export default function RegistrationPage({
                 )}
               </Box>
             ))}
-          <button type="submit">Submit</button>
+          {!registered && (
+            <Button
+              text="Regisztráció"
+              onClick={() => {
+                console.log('Registered');
+              }}
+            />
+          )}
+          {registered && (
+            <>
+              <Button
+                text="Módosítás"
+                onClick={() => {
+                  console.log('Edited');
+                }}
+              />
+              <Button
+                text="Regisztráció törlése"
+                onClick={() => {
+                  console.log('Deleted');
+                }}
+              />
+            </>
+          )}
         </form>
       </Flex>
     </Layout>
