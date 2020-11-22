@@ -11,8 +11,6 @@ import { getAuthToken, getEventToken } from './TokenContainer';
 
 const httpLink = new HttpLink({ uri: 'http://localhost:3000/api/v1' });
 
-const eventQueries = ['eventGetOne'];
-
 export const resetContext = (client: ApolloClient<object>) => {
   client.setLink(
     from([authMiddleware(getAuthToken(), getEventToken()), httpLink]),
@@ -22,7 +20,7 @@ export const resetContext = (client: ApolloClient<object>) => {
 const authMiddleware = (authToken, eventToken) =>
   setContext((operation) => {
     console.log(operation);
-    if (!eventQueries.includes(operation.operationName) && authToken) {
+    if (!operation.operationName?.startsWith('e_') && authToken) {
       console.log('operation auth');
       return {
         headers: {
