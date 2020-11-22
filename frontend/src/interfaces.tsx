@@ -9,6 +9,8 @@ export interface Event {
   registrationEnd: string;
   registrationForm: EventRegistrationForm;
   isClosedEvent: boolean;
+  uniqueName: string;
+  registrationAllowed: boolean;
   relations: {
     nodes: EventRelation[];
   };
