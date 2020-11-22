@@ -32,7 +32,7 @@ export class AuthManager {
 	@Transactional()
 	public async loginWithLocalIdentity(
 		username: string, password: string
-	): Promise<{ refresh: string, access: string }> {
+	): Promise<{ refresh: string, access: string, user: User }> {
 		checkArgument(isNotEmpty(username), AuthUserNameValidationException);
 		checkArgument(isNotEmpty(password), AuthPasswordValidationException);
 
@@ -67,7 +67,7 @@ export class AuthManager {
 
 				return {
 					refresh: refreshToken,
-					access: await this.loginWithRefreshToken(new RefreshContext(refreshPayload))
+					...(await this.loginWithRefreshToken(new RefreshContext(refreshPayload)))
 				};
 			}
 		}
@@ -78,7 +78,7 @@ export class AuthManager {
 	@Transactional()
 	public async loginWithRefreshToken(
 		refreshContext: RefreshContext
-	): Promise<string> {
+	): Promise<{ access: string, user: User }> {
 		const token = await this.refreshTokenRepository.findOne({ id: refreshContext.getTokenId() });
 		if(!token || token.user.id !== refreshContext.getUserId()) {
 			throw new AuthInvalidTokenException();
@@ -96,17 +96,20 @@ export class AuthManager {
 				throw new AuthUserSuspendedException();
 			}
 			else {
-				return this.jwtService.signAsync({
-					typ: 'access',
-					uid: user.id,
-					rol: user.role,
-					clb: user.memberships.map(m => ({
-						cid: m.club.id,
-						rol: m.clubRole
-					}))
-				} as AccessToken, {
-					expiresIn: '5m'
-				});
+				return {
+					access: await this.jwtService.signAsync({
+						typ: 'access',
+						uid: user.id,
+						rol: user.role,
+						clb: user.memberships.map(m => ({
+							cid: m.club.id,
+							rol: m.clubRole
+						}))
+					} as AccessToken, {
+						expiresIn: '5m'
+					}),
+					user: user
+				};
 			}
 		}
 

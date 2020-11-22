@@ -4,9 +4,11 @@ import { AuthManager } from '../../../business/auth/AuthManager';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { AuthRefreshGuard, RefreshCtx } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
-import { LoginDTO } from '../dtos/LoginDTO';
+import { LoginDTO, UserRole as UserRoleDTO } from '../dtos/LoginDTO';
 import { RefreshContext } from '../../../business/auth/tokens/RefreshToken';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { UserRole } from '../../../data/models/UserRole';
+import { MembershipResolver } from './MembershipResolver';
 
 @Resolver()
 export class LoginResolver {
@@ -24,7 +26,17 @@ export class LoginResolver {
 		@Args('username', { description: 'The username of the user' }) username: string,
 		@Args('password', { description: 'The password of the user' }) password: string
 	): Promise<LoginDTO> {
-		return this.authManager.loginWithLocalIdentity(username, password);
+		const { access, refresh, user } = await this.authManager.loginWithLocalIdentity(username, password);
+		return {
+			access: access,
+			refresh: refresh,
+			role: LoginResolver.transformUserRule(user.role),
+			memberships: user.memberships.map(membership => ({
+				club: membership.club,
+				user: membership.user,
+				role: MembershipResolver.transformClubRole(membership.clubRole)
+			}))
+		};
 	}
 
 	@Mutation(_ => GraphQLString, {
@@ -36,8 +48,17 @@ export class LoginResolver {
 	@Transactional()
 	public async loginWithRefreshToken(
 		@RefreshCtx() refreshContext: RefreshContext
-	): Promise<string> {
-		return this.authManager.loginWithRefreshToken(refreshContext);
+	): Promise<LoginDTO> {
+		const { access, user } = await this.authManager.loginWithRefreshToken(refreshContext);
+		return {
+			access: access,
+			role: LoginResolver.transformUserRule(user.role),
+			memberships: user.memberships.map(membership => ({
+				club: membership.club,
+				user: membership.user,
+				role: MembershipResolver.transformClubRole(membership.clubRole)
+			}))
+		};
 	}
 
 	@Mutation(_ => GraphQLBoolean, {
@@ -52,5 +73,14 @@ export class LoginResolver {
 	): Promise<boolean> {
 		await this.authManager.logout(refreshContext);
 		return true;
+	}
+
+	public static transformUserRule(role: UserRole): UserRoleDTO {
+		switch(role) {
+			case UserRole.USER:
+				return UserRoleDTO.USER;
+			case UserRole.ADMIN:
+				return UserRoleDTO.ADMIN;
+		}
 	}
 }
