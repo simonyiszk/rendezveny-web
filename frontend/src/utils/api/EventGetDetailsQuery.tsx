@@ -7,10 +7,12 @@ import {
 
 import { Event } from '../../interfaces';
 
-export const eventGetOrganizersQuery = gql`
-  query e_eventGetOrganizers($id: String!) {
+export const eventGetDetailsQuery = gql`
+  query e_eventGetDetails($id: String!) {
     events_getOne(id: $id) {
+      id
       name
+      uniqueName
       relations {
         nodes {
           userId
@@ -27,10 +29,10 @@ export const eventGetOrganizersQuery = gql`
 interface QueryResult {
   events_getOne: Event;
 }
-export const useEventGetOrganizersQuery = (
+export const useEventGetDetailsQuery = (
   cb: (data: QueryResult) => void,
 ): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetOrganizersQuery, {
+  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetDetailsQuery, {
     onCompleted: cb,
   });
   return [getQuery, data];

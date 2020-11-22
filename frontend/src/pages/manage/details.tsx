@@ -9,7 +9,7 @@ import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event, User } from '../../interfaces';
-import { useEventGetOrganizersQuery } from '../../utils/api/EventGetOrganizersQuery';
+import { useEventGetDetailsQuery } from '../../utils/api/EventGetDetailsQuery';
 import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
 import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
@@ -26,12 +26,11 @@ export default function DetailsPage({
     state: { event },
   },
 }: Props): JSX.Element {
-  const eventReglink = 'gala-est';
   const eventRegopen = false;
 
   const [organizers, setOrganizers] = useState<User[]>([]); // TODO: event.organizers
   const [allUsers, setAllUsers] = useState<User[]>([]); // TODO: make it global
-  const [reglink, setReglink] = useState(eventReglink); // TODO: event.reglink
+  const [reglink, setReglink] = useState(''); // TODO: event.reglink
   const [application, setApplication] = useState(eventRegopen); // TODO: event.regopen
 
   const client = useApolloClient();
@@ -40,16 +39,16 @@ export default function DetailsPage({
   const [getUsers, _getuser] = useUsersGetAllQuery((queryData) => {
     setAllUsers(queryData.users_getAll.nodes as User[]);
   });
-  const [getOrganizers, { error }] = useEventGetOrganizersQuery((queryData) => {
+  const [getOrganizers, { error }] = useEventGetDetailsQuery((queryData) => {
     console.log('QUERYDATA', queryData);
     const result = queryData.events_getOne.relations.nodes
       .filter((curr) => curr.organizer && !curr.organizer.isChiefOrganizer)
       .reduce((acc, curr) => {
         return [...acc, { id: curr.userId, name: curr.name } as User];
-      }, []);
+      }, [] as User[]);
     setOrganizers(result);
+    setReglink(queryData.events_getOne.uniqueName);
   });
-  if (error) console.log('Error', error);
   useEffect(() => {
     const fetchEventData = async () => {
       await getEventTokenMutation(event.id);
