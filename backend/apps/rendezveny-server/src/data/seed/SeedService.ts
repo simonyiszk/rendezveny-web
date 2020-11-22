@@ -172,6 +172,7 @@ export class SeedService {
 
 		const semesterEndDinner = new Event({ // John can attend
 			name: 'Semester end dinner',
+			uniqueName: 'semester-end-dinner',
 			description: 'Semester end dinner',
 			place: 'SCH',
 			start: new Date(2020, 12, 24, 18, 0),
@@ -186,6 +187,7 @@ export class SeedService {
 
 		const privateParty = new Event({ // John can not attend
 			name: 'Private party',
+			uniqueName: 'private-party',
 			description: 'Private party',
 			place: 'SCH',
 			start: new Date(2020, 12, 24, 18, 0),
@@ -200,6 +202,7 @@ export class SeedService {
 
 		const birthdayParty = new Event({ // Public event, John can attend
 			name: 'Birthday party',
+			uniqueName: 'birthday-party',
 			description: 'Birthday party',
 			place: 'SCH',
 			start: new Date(2020, 12, 26, 18, 0),
@@ -214,6 +217,7 @@ export class SeedService {
 
 		const johnsParty = new Event({ // John is chief organizer
 			name: 'John\' party',
+			uniqueName: 'johns-party',
 			description: 'John\' party',
 			place: 'SCH',
 			start: new Date(2020, 12, 26, 18, 0),
@@ -228,6 +232,7 @@ export class SeedService {
 
 		const emilysParty = new Event({ // John is organizer
 			name: 'Emily\'s party',
+			uniqueName: 'emily-party',
 			description: 'Emily\'s party',
 			place: 'SCH',
 			start: new Date(2020, 12, 26, 18, 0),
