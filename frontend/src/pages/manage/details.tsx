@@ -30,7 +30,7 @@ export default function DetailsPage({
 
   const [organizers, setOrganizers] = useState<User[]>([]); // TODO: event.organizers
   const [allUsers, setAllUsers] = useState<User[]>([]); // TODO: make it global
-  const [reglink, setReglink] = useState(''); // TODO: event.reglink
+  const [reglink, setReglink] = useState(event?.uniqueName || ''); // TODO: event.reglink
   const [application, setApplication] = useState(eventRegopen); // TODO: event.regopen
 
   const client = useApolloClient();
