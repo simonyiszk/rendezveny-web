@@ -13,6 +13,9 @@ export interface Event {
   selfRelation: {
     registration: EventRegistration;
   };
+  selfRelation2: {
+    registration: EventRegistration;
+  };
 }
 
 export interface User {
@@ -36,7 +39,7 @@ export interface EventRelation {
   email: string;
   isMemberOfHostingClub: boolean;
   name: string;
-  // organizer: EventOrganizerDTO
+  organizer: EventOrganizer;
   registration: EventRegistration;
   userId: string;
 }
@@ -45,6 +48,12 @@ export interface EventRegistration {
   id: number;
   didAttend: boolean;
   formAnswer: EventRegistrationFormAnswers;
+}
+
+export interface EventOrganizer {
+  hrSegmentIds: string;
+  id: string;
+  isChiefOrganizer: boolean;
 }
 
 // QUESTIONS
