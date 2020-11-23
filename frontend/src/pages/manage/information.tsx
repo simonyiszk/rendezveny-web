@@ -14,6 +14,7 @@ import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event, User } from '../../interfaces';
 import { useEventGetInformationQuery } from '../../utils/api/EventGetInformationQuery';
+import { useEventInformationMutation } from '../../utils/api/EventInformationMutation';
 import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
 import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
@@ -32,7 +33,7 @@ export default function InformationPage({
     state: { event },
   },
 }: Props): JSX.Element {
-  const [allUsers, setAllUsers] = useState<User[]>([]); // TODO: make it global
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   const [eventName, setEventName] = useState(event?.name || '');
   const [eventStart, setEventStart] = useState(
@@ -49,16 +50,21 @@ export default function InformationPage({
   );
   const [eventPlace, setEventPlace] = useState(event?.place || '');
   const [eventOrganizers, setEventOrganizers] = useState<User[]>([]);
-  // const [eventLimit, setEventLimit] = useState(event?.limit || 0);
   const [eventClosed, setEventClosed] = useState(event?.isClosedEvent || false);
   const [eventCapacity, setEventCapacity] = useState(event?.capacity || 0);
   const [regLink, setRegLink] = useState(event?.uniqueName || '');
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
+  const [
+    getEventInformationMutation,
+    _eventMutationResult,
+  ] = useEventInformationMutation();
 
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
+      console.log('QUERYDATA', queryData);
+
       const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
         (acc, curr) => {
           return [...acc, { id: curr.userId, name: curr.name } as User];
@@ -71,10 +77,15 @@ export default function InformationPage({
         },
         [] as User[],
       );
+      setEventName(queryData.events_getOne.name);
+      setEventStart(new Date(queryData.events_getOne.start));
+      setEventEnd(new Date(queryData.events_getOne.end));
       setEventRegStart(new Date(queryData.events_getOne.registrationStart));
       setEventRegEnd(new Date(queryData.events_getOne.registrationEnd));
-      setRegLink(queryData.events_getOne.uniqueName);
+      setEventPlace(queryData.events_getOne.place);
+      setEventClosed(queryData.events_getOne.isClosedEvent || true);
       setEventCapacity(queryData.events_getOne.capacity || 0);
+      setRegLink(queryData.events_getOne.uniqueName || '');
       setAllUsers(resultAllUser);
       setEventOrganizers(resultOrganizers);
     },
@@ -101,11 +112,24 @@ export default function InformationPage({
       eventClosed,
       eventCapacity,
     );
-    if (event) {
+    getEventInformationMutation(
+      event.id,
+      eventName,
+      eventStart.toISOString(),
+      eventEnd.toISOString(),
+      eventRegStart.toISOString(),
+      eventRegEnd.toISOString(),
+      eventPlace,
+      eventOrganizers.map((o) => o.id),
+      eventClosed,
+      eventCapacity,
+      regLink,
+    );
+    /* if (event) {
       navigate('/manage', { state: { event } });
     } else {
       navigate('/');
-    }
+    } */
   };
   const onChangeOrganizers = (
     selectedList: User[],
@@ -207,7 +231,7 @@ export default function InformationPage({
               name="capacity"
               type="number"
               value={eventCapacity}
-              onChange={(e) => setEventCapacity(e.target.value)}
+              onChange={(e) => setEventCapacity(parseInt(e.target.value, 10))}
             />
           </Box>
           <Box>
