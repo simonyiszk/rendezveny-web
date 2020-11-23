@@ -9,6 +9,7 @@ import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event, User } from '../../interfaces';
+import { useEventDetailsMutation } from '../../utils/api/EventDetailsMutation';
 import { useEventGetDetailsQuery } from '../../utils/api/EventGetDetailsQuery';
 import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
 import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
@@ -26,15 +27,19 @@ export default function DetailsPage({
     state: { event },
   },
 }: Props): JSX.Element {
-  const [organizers, setOrganizers] = useState<User[]>([]); // TODO: event.organizers
-  const [allUsers, setAllUsers] = useState<User[]>([]); // TODO: make it global
-  const [reglink, setReglink] = useState(event?.uniqueName || ''); // TODO: event.reglink
+  const [organizers, setOrganizers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [reglink, setReglink] = useState(event?.uniqueName || '');
   const [application, setApplication] = useState(
     event?.registrationAllowed || true,
-  ); // TODO: event.regopen
+  );
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
+  const [
+    getEventDetailsMutation,
+    _eventMutationResult,
+  ] = useEventDetailsMutation();
 
   const [getOrganizers, { error }] = useEventGetDetailsQuery((queryData) => {
     console.log('QUERYDATA', queryData);
@@ -53,7 +58,7 @@ export default function DetailsPage({
     setAllUsers(resultAllUser);
     setOrganizers(resultOrganizers);
     setReglink(queryData.events_getOne.uniqueName);
-    setApplication(queryData.events_getOne.registrationAllowed || true);
+    setApplication(queryData.events_getOne.registrationAllowed);
   });
   useEffect(() => {
     const fetchEventData = async () => {
@@ -65,7 +70,13 @@ export default function DetailsPage({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Submitted', organizers, allUsers);
+    console.log('Submitted', event.id, organizers, reglink, application);
+    getEventDetailsMutation(
+      event.id,
+      organizers.map((o) => o.id),
+      reglink,
+      application,
+    );
     // navigate('/manage', { state: { event } });
   };
   const onChangeOrganizers = (
@@ -74,6 +85,7 @@ export default function DetailsPage({
   ): void => {
     setOrganizers(selectedList);
   };
+  console.log(_eventMutationResult);
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
