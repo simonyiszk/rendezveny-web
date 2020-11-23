@@ -136,7 +136,7 @@ export class EventResolver {
 			description: 'Indicates whether the dates contain times as well',
 			nullable: true
 		}) isDateOrTime?: boolean,
-		@Args('dateOrTime', {
+		@Args('place', {
 			description: 'The place of the event',
 			nullable: true
 		}) place?: string,
@@ -168,19 +168,40 @@ export class EventResolver {
 	@Transactional()
 	public async modifyEvent(
 		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of the event' }) id: string,
-		@Args('name', { description: 'The name of the event' }) name: string,
-		@Args('uniqueName', { description: 'The unique name of the event' }) uniqueName: string,
-		@Args('description', { description: 'The description of the event' }) description: string,
-		@Args('isClosedEvent', { description: 'Indicates whether the event is closed' }) isClosedEvent: boolean,
+		@Args('id', {
+			description: 'The id of the event'
+		}) id: string,
+		@Args('name', {
+			description: 'The name of the event',
+			nullable: true
+		}) name: string,
+		@Args('uniqueName', {
+			description: 'The unique name of the event',
+			nullable: true
+		}) uniqueName: string,
+		@Args('description', {
+			description: 'The description of the event',
+			nullable: true
+		}) description: string,
+		@Args('isClosedEvent', {
+			description: 'Indicates whether the event is closed',
+			nullable: true
+		}) isClosedEvent: boolean,
 		@Args('hostingClubIds', {
 			description: 'The ids of the hosting clubs',
-			type: () => [GraphQLString]
+			type: () => [GraphQLString],
+			nullable: true
 		}) hostingClubIds: string[],
 		@Args('chiefOrganizerIds', {
 			description: 'The ids of the chief organizers',
-			type: () => [GraphQLString]
+			type: () => [GraphQLString],
+			nullable: true
 		}) chiefOrganizerIds: string[],
+		@Args('organizerIds', {
+			description: 'The ids of the not chief organizers',
+			type: () => [GraphQLString],
+			nullable: true
+		}) organizerIds: string[],
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
@@ -205,7 +226,7 @@ export class EventResolver {
 			description: 'Indicates whether the dates contain times as well',
 			nullable: true
 		}) isDateOrTime?: boolean,
-		@Args('dateOrTime', {
+		@Args('place', {
 			description: 'The place of the event',
 			nullable: true
 		}) place?: string,
@@ -218,13 +239,22 @@ export class EventResolver {
 		return this.eventManager.editEvent(
 			eventContext,
 			event,
-			name,
-			uniqueName,
-			description,
-			isClosedEvent,
-			hostingClubIds,
 			{
-				start, end, registrationEnd, registrationStart, isDateOrTime, place, capacity
+				name,
+				uniqueName,
+				description,
+				isClosedEvent,
+				hostingClubIds,
+				chiefOrganizerIds,
+				organizerIds,
+				start,
+				end,
+				registrationEnd,
+				registrationStart,
+				registrationAllowed,
+				isDateOrTime,
+				place,
+				capacity
 			}
 		);
 	}

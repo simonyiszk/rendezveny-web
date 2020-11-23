@@ -176,7 +176,7 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		EventManager.validateEvent(name, uniqueName, description, isClosedEvent, hostingClubs, settings);
+		EventManager.validateEvent({...settings, name, uniqueName, description, isClosedEvent, hostingClubs});
 		checkArgument(
 			isArray(chiefOrganizers) && arrayMinSize(chiefOrganizers, 1),
 			EventChiefOrganizersValidationException
@@ -222,42 +222,62 @@ export class EventManager extends BaseManager {
 	public async editEvent(
 		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
-		name: string,
-		uniqueName: string,
-		description: string,
-		isClosedEvent: boolean,
-		hostingClubsIds: string[],
 		settings: {
+			name?: string,
+			uniqueName?: string,
+			description?: string,
+			isClosedEvent?: boolean,
+			hostingClubIds?: string[],
+			chiefOrganizerIds?: string[],
+			organizerIds?: string[],
 			place?: string, capacity?: number,
 			start?: Date, end?: Date, isDateOrTime?: boolean,
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		const hostingClubs = await this.clubRepository.findByIds(hostingClubsIds);
-		EventManager.validateEvent(name, uniqueName, description, isClosedEvent, hostingClubs, settings);
+		const hostingClubs = settings.hostingClubIds ? await this.clubRepository.findByIds(settings.hostingClubIds) : undefined;
+		EventManager.validateEvent(settings);
 
 		const uniqueNameUsed = await this.eventRepository.findOne({
-			uniqueName: uniqueName,
+			uniqueName: settings.uniqueName,
 			id: Not(event.id)
 		});
 		if(typeof uniqueNameUsed !== 'undefined') {
 			throw new EventUniqueNameValidationException();
 		}
 
-		event.name = name;
-		event.description = description;
-		event.isClosedEvent = isClosedEvent;
-		event.place = settings.place;
-		event.capacity = settings.capacity;
-		event.start = settings.start;
-		event.end = settings.end;
+		event.name = settings.name ?? event.name;
+		event.uniqueName = settings.uniqueName ?? event.uniqueName;
+		event.description = settings.description ?? event.description;
+		event.isClosedEvent = settings.isClosedEvent ?? event.isClosedEvent;
+		event.place = settings.place ?? event.place;
+		event.capacity = settings.capacity ?? event.capacity;
+		event.start = settings.start ?? event.start;
+		event.end = settings.end ?? event.end;
 		event.isDateOrTime = settings.isDateOrTime ?? event.isDateOrTime;
-		event.registrationStart = settings.registrationStart;
-		event.registrationEnd = settings.registrationEnd;
-		event.registrationAllowed = settings.registrationAllowed;
-		event.hostingClubs = hostingClubs;
+		event.registrationStart = settings.registrationStart ?? event.registrationStart;
+		event.registrationEnd = settings.registrationEnd ?? event.registrationEnd;
+		event.registrationAllowed = settings.registrationAllowed ?? event.registrationAllowed;
+		event.hostingClubs = hostingClubs ?? event.hostingClubs;
 
 		await this.eventRepository.save(event);
+
+		if(settings.organizerIds)
+		{
+			const organizers = (await this.userRepository.findByIds(settings.organizerIds))
+			.map(user => new Organizer({
+				event: event, user: user, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
+			}));
+			await this.organizerRepository.save(organizers);
+		}
+		if(settings.chiefOrganizerIds)
+		{
+			const organizers = (await this.userRepository.findByIds(settings.chiefOrganizerIds))
+			.map(user => new Organizer({
+				event: event, user: user, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
+			}));
+			await this.organizerRepository.save(organizers);
+		}
 
 		return event;
 	}
@@ -587,28 +607,34 @@ export class EventManager extends BaseManager {
 	}
 
 	private static validateEvent(
-		name: string,
-		uniqueName: string,
-		description: string,
-		_isClosedEvent: boolean,
-		hostingClubs: Club[],
 		settings: {
+			name?: string,
+			uniqueName?: string,
+			description?: string,
+			isClosedEvent?: boolean,
+			hostingClubs?: Club[],
 			place?: string, capacity?: number,
 			start?: Date, end?: Date, isDateOrTime?: boolean,
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): void {
-		checkArgument(isNotEmpty(name), EventNameValidationException);
-		checkArgument(
-			isNotEmpty(uniqueName) && uniqueName.match(/^[a-zA-Z0-9](?:-[a-zA-Z0-9]*)$/u) !== null,
-			EventUniqueNameValidationException
-		);
-		checkArgument(isNotEmpty(description), EventDescriptionValidationException);
-		checkArgument(
+		if(settings.name)
+			checkArgument(isNotEmpty(settings.name), EventNameValidationException);
+		if(settings.uniqueName)
+			checkArgument(
+				isNotEmpty(settings.uniqueName) && settings.uniqueName.match(/^[a-zA-Z0-9]*(?:-[a-zA-Z0-9]*)*$/u) !== null,
+				EventUniqueNameValidationException
+			);
+		if(settings.description)
+			checkArgument(isNotEmpty(settings.description), EventDescriptionValidationException);
+		
+		if(settings.capacity)
+			checkArgument(
 			!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
 		);
+		if(settings.hostingClubs)
 		checkArgument(
-			isArray(hostingClubs) && arrayMinSize(hostingClubs, 1),
+			isArray(settings.hostingClubs) && arrayMinSize(settings.hostingClubs, 1),
 			EventHostingClubsValidationException
 		);
 		EventManager.validateDatePair(settings.start, settings.end);
