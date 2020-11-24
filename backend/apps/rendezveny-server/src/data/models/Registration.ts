@@ -23,9 +23,13 @@ export class Registration extends BaseEntity<Registration> {
 	@Column()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.registrations, { eager: true, nullable: true, onDelete: 'CASCADE' })
+	@ManyToOne(_ => User, user => user.registrations, {
+		eager: true,
+		nullable: true,
+		onDelete: 'CASCADE'
+	})
 	@JoinColumn({ name: nameof<Registration>('userId') })
-	public user?: User;
+	public user!: User | null;
 
 	@OneToOne(_ => TemporaryIdentity, temporaryIdentity => temporaryIdentity.registration, {
 		onDelete: 'CASCADE',
@@ -33,7 +37,7 @@ export class Registration extends BaseEntity<Registration> {
 		eager: true
 	})
 	@JoinColumn()
-	public temporaryIdentity?: TemporaryIdentity;
+	public temporaryIdentity!: TemporaryIdentity | null;
 
 	@Column({ type: 'timestamp', nullable: true })
 	public registrationDate!: Date | null;

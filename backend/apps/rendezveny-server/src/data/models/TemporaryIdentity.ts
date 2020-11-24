@@ -10,8 +10,8 @@ export class TemporaryIdentity {
 	@Column()
 	public email!: string;
 
-	@Column({ nullable: true })
-	public name!: string;
+	@Column({ type: 'varchar', nullable: true })
+	public name!: string | null;
 
 	@OneToOne(_ => Registration, registration => registration.temporaryIdentity, {
 		onDelete: 'SET NULL'

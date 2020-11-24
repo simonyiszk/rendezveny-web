@@ -22,29 +22,29 @@ export class Event extends BaseEntity<Event> {
 	@Column()
 	public description!: string;
 
-	@Column({ nullable: true })
-	public place?: string;
+	@Column({ type: 'varchar', nullable: true })
+	public place!: string | null;
 
-	@Column({ nullable: true })
-	public capacity?: number;
-
-	@Column({ type: 'timestamp', nullable: true })
-	public start?: Date;
+	@Column({ type: 'int', nullable: true })
+	public capacity!: number | null;
 
 	@Column({ type: 'timestamp', nullable: true })
-	public end?: Date;
+	public start!: Date | null;
+
+	@Column({ type: 'timestamp', nullable: true })
+	public end!: Date | null;
 
 	@Column()
 	public isDateOrTime!: boolean;
 
 	@Column({ type: 'timestamp', nullable: true })
-	public registrationStart?: Date;
+	public registrationStart!: Date | null;
 
 	@Column({ type: 'timestamp', nullable: true })
-	public registrationEnd?: Date;
+	public registrationEnd!: Date | null;
 
-	@Column({ nullable: true })
-	public registrationAllowed?: boolean;
+	@Column({ type: 'boolean', nullable: true })
+	public registrationAllowed!: boolean | null;
 
 	@Column()
 	public isClosedEvent!: boolean;
@@ -75,7 +75,7 @@ export class Event extends BaseEntity<Event> {
 		onDelete: 'CASCADE',
 		nullable: true
 	})
-	public hrTable?: HRTable;
+	public hrTable!: HRTable | null;
 
 	public constructor(params?: {
 		name: string,
@@ -100,14 +100,14 @@ export class Event extends BaseEntity<Event> {
 			this.name = params.name;
 			this.uniqueName = params.uniqueName;
 			this.description = params.description;
-			this.place = params.place;
-			this.capacity = params.capacity;
-			this.start = params.start;
-			this.end = params.end;
+			this.place = params.place ?? null;
+			this.capacity = params.capacity ?? null;
+			this.start = params.start ?? null;
+			this.end = params.end ?? null;
 			this.isDateOrTime = params.isDateOrTime ?? false;
-			this.registrationStart = params.registrationStart;
-			this.registrationEnd = params.registrationEnd;
-			this.registrationAllowed = params.registrationAllowed;
+			this.registrationStart = params.registrationStart ?? null;
+			this.registrationEnd = params.registrationEnd ?? null;
+			this.registrationAllowed = params.registrationAllowed ?? null;
 			this.isClosedEvent = params.isClosedEvent ?? false;
 			if(params.hostingClubs) {
 				this.hostingClubs = params.hostingClubs;
@@ -118,7 +118,7 @@ export class Event extends BaseEntity<Event> {
 			if(params.formQuestions) {
 				this.formQuestions = params.formQuestions;
 			}
-			this.hrTable = params.hrTable;
+			this.hrTable = params.hrTable ?? null;
 		}
 	}
 }

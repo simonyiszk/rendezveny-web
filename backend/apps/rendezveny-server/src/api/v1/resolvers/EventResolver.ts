@@ -78,7 +78,7 @@ export class EventResolver {
 		);
 
 		return {
-			nodes: events,
+			nodes: events.map(event => EventResolver.eventToDTO(event)),
 			totalCount: count,
 			pageSize: pageSize,
 			offset: offset
@@ -96,10 +96,10 @@ export class EventResolver {
 		@Args('uniqueName', { description: 'The unique name of the event', nullable: true }) uniqueName?: string
 	): Promise<EventDTO | null> {
 		if(typeof id !== 'undefined') {
-			return this.eventManager.getEventById(id);
+			return EventResolver.eventToDTO(await this.eventManager.getEventById(id));
 		}
 		else if(typeof uniqueName !== 'undefined') {
-			return this.eventManager.getEventByUniqueName(uniqueName);
+			return EventResolver.eventToDTO(await this.eventManager.getEventByUniqueName(uniqueName));
 		}
 		else {
 			return null;
@@ -115,7 +115,7 @@ export class EventResolver {
 	public async getCurrent(
 		@EventCtx() eventContext: EventContext
 	): Promise<EventDTO> {
-		return this.eventManager.getEventById(eventContext.getEventId());
+		return EventResolver.eventToDTO(await this.eventManager.getEventById(eventContext.getEventId()));
 	}
 
 	@Mutation(_ => EventDTO, {
@@ -172,7 +172,7 @@ export class EventResolver {
 			nullable: true
 		}) capacity?: number
 	): Promise<EventDTO> {
-		return this.eventManager.addEvent(
+		return EventResolver.eventToDTO(await this.eventManager.addEvent(
 			accessContext,
 			name,
 			uniqueName,
@@ -183,7 +183,7 @@ export class EventResolver {
 			{
 				start, end, registrationEnd, registrationStart, registrationAllowed, isDateOrTime, place, capacity
 			}
-		);
+		));
 	}
 
 	@Mutation(_ => EventDTO, {
@@ -263,7 +263,7 @@ export class EventResolver {
 		}) capacity?: number
 	): Promise<EventDTO> {
 		const event = await this.eventManager.getEventById(id);
-		return this.eventManager.editEvent(
+		return EventResolver.eventToDTO(await this.eventManager.editEvent(
 			eventContext,
 			event,
 			{
@@ -283,7 +283,7 @@ export class EventResolver {
 				place,
 				capacity
 			}
-		);
+		));
 	}
 
 	@Mutation(_ => GraphQLBoolean, {
@@ -510,10 +510,10 @@ export class EventResolver {
 		return true;
 	}
 
-	private returnEventRelationDTO(relation: EventRelation) {
+	private returnEventRelationDTO(relation: EventRelation): EventRelationDTO {
 		return {
-			name: relation.user.name,
-				email: relation.user.name,
+			name: relation.user.name ?? '',
+			email: relation.user.name ?? '',
 			// eslint-disable-next-line no-undefined
 			userId: relation.user instanceof User ? relation.user.id : undefined,
 			isMemberOfHostingClub: relation.isHostingClubMember(),
@@ -546,6 +546,24 @@ export class EventResolver {
 					)).map(r => this.returnEventRelationDTO(r))
 				})))
 			})))
+		};
+	}
+
+	private static eventToDTO(event: Event): EventDTO {
+		return {
+			id: event.id,
+			name: event.name,
+			uniqueName: event.uniqueName,
+			description: event.description,
+			place: event.place ?? undefined,
+			capacity: event.capacity ?? undefined,
+			isClosedEvent: event.isClosedEvent,
+			start: event.start ?? undefined,
+			end: event.end ?? undefined,
+			isDateOrTime: event.isDateOrTime,
+			registrationStart: event.registrationStart ?? undefined,
+			registrationEnd: event.registrationEnd ?? undefined,
+			registrationAllowed: event.registrationAllowed ?? undefined
 		};
 	}
 }
