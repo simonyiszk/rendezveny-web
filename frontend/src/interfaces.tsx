@@ -113,3 +113,11 @@ export interface EventRegistrationFormTextAnswer {
   type: string;
   text: string;
 }
+
+export interface EventRegistrationFormAnswersInput {
+  answers: EventRegistrationFormAnswerInput[];
+}
+export interface EventRegistrationFormAnswerInput {
+  answer: string;
+  id: string;
+}

@@ -33,6 +33,10 @@ import {
 } from '../interfaces';
 import { useEventGetRegistrationQuery } from '../utils/api/EventGetRegistrationQuery';
 import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
+import {
+  useRegisterDeleteMutation,
+  useRegisterSelfMutation,
+} from '../utils/api/RegistrationMutation';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 interface PageState {
@@ -58,6 +62,7 @@ export default function RegistrationPage({
     { called, loading, data, error },
   ] = useEventGetRegistrationQuery((queryData) => {
     if (queryData.events_getOne.selfRelation.registration) {
+      console.log('ASDASD', queryData.events_getOne.selfRelation.registration);
       const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
           if (curr.answer.type === 'multiple_choice') {
@@ -79,12 +84,23 @@ export default function RegistrationPage({
       );
       console.log('RES', res);
       setAnswers(res);
-      setRegistered(true);
+      setRegistered(queryData.events_getOne.selfRelation.registration.id);
     }
   });
 
   const client = useApolloClient();
-  const [getEventTokenMutation, _] = useEventTokenMutation(client);
+  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
+    client,
+  );
+  const [
+    getRegisterSelfMutation,
+    _getRegisterSelfMutation,
+  ] = useRegisterSelfMutation();
+  const [
+    getRegisterDeleteMutation,
+    _getRegisterDeleteMutation,
+  ] = useRegisterDeleteMutation();
+
   useEffect(() => {
     const fetchEventData = async () => {
       await getEventTokenMutation(event.id);
@@ -96,7 +112,7 @@ export default function RegistrationPage({
   }, [event.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
-  const [registered, setRegistered] = useState(false);
+  const [registered, setRegistered] = useState('');
 
   const getAnswer = (id: string): string | string[] => {
     return answers[id];
@@ -105,9 +121,30 @@ export default function RegistrationPage({
     setAnswers({ ...answers, [id]: text });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Submitted', answers);
+  const handleRegistration = () => {
+    getRegisterSelfMutation(event.id, {
+      answers: Object.entries(answers).map(([key, value]) => {
+        return {
+          id: key,
+          answer: JSON.stringify(
+            Array.isArray(value)
+              ? {
+                  type: 'multiple_choice',
+                  options: value,
+                }
+              : {
+                  type: 'text',
+                  text: value,
+                },
+          ),
+        };
+      }),
+    });
+  };
+  const handleModify = () => {};
+  const handleDelete = () => {
+    getRegisterDeleteMutation(registered);
+    setRegistered('');
   };
 
   if (called && loading) {
@@ -124,7 +161,7 @@ export default function RegistrationPage({
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <form onSubmit={handleSubmit}>
+        <form>
           {data &&
             data.events_getOne.registrationForm.questions.map((q) => (
               <Box key={q.id}>
@@ -152,27 +189,12 @@ export default function RegistrationPage({
               </Box>
             ))}
           {!registered && (
-            <Button
-              text="Regisztráció"
-              onClick={() => {
-                console.log('Registered');
-              }}
-            />
+            <Button text="Regisztráció" onClick={handleRegistration} />
           )}
           {registered && (
             <>
-              <Button
-                text="Módosítás"
-                onClick={() => {
-                  console.log('Edited');
-                }}
-              />
-              <Button
-                text="Regisztráció törlése"
-                onClick={() => {
-                  console.log('Deleted');
-                }}
-              />
+              <Button text="Módosítás" onClick={handleModify} />
+              <Button text="Regisztráció törlése" onClick={handleDelete} />
             </>
           )}
         </form>

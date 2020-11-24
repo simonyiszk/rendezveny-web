@@ -36,6 +36,7 @@ export const eventGetRegistrationQuery = gql`
       selfRelation {
         email
         registration {
+          id
           formAnswer {
             answers {
               answer {
