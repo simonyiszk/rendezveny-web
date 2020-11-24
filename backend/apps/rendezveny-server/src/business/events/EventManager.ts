@@ -319,31 +319,36 @@ export class EventManager extends BaseManager {
 
 		await this.eventRepository.save(event);
 
-		if(typeof settings.organizerIds !== 'undefined') {
+		if(typeof settings.organizerIds !== 'undefined' && typeof settings.chiefOrganizerIds !== 'undefined') {
+			await event.loadRelation(this.eventRepository, 'organizers');
+
 			const organizersToRemove = event.organizers
 				.filter(o => !settings.organizerIds!.includes(o.userId!));
 
 			await this.organizerRepository.remove(organizersToRemove);
 
 			const newOrganizers = await Promise.all(settings.organizerIds
-				.filter(id => !event.organizers.filter(o => !o.isChief).map(o => o.userId).includes(id))
-				.map(async userId => new Organizer({
-					user: (await this.userRepository.findOne(userId))!,
-					event: event,
-					isChief: false,
-					notificationSettings: OrganizerNotificationSettings.ALL
-				})));
+				.map(async(userId) => {
+					if(event.organizers.map(o => o.userId).includes(userId)) {
+						const organizer = event.organizers.find(o => o.userId === userId)!;
+						organizer.isChief = false;
+						return organizer;
+					}
+					else {
+						return new Organizer({
+							user: (await this.userRepository.findOne(userId))!,
+							event: event,
+							isChief: false,
+							notificationSettings: OrganizerNotificationSettings.ALL
+						});
+					}
+				}));
 
 			await this.organizerRepository.save(newOrganizers);
-		}
-		if(typeof settings.chiefOrganizerIds !== 'undefined') {
-			const organizersToRemove = event.organizers
-				.filter(o => o.isChief)
-				.filter(o => !settings.chiefOrganizerIds!.includes(o.userId!));
 
-			await this.organizerRepository.remove(organizersToRemove);
+			await event.loadRelation(this.eventRepository, 'organizers');
 
-			const newOrganizers = await Promise.all(settings.chiefOrganizerIds
+			const newChiefOrganizers = await Promise.all(settings.chiefOrganizerIds
 				.filter(id => !event.organizers.filter(o => o.isChief).map(o => o.userId).includes(id))
 				.map(async(userId) => {
 					if(event.organizers.map(o => o.userId).includes(userId)) {
@@ -361,7 +366,7 @@ export class EventManager extends BaseManager {
 					}
 				}));
 
-			await this.organizerRepository.save(newOrganizers);
+			await this.organizerRepository.save(newChiefOrganizers);
 		}
 
 		return event;
