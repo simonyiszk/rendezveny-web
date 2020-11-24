@@ -69,10 +69,10 @@ export class RegistrationResolver {
 				}))
 			}
 		);
-
+		
 		return {
 			id: registration.id,
-			didAttend: registration.attendDate !== undefined
+			didAttend: !!registration.attendDate
 		};
 	}
 
@@ -111,7 +111,7 @@ export class RegistrationResolver {
 
 		return {
 			id: registration.id,
-			didAttend: registration.attendDate !== undefined
+			didAttend: !!registration.attendDate
 		};
 	}
 

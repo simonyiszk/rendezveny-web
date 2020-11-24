@@ -105,21 +105,19 @@ export class RegistrationManager {
 		if(event.registrationAllowed === false) {
 			throw new RegistrationDisabledException();
 		}
-		if(typeof event.registrationAllowed === 'undefined'
-			&& event.registrationStart && event.registrationStart > now) {
+		if(event.registrationStart && event.registrationStart > now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if(typeof event.registrationAllowed === 'undefined'
-			&& event.registrationEnd && event.registrationEnd < now) {
+		if(event.registrationEnd && event.registrationEnd < now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if(typeof event.capacity !== 'undefined' && alreadyRegistered >= event.capacity) {
+		if(!!event.capacity && alreadyRegistered >= event.capacity) {
 			throw new RegistrationLimitReachedException();
 		}
 
-		const registration = await this.registrationRepository.findOne({ user });
+		const registration = await this.registrationRepository.findOne({ user, event });
 		if(registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}
@@ -131,7 +129,7 @@ export class RegistrationManager {
 			registrationDate: new Date()
 		});
 		await this.registrationRepository.save(newRegistration);
-
+		
 		await this.formManager.fillInForm(event, newRegistration, filledInForm);
 
 		return newRegistration;
@@ -163,17 +161,15 @@ export class RegistrationManager {
 		if(event.registrationAllowed === false) {
 			throw new RegistrationDisabledException();
 		}
-		if(typeof event.registrationAllowed === 'undefined'
-			&& event.registrationStart && event.registrationStart > now) {
+		if(event.registrationStart && event.registrationStart > now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if(typeof event.registrationAllowed === 'undefined'
-			&& event.registrationEnd && event.registrationEnd < now) {
+		if(event.registrationEnd && event.registrationEnd < now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if(typeof event.capacity !== 'undefined' && alreadyRegistered >= event.capacity) {
+		if(!!event.capacity && alreadyRegistered >= event.capacity) {
 			throw new RegistrationLimitReachedException();
 		}
 
@@ -206,7 +202,7 @@ export class RegistrationManager {
 			throw new UserDoesNotExistsException(userId);
 		}
 
-		const registration = await this.registrationRepository.findOne({ user });
+		const registration = await this.registrationRepository.findOne({ user, event });
 		if(registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}

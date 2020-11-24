@@ -578,14 +578,14 @@ export class EventManager extends BaseManager {
 
 	private static validateDatePair(start?: Date, end?: Date): void {
 		checkArgument(
-			!isDefined(start) || isDateString(start!.toString()), EventStartDateValidationException
+			!isDefined(start) || isDateString(start!.toISOString()), EventStartDateValidationException
 		);
 		checkArgument(
-			!isDefined(end) || isDateString(end!.toString()), EventEndDateValidationException
+			!isDefined(end) || isDateString(end!.toISOString()), EventEndDateValidationException
 		);
 
 		checkArgument(
-			!(start !== undefined && end !== undefined) || minDate(end, start),
+			!(!!start && !!end) || minDate(end, start),
 			EventDateIntervalValidationException
 		);
 	}
@@ -594,14 +594,14 @@ export class EventManager extends BaseManager {
 		start?: Date, end?: Date
 	): void {
 		checkArgument(
-			!isDefined(start) || isDateString(start!.toString()), EventRegistrationStartDateValidationException
+			!isDefined(start) || isDateString(start!.toISOString()), EventRegistrationStartDateValidationException
 		);
 		checkArgument(
-			!isDefined(end) || isDateString(end!.toString()), EventRegistrationEndDateValidationException
+			!isDefined(end) || isDateString(end!.toISOString()), EventRegistrationEndDateValidationException
 		);
 
 		checkArgument(
-			!(start !== undefined && end !== undefined) || minDate(end, start),
+			!(!!start && !!end) || minDate(end, start),
 			EventRegistrationDateIntervalValidationException
 		);
 	}
@@ -618,25 +618,29 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): void {
-		if(settings.name)
+		if(settings.name) {
 			checkArgument(isNotEmpty(settings.name), EventNameValidationException);
-		if(settings.uniqueName)
+		}
+		if(settings.uniqueName) {
 			checkArgument(
 				isNotEmpty(settings.uniqueName) && settings.uniqueName.match(/^[a-zA-Z0-9]*(?:-[a-zA-Z0-9]*)*$/u) !== null,
 				EventUniqueNameValidationException
 			);
-		if(settings.description)
+		}
+		if(settings.description) {
 			checkArgument(isNotEmpty(settings.description), EventDescriptionValidationException);
-		
-		if(settings.capacity)
+		}
+		if(settings.capacity) {
 			checkArgument(
-			!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
-		);
-		if(settings.hostingClubs)
-		checkArgument(
-			isArray(settings.hostingClubs) && arrayMinSize(settings.hostingClubs, 1),
-			EventHostingClubsValidationException
-		);
+				!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
+			);
+		}
+		if(settings.hostingClubs) {
+			checkArgument(
+				isArray(settings.hostingClubs) && arrayMinSize(settings.hostingClubs, 1),
+				EventHostingClubsValidationException
+			);
+		}
 		EventManager.validateDatePair(settings.start, settings.end);
 		EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
 	}
