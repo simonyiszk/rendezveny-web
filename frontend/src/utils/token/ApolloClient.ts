@@ -19,9 +19,7 @@ export const resetContext = (client: ApolloClient<object>) => {
 
 const authMiddleware = (authToken, eventToken) =>
   setContext((operation) => {
-    console.log(operation);
     if (!operation.operationName?.startsWith('e_') && authToken) {
-      console.log('operation auth');
       return {
         headers: {
           authorization: `Bearer ${authToken}`,
@@ -29,7 +27,6 @@ const authMiddleware = (authToken, eventToken) =>
       };
     }
     if (eventToken) {
-      console.log('operation event');
       return {
         headers: {
           authorization: `Bearer ${eventToken}`,
@@ -46,8 +43,6 @@ const cache = new InMemoryCache({});
 const useAppApolloClient = () => {
   const authToken = getAuthToken();
   const eventToken = getEventToken();
-  console.log('APOLLO AUTH', authToken);
-  console.log('APOLLO EVENT', eventToken);
   return new ApolloClient({
     link: from([authMiddleware(authToken, eventToken), httpLink]),
     cache,

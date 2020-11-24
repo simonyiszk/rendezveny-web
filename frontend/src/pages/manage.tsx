@@ -23,7 +23,6 @@ export default function ManagePage({
   },
 }: Props): JSX.Element {
   // const { event } = location.state;
-  console.log(event);
   return (
     <Layout>
       <Heading textAlign="center" mb="2rem">

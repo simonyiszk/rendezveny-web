@@ -55,14 +55,11 @@ export default function RegistrationPage({
     state: { event },
   },
 }: Props): JSX.Element {
-  console.log('EVENT', event);
-
   const [
     getEvent,
     { called, loading, data, error },
   ] = useEventGetRegistrationQuery((queryData) => {
     if (queryData.events_getOne.selfRelation.registration) {
-      console.log('ASDASD', queryData.events_getOne.selfRelation.registration);
       const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
           if (curr.answer.type === 'multiple_choice') {
@@ -82,7 +79,6 @@ export default function RegistrationPage({
         },
         {},
       );
-      console.log('RES', res);
       setAnswers(res);
       setRegistered(queryData.events_getOne.selfRelation.registration.id);
     }
@@ -106,9 +102,7 @@ export default function RegistrationPage({
       await getEventTokenMutation(event.id);
       return getEvent({ variables: { id: event.id } });
     };
-    fetchEventData().then(() =>
-      console.log('eventdata: ', data, 'error: ', error),
-    );
+    fetchEventData();
   }, [event.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
@@ -148,16 +142,13 @@ export default function RegistrationPage({
   };
 
   if (called && loading) {
-    console.log('Render loading');
     return <div>Loading</div>;
   }
 
   if (error) {
-    console.log('Render error');
     return <div>Error {error.message}</div>;
   }
-  if (data) console.log('DATA', data);
-  console.log(client);
+
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">

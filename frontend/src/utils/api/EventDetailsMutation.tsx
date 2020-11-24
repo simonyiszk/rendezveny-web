@@ -37,14 +37,6 @@ export const useEventDetailsMutation = () => {
     uniqueName: string,
     registrationAllowed: boolean,
   ) => {
-    console.log(
-      'SUBMITTED MUTATION',
-      id,
-      organizerIds,
-      chiefOrganizerIds,
-      uniqueName,
-      registrationAllowed,
-    );
     return mutation({
       variables: {
         id,

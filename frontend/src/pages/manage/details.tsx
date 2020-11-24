@@ -44,7 +44,6 @@ export default function DetailsPage({
   ] = useEventDetailsMutation();
 
   const [getOrganizers, { error }] = useEventGetDetailsQuery((queryData) => {
-    console.log('QUERYDATA', queryData);
     const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
       (acc, curr) => {
         return [...acc, { id: curr.userId, name: curr.name } as User];
@@ -79,7 +78,6 @@ export default function DetailsPage({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Submitted', event.id, organizers, reglink, application);
     getEventDetailsMutation(
       event.id,
       organizers.map((o) => o.id),
@@ -95,7 +93,6 @@ export default function DetailsPage({
   ): void => {
     setOrganizers(selectedList);
   };
-  console.log(_eventMutationResult);
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">

@@ -64,8 +64,6 @@ export default function InformationPage({
 
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
-      console.log('QUERYDATA', queryData);
-
       const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
         (acc, curr) => {
           return [...acc, { id: curr.userId, name: curr.name } as User];
@@ -110,17 +108,6 @@ export default function InformationPage({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(
-      'Submitted',
-      eventName,
-      eventStart,
-      eventEnd,
-      eventPlace,
-      organizers.map((o) => o.id),
-      chiefOrganizers.map((o) => o.id),
-      eventClosed,
-      eventCapacity,
-    );
     getEventInformationMutation(
       event.id,
       eventName,

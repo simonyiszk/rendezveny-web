@@ -65,8 +65,6 @@ export const useEventInformationMutation = () => {
     capacity: number,
     uniqueName: string,
   ) => {
-    console.log('SUBMITTED MUTATION', organizerIds);
-    console.log('SUBMITTED MUTATION', chiefOrganizerIds);
     return mutation({
       variables: {
         id,

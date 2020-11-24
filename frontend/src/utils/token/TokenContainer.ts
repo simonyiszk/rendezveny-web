@@ -6,7 +6,6 @@ export function getAuthToken(): string | null {
 }
 
 export function setAuthToken(_token: string): void {
-  console.log('Set auth ', _token);
   localStorage.setItem(authToken, _token);
 }
 
@@ -15,6 +14,5 @@ export function getEventToken(): string | null {
 }
 
 export function setEventToken(_token: string): void {
-  console.log('Set event ', _token);
   localStorage.setItem(eventToken, _token);
 }

@@ -18,7 +18,6 @@ export const useEventTokenMutation = (client: ApolloClient<object>) => {
   });
 
   const getEventToken = (eventId: string) => {
-    console.log('getEventToken, eventid:', eventId);
     return mutation({ variables: { id: eventId } });
   };
   return [getEventToken, mutationResults];

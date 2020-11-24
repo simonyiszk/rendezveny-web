@@ -20,7 +20,6 @@ export const useRegisterSelfMutation = () => {
     eventId: string,
     filledInForm: EventRegistrationFormAnswersInput,
   ) => {
-    console.log('FILLEDFURM', filledInForm);
     return mutation({
       variables: {
         eventId,
