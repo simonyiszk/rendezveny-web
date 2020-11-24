@@ -106,10 +106,13 @@ export class ClubsResolver {
 		@Parent() clubDTO: ClubDTO,
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
+		@Args('searchForName', {
+			description: 'The name of members to search for', nullable: true
+		}) searchForName?: string
 	): Promise<PaginatedMembershipDTO> {
 		const club = await this.clubManager.getClubById(accessContext, clubDTO.id);
 		const { memberships, count } = await this.clubManager.getAllClubMembershipsPaginated(
-			accessContext, club, pageSize, offset
+			accessContext, club, pageSize, offset, searchForName
 		);
 
 		return {

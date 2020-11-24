@@ -12,6 +12,8 @@ import { BaseManager, Manager } from '../utils/BaseManager';
 import { AuthClub, AuthContext, AuthorizeGuard, IsAdmin, IsManagerOfClub, IsUser } from '../auth/AuthorizeGuard';
 import { ClubMembershipRepository, ClubRepository } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { nameof } from '../../utils/nameof';
+import { User } from '../../data/models/User';
 
 @Manager()
 export class ClubManager extends BaseManager {
@@ -140,15 +142,29 @@ export class ClubManager extends BaseManager {
 	public async getAllClubMembershipsPaginated(
 		@AuthContext() accessContext: AccessContext,
 		@AuthClub() club: Club,
-		pageSize: number, offset: number
+		pageSize: number,
+		offset: number,
+		searchForName?: string
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		checkPagination(pageSize, offset);
 
-		const [memberships, count] = await this.membershipRepository.findAndCount({
-			where: { club },
-			take: pageSize,
-			skip: offset * pageSize
-		});
+		const [memberships, count] = typeof searchForName === 'string'
+			? await this.membershipRepository.createQueryBuilder('membership')
+				.leftJoinAndSelect(`membership.${nameof<ClubMembership>('user')}`, 'user')
+				.andWhere(`membership.${nameof<ClubMembership>('club')}.id = :clubId`, {
+					clubId: club.id
+				})
+				.andWhere(`user.${nameof<User>('name')} like :searchForName`, {
+					searchForName: `%${searchForName}%`
+				})
+				.take(pageSize)
+				.skip(offset * pageSize)
+				.getManyAndCount()
+			: await this.membershipRepository.findAndCount({
+				where: { club },
+				take: pageSize,
+				skip: offset * pageSize
+			});
 		return {
 			memberships,
 			count

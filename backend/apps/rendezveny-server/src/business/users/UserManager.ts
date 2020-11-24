@@ -201,7 +201,8 @@ export class UserManager extends BaseManager {
 	public async getAllClubMembershipsPaginated(
 		@AuthContext() _accessContext: AccessContext,
 		@AuthUser() user: User,
-		pageSize: number, offset: number
+		pageSize: number,
+		offset: number
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		checkPagination(pageSize, offset);
 

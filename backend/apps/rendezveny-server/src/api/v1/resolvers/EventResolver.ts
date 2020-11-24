@@ -46,9 +46,36 @@ export class EventResolver {
 	public async getEvents(
 		@AccessCtx() accessContext: AccessContext,
 		@PageSize() pageSize: number,
-		@Offset() offset: number
+		@Offset() offset: number,
+		@Args('isRegisteredUpcoming', {
+			description: 'The user is registered to and the event is upcoming', nullable: true
+		}) isRegisteredUpcoming?: boolean,
+		@Args('isRegisteredPast', {
+			description: 'The user is registered to and the event is past', nullable: true
+		}) isRegisteredPast?: boolean,
+		@Args('isOrganizerUpcoming', {
+			description: 'The user is organizer of and the event is upcoming', nullable: true
+		}) isOrganizerUpcoming?: boolean,
+		@Args('isOrganizerPast', {
+			description: 'The user is organizer of and the event is past', nullable: true
+		}) isOrganizerPast?: boolean,
+		@Args('canRegisterToUpcoming', {
+			description: 'The user can register to and the event is upcoming', nullable: true
+		}) canRegisterToUpcoming?: boolean,
+		@Args('canRegisterToPast', {
+			description: 'The user can register to and the event is past', nullable: true
+		}) canRegisterToPast?: boolean
 	): Promise<PaginatedEventDTO> {
-		const { events, count } = await this.eventManager.getAllEventsPaginated(accessContext, pageSize, offset);
+		const { events, count } = await this.eventManager.getAllEventsPaginated(
+			accessContext, pageSize, offset, {
+				isRegisteredUpcoming,
+				isRegisteredPast,
+				isOrganizerUpcoming,
+				isOrganizerPast,
+				canRegisterToUpcoming,
+				canRegisterToPast
+			}
+		);
 
 		return {
 			nodes: events,

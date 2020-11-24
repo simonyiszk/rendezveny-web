@@ -4,6 +4,7 @@ import { PaginatedDTO } from '../utils/PaginatedDTO';
 import { EventRegistrationFormDTO } from './EventRegistrationFormDTO';
 import { HRTableDTO } from './HRTableDTO';
 import { EventRelationDTO } from './EventRelationDTO';
+import { ClubDTO } from './ClubDTO';
 
 @ObjectType({
 	description: 'The data of an event'
@@ -87,6 +88,11 @@ export class EventDTO {
 		description: 'The users in relation with the event'
 	})
 	public relations?: EventRelationDTO[];
+
+	@Field(_ => [ClubDTO], {
+		description: 'The hosting clubs of the event'
+	})
+	public hostingClubs?: ClubDTO[];
 
 	@Field(_ => EventRelationDTO, {
 		description: 'The current user\'s relation with the event (event token)'

@@ -28,9 +28,11 @@ import {
 	AuthContext,
 	AuthEvent,
 	AuthorizeGuard,
-	IsAdmin, IsChiefOrganizer,
+	IsAdmin,
+	IsChiefOrganizer,
 	IsManager,
-	IsOrganizer, IsRegistered,
+	IsOrganizer,
+	IsRegistered,
 	IsUser
 } from '../auth/AuthorizeGuard';
 import { UnauthorizedException } from '../utils/permissions/UnauthorizedException';
@@ -44,7 +46,8 @@ import {
 	ClubRepository,
 	EventRepository,
 	OrganizerRepository,
-	RegistrationRepository, TemporaryIdentityRepository,
+	RegistrationRepository,
+	TemporaryIdentityRepository,
 	UserRepository
 } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
@@ -79,14 +82,60 @@ export class EventManager extends BaseManager {
 	@AuthorizeGuard(IsUser(), IsAdmin())
 	public async getAllEventsPaginated(
 		@AuthContext() accessContext: AccessContext,
-		pageSize: number, offset: number
+		pageSize: number,
+		offset: number,
+		settings?: {
+			isRegisteredUpcoming?: boolean,
+			isRegisteredPast?: boolean,
+			isOrganizerUpcoming?: boolean,
+			isOrganizerPast?: boolean,
+			canRegisterToUpcoming?: boolean,
+			canRegisterToPast?: boolean
+		}
 	): Promise<{ events: Event[], count: number}> {
 		checkPagination(pageSize, offset);
+		const user = await this.userRepository.findOne(accessContext.getUserId());
 
-		const [events, count] = await this.eventRepository.findAndCount({
-			take: pageSize,
-			skip: offset * pageSize
-		});
+		let query = await this.eventRepository.createQueryBuilder('event')
+			.leftJoinAndSelect(`event.${nameof<Event>('registrations')}`, 'registration')
+			.leftJoinAndSelect(`event.${nameof<Event>('organizers')}`, 'organizer')
+			.leftJoinAndSelect(`event.${nameof<Event>('hostingClubs')}`, 'hostingClub');
+
+		if(settings?.isRegisteredUpcoming === true) {
+			query = query
+				.andWhere(`event.${nameof<Event>('end')} >= :now`, { now: new Date() })
+				.andWhere(`registration.${nameof<Registration>('userId')} = :userId`, { userId: user?.id });
+		}
+		if(settings?.isRegisteredUpcoming === true) {
+			query = query
+				.andWhere(`event.${nameof<Event>('end')} < :now`, { now: new Date() })
+				.andWhere(`registration.${nameof<Registration>('userId')} = :userId`, { userId: user?.id });
+		}
+		if(settings?.isOrganizerUpcoming === true) {
+			query = query
+				.andWhere(`event.${nameof<Event>('end')} >= :now`, { now: new Date() })
+				.andWhere(`organizer.${nameof<Organizer>('userId')} = :userId`, { userId: user?.id });
+		}
+		if(settings?.isOrganizerPast === true) {
+			query = query
+				.andWhere(`event.${nameof<Event>('end')} < :now`, { now: new Date() })
+				.andWhere(`organizer.${nameof<Organizer>('userId')} = :userId`, { userId: user?.id });
+		}
+		if(settings?.canRegisterToUpcoming === true) {
+			query = query
+				.andWhere(`event.${nameof<Event>('end')} >= :now`, { now: new Date() })
+				.andWhere(`registration.${nameof<Registration>('userId')} != :userId`, { userId: user?.id });
+		}
+		if(settings?.canRegisterToPast === true) {
+			query = query
+				.andWhere(`event.${nameof<Event>('end')} < :now`, { now: new Date() })
+				.andWhere(`registration.${nameof<Registration>('userId')} != :userId`, { userId: user?.id });
+		}
+
+		const [events, count] = await query
+			.take(pageSize)
+			.limit(offset * pageSize)
+			.getManyAndCount();
 
 		return { events, count };
 	}
@@ -125,7 +174,9 @@ export class EventManager extends BaseManager {
 	public async getEventById(
 		id: string
 	): Promise<Event> {
-		const event = await this.eventRepository.findOne({ id }, {});
+		const event = await this.eventRepository.findOne({ id }, {
+			relations: [nameof<Event>('hostingClubs')]
+		});
 
 		if(!event) {
 			return this.getEventFail(id);
@@ -237,6 +288,8 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
+		await event.loadRelation(this.eventRepository, 'organizers');
+
 		const hostingClubs = settings.hostingClubIds
 			? await this.clubRepository.findByIds(settings.hostingClubIds)
 			: undefined;
@@ -266,19 +319,49 @@ export class EventManager extends BaseManager {
 
 		await this.eventRepository.save(event);
 
-		if(settings.organizerIds) {
-			const organizers = (await this.userRepository.findByIds(settings.organizerIds))
-			.map(user => new Organizer({
-				event: event, user: user, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
-			}));
-			await this.organizerRepository.save(organizers);
+		if(typeof settings.organizerIds !== 'undefined') {
+			const organizersToRemove = event.organizers
+				.filter(o => !settings.organizerIds!.includes(o.userId!));
+
+			await this.organizerRepository.remove(organizersToRemove);
+
+			const newOrganizers = await Promise.all(settings.organizerIds
+				.filter(id => !event.organizers.filter(o => !o.isChief).map(o => o.userId).includes(id))
+				.map(async userId => new Organizer({
+					user: (await this.userRepository.findOne(userId))!,
+					event: event,
+					isChief: false,
+					notificationSettings: OrganizerNotificationSettings.ALL
+				})));
+
+			await this.organizerRepository.save(newOrganizers);
 		}
-		if(settings.chiefOrganizerIds) {
-			const organizers = (await this.userRepository.findByIds(settings.chiefOrganizerIds))
-			.map(user => new Organizer({
-				event: event, user: user, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
-			}));
-			await this.organizerRepository.save(organizers);
+		if(typeof settings.chiefOrganizerIds !== 'undefined') {
+			const organizersToRemove = event.organizers
+				.filter(o => o.isChief)
+				.filter(o => !settings.chiefOrganizerIds!.includes(o.userId!));
+
+			await this.organizerRepository.remove(organizersToRemove);
+
+			const newOrganizers = await Promise.all(settings.chiefOrganizerIds
+				.filter(id => !event.organizers.filter(o => o.isChief).map(o => o.userId).includes(id))
+				.map(async(userId) => {
+					if(event.organizers.map(o => o.userId).includes(userId)) {
+						const organizer = event.organizers.find(o => o.userId === userId)!;
+						organizer.isChief = true;
+						return organizer;
+					}
+					else {
+						return new Organizer({
+							user: (await this.userRepository.findOne(userId))!,
+							event: event,
+							isChief: true,
+							notificationSettings: OrganizerNotificationSettings.ALL
+						});
+					}
+				}));
+
+			await this.organizerRepository.save(newOrganizers);
 		}
 
 		return event;
@@ -587,7 +670,7 @@ export class EventManager extends BaseManager {
 		);
 
 		checkArgument(
-			!(!!start && !!end) || minDate(end, start),
+			!(start && end) || minDate(end, start),
 			EventDateIntervalValidationException
 		);
 	}
@@ -603,7 +686,7 @@ export class EventManager extends BaseManager {
 		);
 
 		checkArgument(
-			!(!!start && !!end) || minDate(end, start),
+			!(start && end) || minDate(end, start),
 			EventRegistrationDateIntervalValidationException
 		);
 	}
@@ -620,19 +703,19 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): void {
-		if(settings.name) {
+		if(typeof settings.name === 'string') {
 			checkArgument(isNotEmpty(settings.name), EventNameValidationException);
 		}
-		if(settings.uniqueName) {
+		if(typeof settings.uniqueName === 'string') {
 			checkArgument(
 				isNotEmpty(settings.uniqueName) && settings.uniqueName.match(/^[a-zA-Z0-9]*(?:-[a-zA-Z0-9]*)*$/u) !== null,
 				EventUniqueNameValidationException
 			);
 		}
-		if(settings.description) {
+		if(typeof settings.description === 'string') {
 			checkArgument(isNotEmpty(settings.description), EventDescriptionValidationException);
 		}
-		if(settings.capacity) {
+		if(typeof settings.capacity === 'number') {
 			checkArgument(
 				!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
 			);
