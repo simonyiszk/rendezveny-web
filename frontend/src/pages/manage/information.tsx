@@ -89,7 +89,7 @@ export default function InformationPage({
       setEventEnd(new Date(queryData.events_getOne.end));
       setEventRegStart(new Date(queryData.events_getOne.registrationStart));
       setEventRegEnd(new Date(queryData.events_getOne.registrationEnd));
-      setEventPlace(queryData.events_getOne.place);
+      setEventPlace(queryData.events_getOne.place || '');
       setEventClosed(queryData.events_getOne.isClosedEvent || true);
       setEventCapacity(queryData.events_getOne.capacity || 0);
       setRegLink(queryData.events_getOne.uniqueName || '');

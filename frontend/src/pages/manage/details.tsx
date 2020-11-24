@@ -1,5 +1,6 @@
 import { gql, useApolloClient, useQuery } from '@apollo/client';
 import { Box, Flex, Input, Select } from '@chakra-ui/core';
+import { tr } from 'date-fns/locale';
 import { navigate, PageProps } from 'gatsby';
 import { Multiselect } from 'multiselect-react-dropdown';
 import React, { useEffect, useState } from 'react';
@@ -65,8 +66,8 @@ export default function DetailsPage({
     setAllUsers(resultAllUser);
     setOrganizers(resultOrganizers);
     setChiefOrganizers(resultChiefOrganizers);
-    setReglink(queryData.events_getOne.uniqueName);
-    setApplication(queryData.events_getOne.registrationAllowed);
+    setReglink(queryData.events_getOne.uniqueName || '');
+    setApplication(queryData.events_getOne.registrationAllowed || true);
   });
   useEffect(() => {
     const fetchEventData = async () => {
