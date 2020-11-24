@@ -28,6 +28,7 @@ export default function DetailsPage({
   },
 }: Props): JSX.Element {
   const [organizers, setOrganizers] = useState<User[]>([]);
+  const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [reglink, setReglink] = useState(event?.uniqueName || '');
   const [application, setApplication] = useState(
@@ -55,8 +56,15 @@ export default function DetailsPage({
       },
       [] as User[],
     );
+    const resultChiefOrganizers = queryData.events_getOne.chiefOrganizers.nodes.reduce(
+      (acc, curr) => {
+        return [...acc, { id: curr.userId, name: curr.name } as User];
+      },
+      [] as User[],
+    );
     setAllUsers(resultAllUser);
     setOrganizers(resultOrganizers);
+    setChiefOrganizers(resultChiefOrganizers);
     setReglink(queryData.events_getOne.uniqueName);
     setApplication(queryData.events_getOne.registrationAllowed);
   });
@@ -74,6 +82,7 @@ export default function DetailsPage({
     getEventDetailsMutation(
       event.id,
       organizers.map((o) => o.id),
+      chiefOrganizers.map((o) => o.id),
       reglink,
       application,
     );

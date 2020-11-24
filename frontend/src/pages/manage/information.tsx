@@ -33,6 +33,8 @@ export default function InformationPage({
     state: { event },
   },
 }: Props): JSX.Element {
+  const [organizers, setOrganizers] = useState<User[]>([]);
+  const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
   const [eventName, setEventName] = useState(event?.name || '');
@@ -49,7 +51,6 @@ export default function InformationPage({
     event?.registrationEnd ? new Date(event?.registrationEnd) : new Date(),
   );
   const [eventPlace, setEventPlace] = useState(event?.place || '');
-  const [eventOrganizers, setEventOrganizers] = useState<User[]>([]);
   const [eventClosed, setEventClosed] = useState(event?.isClosedEvent || false);
   const [eventCapacity, setEventCapacity] = useState(event?.capacity || 0);
   const [regLink, setRegLink] = useState(event?.uniqueName || '');
@@ -77,6 +78,12 @@ export default function InformationPage({
         },
         [] as User[],
       );
+      const resultChiefOrganizers = queryData.events_getOne.chiefOrganizers.nodes.reduce(
+        (acc, curr) => {
+          return [...acc, { id: curr.userId, name: curr.name } as User];
+        },
+        [] as User[],
+      );
       setEventName(queryData.events_getOne.name);
       setEventStart(new Date(queryData.events_getOne.start));
       setEventEnd(new Date(queryData.events_getOne.end));
@@ -87,7 +94,8 @@ export default function InformationPage({
       setEventCapacity(queryData.events_getOne.capacity || 0);
       setRegLink(queryData.events_getOne.uniqueName || '');
       setAllUsers(resultAllUser);
-      setEventOrganizers(resultOrganizers);
+      setOrganizers(resultOrganizers);
+      setChiefOrganizers(resultChiefOrganizers);
     },
   );
   useEffect(() => {
@@ -108,7 +116,8 @@ export default function InformationPage({
       eventStart,
       eventEnd,
       eventPlace,
-      eventOrganizers,
+      organizers.map((o) => o.id),
+      chiefOrganizers.map((o) => o.id),
       eventClosed,
       eventCapacity,
     );
@@ -120,7 +129,8 @@ export default function InformationPage({
       eventRegStart.toISOString(),
       eventRegEnd.toISOString(),
       eventPlace,
-      eventOrganizers.map((o) => o.id),
+      organizers.concat(chiefOrganizers).map((o) => o.id),
+      chiefOrganizers.map((o) => o.id),
       eventClosed,
       eventCapacity,
       regLink,
@@ -135,7 +145,7 @@ export default function InformationPage({
     selectedList: User[],
     _selectedItem: User,
   ): void => {
-    setEventOrganizers(selectedList);
+    setChiefOrganizers(selectedList);
   };
   return (
     <Layout>
@@ -202,11 +212,11 @@ export default function InformationPage({
             />
           </Box>
           <Box>
-            <Box>Szervezők</Box>
+            <Box>Fő szervezők</Box>
             <Multiselect
-              name="eventOrganizers"
+              name="chiefOrganizers"
               options={allUsers}
-              selectedValues={eventOrganizers}
+              selectedValues={chiefOrganizers}
               displayValue="name"
               onSelect={onChangeOrganizers}
               onRemove={onChangeOrganizers}

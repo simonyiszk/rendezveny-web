@@ -20,7 +20,13 @@ export const eventGetDetailsQuery = gql`
           name
         }
       }
-      relations(organizer: false) {
+      chiefOrganizers: relations(chiefOrganizer: true) {
+        nodes {
+          userId
+          name
+        }
+      }
+      relations {
         nodes {
           userId
           name

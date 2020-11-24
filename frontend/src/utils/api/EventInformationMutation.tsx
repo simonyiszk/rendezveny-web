@@ -9,6 +9,7 @@ export const eventInformationMutation = gql`
     $registrationStart: DateTime!
     $registrationEnd: DateTime!
     $place: String!
+    $organizerIds: [String!]
     $chiefOrganizerIds: [String!]
     $isClosedEvent: Boolean!
     $capacity: Float!
@@ -22,6 +23,7 @@ export const eventInformationMutation = gql`
       registrationStart: $registrationStart
       registrationEnd: $registrationEnd
       place: $place
+      organizerIds: $organizerIds
       chiefOrganizerIds: $chiefOrganizerIds
       isClosedEvent: $isClosedEvent
       capacity: $capacity
@@ -57,11 +59,14 @@ export const useEventInformationMutation = () => {
     registrationStart: string,
     registrationEnd: string,
     place: string,
+    organizerIds: string[],
     chiefOrganizerIds: string[],
     isClosedEvent: boolean,
     capacity: number,
     uniqueName: string,
   ) => {
+    console.log('SUBMITTED MUTATION', organizerIds);
+    console.log('SUBMITTED MUTATION', chiefOrganizerIds);
     return mutation({
       variables: {
         id,
@@ -71,6 +76,7 @@ export const useEventInformationMutation = () => {
         registrationStart,
         registrationEnd,
         place,
+        organizerIds,
         chiefOrganizerIds,
         isClosedEvent,
         capacity,

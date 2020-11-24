@@ -18,6 +18,9 @@ export interface Event {
   organizers: {
     nodes: EventRelation[];
   };
+  chiefOrganizers: {
+    nodes: EventRelation[];
+  };
   selfRelation: {
     registration: EventRegistration;
   };
