@@ -36,10 +36,10 @@ export class Registration extends BaseEntity<Registration> {
 	public temporaryIdentity?: TemporaryIdentity;
 
 	@Column({ type: 'timestamp', nullable: true })
-	public registrationDate!: Date;
+	public registrationDate!: Date | null;
 
 	@Column({ type: 'timestamp', nullable: true })
-	public attendDate?: Date;
+	public attendDate!: Date | null;
 
 	@Column({ type: 'enum', enum: RegistrationNotificationSettings })
 	public notificationSettings!: RegistrationNotificationSettings;

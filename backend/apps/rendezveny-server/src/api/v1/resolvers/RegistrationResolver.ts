@@ -44,7 +44,7 @@ export class RegistrationResolver {
 		};
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation(_ => EventRegistrationDTO, {
 		name: 'registration_registerSelf',
 		description: 'Registers the current user to the event'
 	})
@@ -72,7 +72,7 @@ export class RegistrationResolver {
 		
 		return {
 			id: registration.id,
-			didAttend: !!registration.attendDate
+			didAttend: Boolean(registration.attendDate)
 		};
 	}
 
@@ -111,7 +111,7 @@ export class RegistrationResolver {
 
 		return {
 			id: registration.id,
-			didAttend: !!registration.attendDate
+			didAttend: Boolean(registration.attendDate)
 		};
 	}
 

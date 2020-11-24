@@ -241,7 +241,7 @@ export class RegistrationManager {
 		@AuthEvent() event: Event,
 		@AuthRegistration() registration: Registration
 	): Promise<Registration> {
-		registration.attendDate = undefined;
+		registration.attendDate = null;
 		await this.registrationRepository.save(registration);
 		return registration;
 	}
