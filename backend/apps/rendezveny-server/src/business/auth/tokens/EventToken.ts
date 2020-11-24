@@ -3,7 +3,7 @@ import { Event } from '../../../data/models/Event';
 export interface EventToken {
 	typ: 'event'
 	eid: string
-	reg: 'none' | { rid: string, typ: 'tmp' | 'per' }
+	reg: 'none' | { rid: string, uid: string, typ: 'tmp' | 'per' }
 	org: 'none' | { uid: string, chf: boolean, typ: 'tmp' | 'per' }
 }
 

@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ClubManager } from './clubs/ClubManager';
 import { DataModule } from '../data/DataModule';
 import { CryptoService } from './crypto/CryptoService';
@@ -15,6 +16,8 @@ import { FormManager } from './registration/FormManager';
 import { FormTemplateManager } from './registration/FormTemplateManager';
 import { OrganizerManager } from './organizing/OrganizerManager';
 import { HRTableManager } from './organizing/HRTableManager';
+import { LoggingInterceptor } from './log/LoggingInterceptor';
+import { LogManager } from './log/LogManager';
 
 @Module({
 	imports: [
@@ -33,6 +36,8 @@ import { HRTableManager } from './organizing/HRTableManager';
 		FormTemplateManager,
 		OrganizerManager,
 		HRTableManager,
+		LogManager,
+		LoggingInterceptor,
 		AuthManager,
 		AuthRefreshJwtStrategy,
 		AuthAccessJwtStrategy,
@@ -48,7 +53,15 @@ import { HRTableManager } from './organizing/HRTableManager';
 		FormTemplateManager,
 		OrganizerManager,
 		HRTableManager,
-		AuthManager
+		AuthManager,
+		LogManager,
+		LoggingInterceptor
 	]
 })
-export class BusinessModule {}
+export class BusinessModule {
+	public static forRoot(): DynamicModule[] {
+		return [
+			ScheduleModule.forRoot()
+		];
+	}
+}

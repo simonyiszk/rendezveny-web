@@ -1,5 +1,5 @@
 import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { EventManager } from '../../../business/events/EventManager';
 import { EventContext } from '../../../business/auth/tokens/EventToken';
@@ -9,8 +9,10 @@ import { EventOrganizerDTO } from '../dtos/EventOrganizerDTO';
 import { GraphQLBoolean, GraphQLString } from 'graphql';
 import { OrganizerManager } from '../../../business/organizing/OrganizerManager';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 
 @Resolver((_: never) => EventOrganizerDTO)
+@UseInterceptors(LoggingInterceptor)
 export class OrganizerResolver {
 	public constructor(
 		private readonly eventManager: EventManager,

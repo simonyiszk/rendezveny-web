@@ -24,6 +24,7 @@ import { FormQuestionAnswer } from '../models/FormQuestionAnswer';
 import { HRTable } from '../models/HRTable';
 import { HRTask } from '../models/HRTask';
 import { HRSegment } from '../models/HRSegment';
+import { Log } from '../models/Log';
 
 @Injectable()
 export class SeedService {
@@ -43,6 +44,7 @@ export class SeedService {
 		@InjectRepository(HRTable) private readonly hrTableRepository: Repository<HRTable>,
 		@InjectRepository(HRTask) private readonly hrTaskRepository: Repository<HRTask>,
 		@InjectRepository(HRSegment) private readonly hrSegmentRepository: Repository<HRSegment>,
+		@InjectRepository(Log) private readonly logRepository: Repository<Log>,
 		private readonly authManager: AuthManager,
 		private readonly eventManager: EventManager,
 		private readonly jwtService: JwtService
@@ -65,6 +67,7 @@ export class SeedService {
 			await this.hrTableRepository.clear();
 			await this.hrTaskRepository.clear();
 			await this.hrSegmentRepository.clear();
+			await this.logRepository.clear();
 		}
 		finally {
 			await this.entityManager.query('SET FOREIGN_KEY_CHECKS = 1');

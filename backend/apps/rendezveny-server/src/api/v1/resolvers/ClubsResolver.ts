@@ -3,7 +3,7 @@ import { ClubDTO, PaginatedClubDTO } from '../dtos/ClubDTO';
 import { nameof } from '../../../utils/nameof';
 import { PaginatedMembershipDTO } from '../dtos/MembershipDTO';
 import { ClubManager } from '../../../business/clubs/ClubManager';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { GraphQLBoolean } from 'graphql';
 import { Offset, PageSize } from '../utils/PaginatedDTO';
@@ -11,8 +11,10 @@ import { MembershipResolver } from './MembershipResolver';
 import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessContext } from '../../../business/auth/tokens/AccessToken';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 
 @Resolver((_: never) => ClubDTO)
+@UseInterceptors(LoggingInterceptor)
 export class ClubsResolver {
 	public constructor(
 		private readonly clubManager: ClubManager

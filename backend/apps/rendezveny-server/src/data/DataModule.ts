@@ -10,7 +10,7 @@ import {
 	HRSegmentRepository,
 	HRTableRepository,
 	HRTaskRepository,
-	LocalIdentityRepository,
+	LocalIdentityRepository, LogRepository,
 	OrganizerRepository,
 	RefreshTokenRepository,
 	RegistrationRepository,
@@ -31,6 +31,7 @@ import {
 			HRTableRepository,
 			HRTaskRepository,
 			LocalIdentityRepository,
+			LogRepository,
 			OrganizerRepository,
 			RefreshTokenRepository,
 			RegistrationRepository,
@@ -60,7 +61,7 @@ export class DataModule {
 						database: ormconfig.database,
 
 						autoLoadEntities: true,
-						logging: ['warn', 'error', 'query']
+						logging: ['warn', 'error']
 					};
 				}
 			})

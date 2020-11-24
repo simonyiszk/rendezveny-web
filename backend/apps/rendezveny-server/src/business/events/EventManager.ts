@@ -399,7 +399,7 @@ export class EventManager extends BaseManager {
 		return this.jwtService.sign({
 			typ: 'event',
 			eid: event.id,
-			reg: registered ? { typ: 'per', rid: registered.id } : 'none',
+			reg: registered ? { typ: 'per', rid: registered.id, uid: registered.userId } : 'none',
 			org: isOrganizing
 				? {
 					uid: accessContext.getUserId(),

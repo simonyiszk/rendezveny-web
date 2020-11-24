@@ -9,6 +9,7 @@ import { join } from 'path';
 import { EventResolver } from './resolvers/EventResolver';
 import { RegistrationResolver } from './resolvers/RegistrationResolver';
 import { OrganizerResolver } from './resolvers/OrganizerResolver';
+import { LogResolver } from './resolvers/LogResolver';
 
 @Module({
 	imports: [
@@ -21,7 +22,8 @@ import { OrganizerResolver } from './resolvers/OrganizerResolver';
 		LoginResolver,
 		EventResolver,
 		RegistrationResolver,
-		OrganizerResolver
+		OrganizerResolver,
+		LogResolver
 	]
 })
 export class ApiV1Module {

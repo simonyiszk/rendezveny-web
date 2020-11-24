@@ -1,7 +1,7 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { GraphQLBoolean, GraphQLString } from 'graphql';
 import { AuthManager } from '../../../business/auth/AuthManager';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { AuthRefreshGuard, RefreshCtx } from '../../../business/auth/passport/AuthRefreshJwtStrategy';
 import { LoginDTO, UserRole as UserRoleDTO } from '../dtos/LoginDTO';
@@ -9,8 +9,10 @@ import { RefreshContext } from '../../../business/auth/tokens/RefreshToken';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { UserRole } from '../../../data/models/UserRole';
 import { MembershipResolver } from './MembershipResolver';
+import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 
 @Resolver()
+@UseInterceptors(LoggingInterceptor)
 export class LoginResolver {
 	public constructor(
 		private readonly authManager: AuthManager

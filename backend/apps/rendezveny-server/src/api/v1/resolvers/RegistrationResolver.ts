@@ -1,6 +1,6 @@
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { PaginatedEventDTO } from '../dtos/EventDTO';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { EventManager } from '../../../business/events/EventManager';
 import { EventContext } from '../../../business/auth/tokens/EventToken';
@@ -17,8 +17,10 @@ import { GraphQLBoolean } from 'graphql';
 import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessContext } from '../../../business/auth/tokens/AccessToken';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 
 @Resolver((_: never) => EventRegistrationDTO)
+@UseInterceptors(LoggingInterceptor)
 export class RegistrationResolver {
 	public constructor(
 		private readonly eventManager: EventManager,

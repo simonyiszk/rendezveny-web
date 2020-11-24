@@ -8,10 +8,12 @@ import { MembershipResolver } from './MembershipResolver';
 import { LocalIdentityDTO } from '../dtos/LocalIdentityDTO';
 import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessContext } from '../../../business/auth/tokens/AccessToken';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
+import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 
 @Resolver((_: never) => UserDTO)
+@UseInterceptors(LoggingInterceptor)
 export class UsersResolver {
 	public constructor(
 		private readonly userManager: UserManager

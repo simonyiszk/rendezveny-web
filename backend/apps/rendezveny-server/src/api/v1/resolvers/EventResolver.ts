@@ -1,6 +1,6 @@
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EventDTO, PaginatedEventDTO } from '../dtos/EventDTO';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { AccessCtx, AuthAccessGuard } from '../../../business/auth/passport/AuthAccessJwtStrategy';
 import { AccessContext } from '../../../business/auth/tokens/AccessToken';
@@ -26,8 +26,10 @@ import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { ClubManager } from '../../../business/clubs/ClubManager';
 import { HRTableState } from '../../../business/organizing/HRTableState';
 import { Event } from '../../../data/models/Event';
+import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 
 @Resolver((_: never) => EventDTO)
+@UseInterceptors(LoggingInterceptor)
 export class EventResolver {
 	public constructor(
 		private readonly userManager: UserManager,

@@ -17,6 +17,7 @@ import { Tag } from '../models/Tag';
 import { TemporaryIdentity } from '../models/TemporaryIdentity';
 import { User } from '../models/User';
 import { BaseRepository } from '../utils/BaseRepository';
+import { Log } from '../models/Log';
 
 @EntityRepository(Club)
 export class ClubRepository extends BaseRepository<Club> {}
@@ -47,6 +48,9 @@ export class HRTaskRepository extends BaseRepository<HRTask> {}
 
 @EntityRepository(LocalIdentity)
 export class LocalIdentityRepository extends BaseRepository<LocalIdentity> {}
+
+@EntityRepository(Log)
+export class LogRepository extends BaseRepository<Log> {}
 
 @EntityRepository(Organizer)
 export class OrganizerRepository extends BaseRepository<Organizer> {}

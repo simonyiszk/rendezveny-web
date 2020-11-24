@@ -8,6 +8,7 @@ import { BusinessModule } from './business/BusinessModule';
 		...ApiV1Module.forRoot(),
 		ApiV1Module,
 
+		...BusinessModule.forRoot(),
 		BusinessModule,
 
 		...DataModule.forRoot(),
