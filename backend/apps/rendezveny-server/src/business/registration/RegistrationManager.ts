@@ -129,7 +129,7 @@ export class RegistrationManager {
 			registrationDate: new Date()
 		});
 		await this.registrationRepository.save(newRegistration);
-		
+
 		await this.formManager.fillInForm(event, newRegistration, filledInForm);
 
 		return newRegistration;

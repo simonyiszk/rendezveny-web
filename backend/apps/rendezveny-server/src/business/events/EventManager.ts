@@ -176,7 +176,9 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		EventManager.validateEvent({...settings, name, uniqueName, description, isClosedEvent, hostingClubs});
+		EventManager.validateEvent({
+			...settings, name, uniqueName, description, isClosedEvent, hostingClubs
+		});
 		checkArgument(
 			isArray(chiefOrganizers) && arrayMinSize(chiefOrganizers, 1),
 			EventChiefOrganizersValidationException
@@ -235,7 +237,9 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		const hostingClubs = settings.hostingClubIds ? await this.clubRepository.findByIds(settings.hostingClubIds) : undefined;
+		const hostingClubs = settings.hostingClubIds
+			? await this.clubRepository.findByIds(settings.hostingClubIds)
+			: undefined;
 		EventManager.validateEvent(settings);
 
 		const uniqueNameUsed = await this.eventRepository.findOne({
@@ -262,16 +266,14 @@ export class EventManager extends BaseManager {
 
 		await this.eventRepository.save(event);
 
-		if(settings.organizerIds)
-		{
+		if(settings.organizerIds) {
 			const organizers = (await this.userRepository.findByIds(settings.organizerIds))
 			.map(user => new Organizer({
 				event: event, user: user, isChief: false, notificationSettings: OrganizerNotificationSettings.ALL
 			}));
 			await this.organizerRepository.save(organizers);
 		}
-		if(settings.chiefOrganizerIds)
-		{
+		if(settings.chiefOrganizerIds) {
 			const organizers = (await this.userRepository.findByIds(settings.chiefOrganizerIds))
 			.map(user => new Organizer({
 				event: event, user: user, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
