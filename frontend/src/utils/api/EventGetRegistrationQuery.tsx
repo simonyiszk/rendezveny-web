@@ -33,27 +33,6 @@ export const eventGetRegistrationQuery = gql`
           }
         }
       }
-      selfRelation {
-        email
-        registration {
-          id
-          formAnswer {
-            answers {
-              answer {
-                ... on EventRegistrationFormMultipleChoiceAnswerDTO {
-                  type
-                  options
-                }
-                ... on EventRegistrationFormTextAnswerDTO {
-                  type
-                  text
-                }
-              }
-              id
-            }
-          }
-        }
-      }
     }
   }
 `;

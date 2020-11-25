@@ -31,6 +31,7 @@ import {
   EventRegistrationFormTextQuestion,
   User,
 } from '../interfaces';
+import { useEventGetCurrentQuery } from '../utils/api/EventGetCurrentQuery';
 import { useEventGetRegistrationQuery } from '../utils/api/EventGetRegistrationQuery';
 import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
 import {
@@ -59,8 +60,25 @@ export default function RegistrationPage({
     getEvent,
     { called, loading, data, error },
   ] = useEventGetRegistrationQuery((queryData) => {
-    if (queryData.events_getOne.selfRelation.registration) {
-      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
+    getCurrent();
+  });
+
+  const client = useApolloClient();
+  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
+    client,
+  );
+  const [
+    getRegisterSelfMutation,
+    _getRegisterSelfMutation,
+  ] = useRegisterSelfMutation();
+  const [
+    getRegisterDeleteMutation,
+    _getRegisterDeleteMutation,
+  ] = useRegisterDeleteMutation();
+  const [getCurrent, _getCurrent] = useEventGetCurrentQuery((queryData) => {
+    console.log('GetCurrent', queryData);
+    if (queryData.events_getCurrent.selfRelation.registration) {
+      const res = queryData.events_getCurrent.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
           if (curr.answer.type === 'multiple_choice') {
             return {
@@ -80,22 +98,9 @@ export default function RegistrationPage({
         {},
       );
       setAnswers(res);
-      setRegistered(queryData.events_getOne.selfRelation.registration.id);
+      setRegistered(queryData.events_getCurrent.selfRelation.registration.id);
     }
   });
-
-  const client = useApolloClient();
-  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
-    client,
-  );
-  const [
-    getRegisterSelfMutation,
-    _getRegisterSelfMutation,
-  ] = useRegisterSelfMutation();
-  const [
-    getRegisterDeleteMutation,
-    _getRegisterDeleteMutation,
-  ] = useRegisterDeleteMutation();
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -138,7 +143,6 @@ export default function RegistrationPage({
   const handleModify = () => {};
   const handleDelete = () => {
     getRegisterDeleteMutation(registered);
-    setRegistered('');
   };
 
   if (called && loading) {
