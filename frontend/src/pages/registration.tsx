@@ -35,6 +35,7 @@ import { useEventGetCurrentQuery } from '../utils/api/EventGetCurrentQuery';
 import { useEventGetRegistrationQuery } from '../utils/api/EventGetRegistrationQuery';
 import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
 import {
+  useModifyFilledInForm,
   useRegisterDeleteMutation,
   useRegisterSelfMutation,
 } from '../utils/api/RegistrationMutation';
@@ -71,6 +72,10 @@ export default function RegistrationPage({
     getRegisterSelfMutation,
     _getRegisterSelfMutation,
   ] = useRegisterSelfMutation();
+  const [
+    getModifyFilledInForm,
+    _getModifyFilledInForm,
+  ] = useModifyFilledInForm();
   const [
     getRegisterDeleteMutation,
     _getRegisterDeleteMutation,
@@ -120,8 +125,8 @@ export default function RegistrationPage({
     setAnswers({ ...answers, [id]: text });
   };
 
-  const handleRegistration = () => {
-    getRegisterSelfMutation(event.id, {
+  const generateAnswerDTO = () => {
+    return {
       answers: Object.entries(answers).map(([key, value]) => {
         return {
           id: key,
@@ -138,9 +143,15 @@ export default function RegistrationPage({
           ),
         };
       }),
-    });
+    };
   };
-  const handleModify = () => {};
+
+  const handleRegistration = () => {
+    getRegisterSelfMutation(event.id, generateAnswerDTO());
+  };
+  const handleModify = () => {
+    getModifyFilledInForm(registered, generateAnswerDTO());
+  };
   const handleDelete = () => {
     getRegisterDeleteMutation(registered);
   };

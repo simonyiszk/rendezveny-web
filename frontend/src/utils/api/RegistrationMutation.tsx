@@ -30,6 +30,37 @@ export const useRegisterSelfMutation = () => {
   return [getMutation, mutationResults];
 };
 
+export const modifyFilledInForm = gql`
+  mutation e_modifyFilledInForm(
+    $id: String!
+    $filledInForm: EventRegistrationFormAnswersInput!
+  ) {
+    registration_modifyFilledInForm(id: $id, filledInForm: $filledInForm) {
+      answers {
+        id
+      }
+    }
+  }
+`;
+
+export const useModifyFilledInForm = () => {
+  const [mutation, mutationResults] = useMutation(modifyFilledInForm);
+
+  const getMutation = (
+    id: string,
+    filledInForm: EventRegistrationFormAnswersInput,
+  ) => {
+    console.log(filledInForm);
+    return mutation({
+      variables: {
+        id,
+        filledInForm,
+      },
+    });
+  };
+  return [getMutation, mutationResults];
+};
+
 export const registerDeleteMutation = gql`
   mutation e_registerDeleteMutation($id: String!) {
     registration_deleteOne(id: $id)
