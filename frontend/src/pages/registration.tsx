@@ -12,6 +12,8 @@ import {
   CheckboxGroup,
   Flex,
   Input,
+  Radio,
+  RadioGroup,
   Select,
 } from '@chakra-ui/core';
 import hu from 'date-fns/locale/hu';
@@ -178,20 +180,40 @@ export default function RegistrationPage({
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                   />
                 )}
-                {q.metadata.type === 'multiple_choice' && (
-                  <CheckboxGroup
-                    value={getAnswer(q.id) || []}
-                    onChange={(e: string[]) => setAnswer(q.id, e)}
-                  >
-                    {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                      (option) => (
-                        <Checkbox key={option.id} value={option.id}>
-                          {option.text}
-                        </Checkbox>
-                      ),
-                    )}
-                  </CheckboxGroup>
-                )}
+                {q.metadata.type === 'multiple_choice' &&
+                  (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                    .multipleAnswers && (
+                    <CheckboxGroup
+                      value={getAnswer(q.id) || []}
+                      onChange={(e: string[]) => setAnswer(q.id, e)}
+                    >
+                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                        (option) => (
+                          <Checkbox key={option.id} value={option.id}>
+                            {option.text}
+                          </Checkbox>
+                        ),
+                      )}
+                    </CheckboxGroup>
+                  )}
+                {q.metadata.type === 'multiple_choice' &&
+                  !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                    .multipleAnswers && (
+                    <RadioGroup
+                      value={getAnswer(q.id) || []}
+                      onChange={(e: string[]) =>
+                        setAnswer(q.id, [e.target.value])
+                      }
+                    >
+                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                        (option) => (
+                          <Radio key={option.id} value={option.id}>
+                            {option.text}
+                          </Radio>
+                        ),
+                      )}
+                    </RadioGroup>
+                  )}
               </Box>
             ))}
           {!registered && (
