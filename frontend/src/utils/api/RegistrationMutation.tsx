@@ -79,3 +79,23 @@ export const useRegisterDeleteMutation = () => {
   };
   return [getMutation, mutationResults];
 };
+
+export const setAttendMutation = gql`
+  mutation e_setAttendMutation($id: String!, $attended: Boolean!) {
+    registration_setAttendState(id: $id, attended: $attended)
+  }
+`;
+
+export const useSetAttendMutation = () => {
+  const [mutation, mutationResults] = useMutation(setAttendMutation);
+
+  const getMutation = (id: string, attended: boolen) => {
+    return mutation({
+      variables: {
+        id,
+        attended,
+      },
+    });
+  };
+  return [getMutation, mutationResults];
+};

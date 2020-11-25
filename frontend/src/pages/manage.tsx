@@ -30,13 +30,12 @@ export default function ManagePage({
       </Heading>
       <Flex flexDir="column" alignItems="center">
         <ProtectedComponent>
-          <Button
+          <LinkButton
             text="Résztvevők kezelése"
             width={['100%', null, '30rem']}
             mb="1rem"
-            onClick={() => {
-              console.log('Clicked');
-            }}
+            to="/manage/members"
+            state={{ event }}
           />
         </ProtectedComponent>
         <ProtectedComponent>

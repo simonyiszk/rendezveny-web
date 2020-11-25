@@ -5,5 +5,6 @@ export default {
   colors: {
     ...theme.colors,
     simonyi: '#6abd51',
+    red: '#ff0000',
   },
 };

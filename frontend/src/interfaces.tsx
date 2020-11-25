@@ -33,6 +33,7 @@ export interface User {
   id: string;
   name: string;
   clubs: Club[];
+  registration: EventRegistration;
 }
 
 export interface Club {
