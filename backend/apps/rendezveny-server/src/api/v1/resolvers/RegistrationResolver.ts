@@ -28,7 +28,7 @@ export class RegistrationResolver {
 		private readonly formManager: FormManager
 	) {}
 
-	@Query(_ => PaginatedEventDTO, {
+	@Query(_ => EventRegistrationDTO, {
 		name: 'registration_getOne',
 		description: 'Gets one registration by its id'
 	})
