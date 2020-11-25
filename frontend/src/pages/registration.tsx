@@ -112,7 +112,7 @@ export default function RegistrationPage({
   useEffect(() => {
     const fetchEventData = async () => {
       await getEventTokenMutation(event.id);
-      return getEvent({ variables: { id: event.id } });
+      return getEvent();
     };
     fetchEventData();
   }, [event.id]);
@@ -171,7 +171,7 @@ export default function RegistrationPage({
       <Flex flexDir="column" alignItems="center">
         <form>
           {data &&
-            data.events_getOne.registrationForm.questions.map((q) => (
+            data.events_getCurrent.registrationForm.questions.map((q) => (
               <Box key={q.id}>
                 <Box>{q.question}</Box>
                 {q.metadata.type === 'text' && (
@@ -200,7 +200,7 @@ export default function RegistrationPage({
                   !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
                     .multipleAnswers && (
                     <RadioGroup
-                      value={getAnswer(q.id) || []}
+                      value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
                       onChange={(e: string[]) =>
                         setAnswer(q.id, [e.target.value])
                       }
