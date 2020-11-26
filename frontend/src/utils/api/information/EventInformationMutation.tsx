@@ -14,6 +14,7 @@ export const eventInformationMutation = gql`
     $isClosedEvent: Boolean!
     $capacity: Float!
     $uniqueName: String!
+    $hostingClubIds: [String!]
   ) {
     events_modifyEvent(
       id: $id
@@ -28,6 +29,7 @@ export const eventInformationMutation = gql`
       isClosedEvent: $isClosedEvent
       capacity: $capacity
       uniqueName: $uniqueName
+      hostingClubIds: $hostingClubIds
     ) {
       id
       name
@@ -43,6 +45,9 @@ export const eventInformationMutation = gql`
         nodes {
           userId
         }
+      }
+      hostingClubs {
+        id
       }
     }
   }
@@ -64,6 +69,7 @@ export const useEventInformationMutation = () => {
     isClosedEvent: boolean,
     capacity: number,
     uniqueName: string,
+    hostingClubIds: string[],
   ) => {
     return mutation({
       variables: {
@@ -79,6 +85,7 @@ export const useEventInformationMutation = () => {
         isClosedEvent,
         capacity,
         uniqueName,
+        hostingClubIds,
       },
     });
   };

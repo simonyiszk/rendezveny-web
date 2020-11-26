@@ -12,6 +12,7 @@ export interface Event {
   uniqueName: string;
   registrationAllowed: boolean;
   capacity: number;
+  hostingClubs: Club[];
   relations: {
     nodes: EventRelation[];
   };

@@ -20,6 +20,10 @@ export const eventGetInformationQuery = gql`
       place
       isClosedEvent
       capacity
+      hostingClubs {
+        id
+        name
+      }
       organizers: relations(chiefOrganizer: false) {
         nodes {
           userId

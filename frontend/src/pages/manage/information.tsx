@@ -12,7 +12,8 @@ import Button from '../../components/Button';
 import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
-import { Event, User } from '../../interfaces';
+import { Club, Event, User } from '../../interfaces';
+import { useClubsGetAllQuery } from '../../utils/api/information/ClubsGetAllQuery';
 import { useEventGetInformationQuery } from '../../utils/api/information/EventGetInformationQuery';
 import { useEventInformationMutation } from '../../utils/api/information/EventInformationMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
@@ -55,6 +56,9 @@ export default function InformationPage({
   const [eventCapacity, setEventCapacity] = useState(event?.capacity || 0);
   const [regLink, setRegLink] = useState(event?.uniqueName || '');
 
+  const [organizerClubs, setOrganizerClubs] = useState<Club[]>([]);
+  const [allClubs, setAllClubs] = useState<Club[]>([]);
+
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
   const [
@@ -94,13 +98,20 @@ export default function InformationPage({
       setAllUsers(resultAllUser);
       setOrganizers(resultOrganizers);
       setChiefOrganizers(resultChiefOrganizers);
+      setOrganizerClubs(queryData.events_getOne.hostingClubs);
     },
   );
+  const [getClubs, _getClubs] = useClubsGetAllQuery((queryData) => {
+    console.log(queryData);
+    setAllClubs(queryData.clubs_getAll.nodes);
+  });
+  console.log(_getClubs.error);
   useEffect(() => {
     const fetchEventData = async () => {
       if (event) {
         await getEventTokenMutation(event.id);
         getOrganizers({ variables: { id: event.id } });
+        getClubs();
       }
     };
     fetchEventData();
@@ -121,6 +132,7 @@ export default function InformationPage({
       eventClosed,
       eventCapacity,
       regLink,
+      organizerClubs.map((c) => c.id),
     );
     /* if (event) {
       navigate('/manage', { state: { event } });
@@ -133,6 +145,10 @@ export default function InformationPage({
     _selectedItem: User,
   ): void => {
     setChiefOrganizers(selectedList);
+  };
+
+  const onChangeClubs = (selectedList: Club[], _selectedItem: Club): void => {
+    setOrganizerClubs(selectedList);
   };
   return (
     <Layout>
@@ -237,6 +253,19 @@ export default function InformationPage({
               name="regLink"
               value={regLink}
               onChange={(e) => setRegLink(e.target.value)}
+            />
+          </Box>
+          <Box>
+            <Box>Szerező körök</Box>
+            <Multiselect
+              name="organizerClubs"
+              options={allClubs}
+              selectedValues={organizerClubs}
+              displayValue="name"
+              onSelect={onChangeClubs}
+              onRemove={onChangeClubs}
+              avoidHighlightFirstOption
+              closeIcon="cancel"
             />
           </Box>
           <button type="submit">{event ? 'Edit' : 'Create'}</button>
