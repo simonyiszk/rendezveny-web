@@ -35,14 +35,14 @@ import {
   User,
 } from '../../../interfaces';
 import { useEventGetCurrentQuery } from '../../../utils/api/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../../../utils/api/EventGetRegistrationQuery';
-import { useEventTokenMutation } from '../../../utils/api/EventsGetTokenMutation';
+import { useEventGetRegistrationQuery } from '../../../utils/api/registration/EventGetRegistrationQuery';
 import {
   registerDeleteMutation,
   useModifyFilledInForm,
   useRegisterDeleteMutation,
   useRegisterSelfMutation,
-} from '../../../utils/api/RegistrationMutation';
+} from '../../../utils/api/registration/RegistrationMutation';
+import { useEventTokenMutation } from '../../../utils/api/token/EventsGetTokenMutation';
 import ProtectedComponent from '../../../utils/protection/ProtectedComponent';
 
 interface PageState {

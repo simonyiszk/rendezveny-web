@@ -10,9 +10,9 @@ import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event, User } from '../../interfaces';
-import { useEventDetailsMutation } from '../../utils/api/EventDetailsMutation';
-import { useEventGetDetailsQuery } from '../../utils/api/EventGetDetailsQuery';
-import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
+import { useEventDetailsMutation } from '../../utils/api/details/EventDetailsMutation';
+import { useEventGetDetailsQuery } from '../../utils/api/details/EventGetDetailsQuery';
+import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 

@@ -13,9 +13,9 @@ import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event, User } from '../../interfaces';
-import { useEventGetInformationQuery } from '../../utils/api/EventGetInformationQuery';
 import { useEventInformationMutation } from '../../utils/api/EventInformationMutation';
-import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
+import { useEventGetInformationQuery } from '../../utils/api/information/EventGetInformationQuery';
+import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 

@@ -11,9 +11,9 @@ import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import MemberSection from '../../components/MemberSection';
 import { Event, User } from '../../interfaces';
-import { useEventGetMembersQuery } from '../../utils/api/EventMembersQuery';
-import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
-import { useSetAttendMutation } from '../../utils/api/RegistrationMutation';
+import { useEventGetMembersQuery } from '../../utils/api/registration/EventMembersQuery';
+import { useSetAttendMutation } from '../../utils/api/registration/RegistrationMutation';
+import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 
 interface PageState {

@@ -5,7 +5,7 @@ import {
   useLazyQuery,
 } from '@apollo/client';
 
-import { Event } from '../../interfaces';
+import { Event } from '../../../interfaces';
 
 export const eventGetInformationQuery = gql`
   query e_eventGetInformation($id: String!) {

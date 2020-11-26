@@ -1,6 +1,6 @@
 import { gql, useMutation } from '@apollo/client';
 
-import { EventRegistrationFormAnswersInput } from '../../interfaces';
+import { EventRegistrationFormAnswersInput } from '../../../interfaces';
 
 export const registerSelfMutation = gql`
   mutation registerSelfMutation(
