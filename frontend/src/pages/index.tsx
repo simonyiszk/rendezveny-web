@@ -8,43 +8,31 @@ import { Layout } from '../components/Layout';
 import LinkButton from '../components/LinkButton';
 import SectionHeader from '../components/SectionHeader';
 import { Event } from '../interfaces';
+import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
-const userQueryGQL = gql`
-  query eventsGetAll {
-    events_getAll {
-      nodes {
-        id
-        name
-        description
-        place
-        start
-        end
-        registrationStart
-        registrationEnd
-      }
-    }
-  }
-`;
-
 export default function IndexPage(): JSX.Element {
-  const { called, loading, error, data } = useQuery(userQueryGQL);
-  if (called && loading) return <div>Loading</div>;
+  const [getEvents, { error }] = useEventGetAllQuery((queryData) => {
+    setOrganizedEvents(queryData.organizedEvents.nodes);
+    setRegisteredEvents(queryData.registeredEvents.nodes);
+    setAvailableEvents(queryData.availableEvents.nodes);
+  });
 
-  // Show error message if lazy query fails
+  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
+  const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
+  const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    const fetchEventData = async () => {
+      getEvents();
+    };
+    fetchEventData();
+  }, []);
+
   if (error) {
     navigate('/login');
     return <div>Error {error.message}</div>;
   }
-  const organizedEvents = (events) => {
-    return events;
-  };
-  const appliedEvents = (events) => {
-    return events;
-  };
-  const otherEvents = (events) => {
-    return events;
-  };
 
   return (
     <Layout>
@@ -56,17 +44,14 @@ export default function IndexPage(): JSX.Element {
           state={{ event: null }}
         />
       </ProtectedComponent>
-      <EventSection
-        text="Kezelt rendezvények"
-        listOfEvents={organizedEvents(data.events_getAll.nodes)}
-      />
+      <EventSection text="Kezelt rendezvények" listOfEvents={organizedEvents} />
       <EventSection
         text="Regisztrált rendezvények"
-        listOfEvents={appliedEvents([])}
+        listOfEvents={registeredEvents}
       />
       <EventSection
         text="Közelgő rendezvények"
-        listOfEvents={otherEvents([])}
+        listOfEvents={availableEvents}
       />
     </Layout>
   );
