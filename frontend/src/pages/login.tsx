@@ -3,7 +3,7 @@ import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 
 import { Layout } from '../components/Layout';
-import { useLoginMutation } from '../utils/api/LoginWithLocalIdentityMutation';
+import { useLoginMutation } from '../utils/api/token/LoginWithLocalIdentityMutation';
 
 export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');

@@ -33,7 +33,7 @@ import {
   EventRegistrationFormTextQuestion,
   User,
 } from '../interfaces';
-import { useEventGetCurrentQuery } from '../utils/api/EventGetCurrentQuery';
+import { useEventGetCurrentQuery } from '../utils/api/registration/EventGetCurrentQuery';
 import { useEventGetRegistrationQuery } from '../utils/api/registration/EventGetRegistrationQuery';
 import {
   useModifyFilledInForm,

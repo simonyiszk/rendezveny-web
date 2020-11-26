@@ -1,7 +1,7 @@
 import { gql, useMutation } from '@apollo/client';
 
-import { resetContext } from '../token/ApolloClient';
-import { setAuthToken } from '../token/TokenContainer';
+import { resetContext } from '../../token/ApolloClient';
+import { setAuthToken } from '../../token/TokenContainer';
 
 export const loginWithLocalIdentityMutation = gql`
   mutation loginMutation($username: String!, $password: String!) {
