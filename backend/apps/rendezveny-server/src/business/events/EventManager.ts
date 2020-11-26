@@ -96,48 +96,50 @@ export class EventManager extends BaseManager {
 		checkPagination(pageSize, offset);
 		const user = await this.userRepository.findOne(accessContext.getUserId());
 
-		let query = await this.eventRepository.createQueryBuilder('event')
-			.leftJoinAndSelect(`event.${nameof<Event>('registrations')}`, 'registration')
-			.leftJoinAndSelect(`event.${nameof<Event>('organizers')}`, 'organizer')
-			.leftJoinAndSelect(`event.${nameof<Event>('hostingClubs')}`, 'hostingClub');
+		let events = await this.eventRepository.find({
+			relations: [
+				nameof<Event>('registrations'),
+				nameof<Event>('organizers'),
+				nameof<Event>('hostingClubs')
+			]
+		});
 
+		const now = new Date();
 		if(settings?.isRegisteredUpcoming === true) {
-			query = query
-				.andWhere(`event.${nameof<Event>('end')} >= :now`, { now: new Date() })
-				.andWhere(`registration.${nameof<Registration>('userId')} = :userId`, { userId: user?.id });
+			events = events
+				.filter(e => !e.end || e.end.getTime() >= now.getTime())
+				.filter(e => e.registrations.some(r => r.userId === user?.id));
 		}
-		if(settings?.isRegisteredUpcoming === true) {
-			query = query
-				.andWhere(`event.${nameof<Event>('end')} < :now`, { now: new Date() })
-				.andWhere(`registration.${nameof<Registration>('userId')} = :userId`, { userId: user?.id });
+		if(settings?.isRegisteredPast === true) {
+			events = events
+				.filter(e => !e.end || e.end.getTime() < now.getTime())
+				.filter(e => e.registrations.some(r => r.userId === user?.id));
 		}
 		if(settings?.isOrganizerUpcoming === true) {
-			query = query
-				.andWhere(`event.${nameof<Event>('end')} >= :now`, { now: new Date() })
-				.andWhere(`organizer.${nameof<Organizer>('userId')} = :userId`, { userId: user?.id });
+			events = events
+				.filter(e => !e.end || e.end.getTime() >= now.getTime())
+				.filter(e => e.organizers.some(o => o.userId === user?.id));
 		}
 		if(settings?.isOrganizerPast === true) {
-			query = query
-				.andWhere(`event.${nameof<Event>('end')} < :now`, { now: new Date() })
-				.andWhere(`organizer.${nameof<Organizer>('userId')} = :userId`, { userId: user?.id });
+			events = events
+				.filter(e => !e.end || e.end.getTime() < now.getTime())
+				.filter(e => e.organizers.some(o => o.userId === user?.id));
 		}
 		if(settings?.canRegisterToUpcoming === true) {
-			query = query
-				.andWhere(`event.${nameof<Event>('end')} >= :now`, { now: new Date() })
-				.andWhere(`registration.${nameof<Registration>('userId')} != :userId`, { userId: user?.id });
+			events = events
+				.filter(e => !e.end || e.end.getTime() >= now.getTime())
+				.filter(e => !e.registrations.some(r => r.userId === user?.id));
 		}
 		if(settings?.canRegisterToPast === true) {
-			query = query
-				.andWhere(`event.${nameof<Event>('end')} < :now`, { now: new Date() })
-				.andWhere(`registration.${nameof<Registration>('userId')} != :userId`, { userId: user?.id });
+			events = events
+				.filter(e => !e.end || e.end.getTime() < now.getTime())
+				.filter(e => !e.registrations.some(r => r.userId === user?.id));
 		}
 
-		const [events, count] = await query
-			.take(pageSize)
-			.limit(offset * pageSize)
-			.getManyAndCount();
-
-		return { events, count };
+		return {
+			events: events.slice(offset * pageSize, (offset * pageSize) + pageSize),
+			count: events.length
+		};
 	}
 
 	@AuthorizeGuard(IsUser(), IsAdmin())
