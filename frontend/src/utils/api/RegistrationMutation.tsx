@@ -50,7 +50,6 @@ export const useModifyFilledInForm = () => {
     id: string,
     filledInForm: EventRegistrationFormAnswersInput,
   ) => {
-    console.log(filledInForm);
     return mutation({
       variables: {
         id,

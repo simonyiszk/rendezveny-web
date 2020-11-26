@@ -8,15 +8,15 @@ import SectionHeader from './SectionHeader';
 interface Props extends BoxProps {
   text: string;
   listOfMembers: User[];
+  event: Event;
   setAttendCb: (user: User) => void;
-  deleteCb: (user: User) => void;
 }
 
 export default function MemberSection({
   text,
   listOfMembers,
+  event,
   setAttendCb,
-  deleteCb,
 }: Props): JSX.Element {
   return (
     <Box>
@@ -28,8 +28,8 @@ export default function MemberSection({
               <MemberBox
                 key={e.id}
                 user={e}
+                event={event}
                 setAttendCb={setAttendCb}
-                deleteCb={deleteCb}
               />
             ))}
           </Box>

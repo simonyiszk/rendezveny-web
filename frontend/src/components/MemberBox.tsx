@@ -7,14 +7,14 @@ import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   user: User;
+  event: Event;
   setAttendCb: (user: User) => void;
-  deleteCb: (user: User) => void;
 }
 
 export default function MemberBox({
   user,
+  event,
   setAttendCb,
-  deleteCb,
 }: Props): JSX.Element {
   return (
     <Flex my="0.25rem">
@@ -23,7 +23,11 @@ export default function MemberBox({
         <Box>{new Date().toLocaleDateString()}</Box>
       </Box>
       <Flex flexGrow={1} justifyContent="flex-end">
-        <LinkButton text="R" to="/manage/member/showreg" state={{ user }} />
+        <LinkButton
+          text="R"
+          to="/manage/members/showreg"
+          state={{ user, event }}
+        />
         {user.registration.didAttend && (
           <Button text="E" onClick={() => setAttendCb(user)} ml="1rem" />
         )}
@@ -35,12 +39,6 @@ export default function MemberBox({
             backgroundColor="red"
           />
         )}
-        <Button
-          text="X"
-          onClick={() => deleteCb(user)}
-          ml="1rem"
-          backgroundColor="red"
-        />
       </Flex>
     </Flex>
   );

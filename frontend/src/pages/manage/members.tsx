@@ -13,10 +13,7 @@ import MemberSection from '../../components/MemberSection';
 import { Event, User } from '../../interfaces';
 import { useEventGetMembersQuery } from '../../utils/api/EventMembersQuery';
 import { useEventTokenMutation } from '../../utils/api/EventsGetTokenMutation';
-import {
-  useRegisterDeleteMutation,
-  useSetAttendMutation,
-} from '../../utils/api/RegistrationMutation';
+import { useSetAttendMutation } from '../../utils/api/RegistrationMutation';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 
 interface PageState {
@@ -32,17 +29,14 @@ export default function MembersPage({
   },
 }: Props): JSX.Element {
   const [registeredUsers, setRegisteredUsers] = useState<User[]>([]);
+  const [currentEvent, setCurrentEvent] = useState<Event>();
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
 
   const [getSetAttendMutation, _getSetAttendMutation] = useSetAttendMutation();
-  const [
-    getRegisterDeleteMutation,
-    _getRegisterDeleteMutation,
-  ] = useRegisterDeleteMutation();
 
-  const [getOrganizers, { error }] = useEventGetMembersQuery((queryData) => {
+  const [getEventData, { error }] = useEventGetMembersQuery((queryData) => {
     const resultRegisteredUsers = queryData.events_getOne.relations.nodes.reduce(
       (acc, curr) => {
         return [
@@ -56,13 +50,13 @@ export default function MembersPage({
       },
       [] as User[],
     );
-
     setRegisteredUsers(resultRegisteredUsers);
+    setCurrentEvent(queryData.events_getOne);
   });
   useEffect(() => {
     const fetchEventData = async () => {
       await getEventTokenMutation(event.id);
-      getOrganizers({ variables: { id: event.id } });
+      getEventData({ variables: { id: event.id } });
     };
     fetchEventData();
   }, [event.id]);
@@ -84,18 +78,13 @@ export default function MembersPage({
     );
   };
 
-  const handleDelete = (user: User) => {
-    getRegisterDeleteMutation(user.registration.id);
-    setRegisteredUsers(registeredUsers.filter((u) => u.id !== user.id));
-  };
-
   return (
     <Layout>
       <MemberSection
         text="Résztvevők"
         listOfMembers={registeredUsers}
+        event={currentEvent}
         setAttendCb={handleAttend}
-        deleteCb={handleDelete}
       />
     </Layout>
   );

@@ -4,7 +4,7 @@ import React from 'react';
 
 interface Props extends BoxProps {
   to: string;
-  state: object;
+  state?: object;
   text: string;
 }
 

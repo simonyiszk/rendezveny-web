@@ -20,30 +20,33 @@ import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../components/Button';
-import EventSection from '../components/EventSection';
-import { Layout } from '../components/Layout';
-import LinkButton from '../components/LinkButton';
+import Button from '../../../components/Button';
+import EventSection from '../../../components/EventSection';
+import { Layout } from '../../../components/Layout';
+import LinkButton from '../../../components/LinkButton';
 import {
   Event,
+  EventRegistration,
   EventRegistrationForm,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
   EventRegistrationFormTextQuestion,
   User,
-} from '../interfaces';
-import { useEventGetCurrentQuery } from '../utils/api/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../utils/api/EventGetRegistrationQuery';
-import { useEventTokenMutation } from '../utils/api/EventsGetTokenMutation';
+} from '../../../interfaces';
+import { useEventGetCurrentQuery } from '../../../utils/api/EventGetCurrentQuery';
+import { useEventGetRegistrationQuery } from '../../../utils/api/EventGetRegistrationQuery';
+import { useEventTokenMutation } from '../../../utils/api/EventsGetTokenMutation';
 import {
+  registerDeleteMutation,
   useModifyFilledInForm,
   useRegisterDeleteMutation,
   useRegisterSelfMutation,
-} from '../utils/api/RegistrationMutation';
-import ProtectedComponent from '../utils/protection/ProtectedComponent';
+} from '../../../utils/api/RegistrationMutation';
+import ProtectedComponent from '../../../utils/protection/ProtectedComponent';
 
 interface PageState {
+  user: User;
   event: Event;
 }
 interface Props {
@@ -54,26 +57,11 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function RegistrationPage({
+export default function EditMemberRegPage({
   location: {
-    state: { event },
+    state: { user, event },
   },
 }: Props): JSX.Element {
-  const [
-    getEvent,
-    { called, loading, data, error },
-  ] = useEventGetRegistrationQuery((queryData) => {
-    getCurrent();
-  });
-
-  const client = useApolloClient();
-  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
-    client,
-  );
-  const [
-    getRegisterSelfMutation,
-    _getRegisterSelfMutation,
-  ] = useRegisterSelfMutation();
   const [
     getModifyFilledInForm,
     _getModifyFilledInForm,
@@ -82,42 +70,34 @@ export default function RegistrationPage({
     getRegisterDeleteMutation,
     _getRegisterDeleteMutation,
   ] = useRegisterDeleteMutation();
-  const [getCurrent, _getCurrent] = useEventGetCurrentQuery((queryData) => {
-    if (queryData.events_getCurrent.selfRelation.registration) {
-      const res = queryData.events_getCurrent.selfRelation.registration.formAnswer.answers.reduce(
-        (acc, curr) => {
-          if (curr.answer.type === 'multiple_choice') {
-            return {
-              ...acc,
-              [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
-                .options,
-            };
-          }
-          if (curr.answer.type === 'text') {
-            return {
-              ...acc,
-              [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
-            };
-          }
-          return acc;
-        },
-        {},
-      );
+
+  const getAnswersFromProps = (u: User) => {
+    if (u.registration) {
+      const res = u.registration.formAnswer.answers.reduce((acc, curr) => {
+        if (curr.answer.type === 'multiple_choice') {
+          return {
+            ...acc,
+            [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
+              .options,
+          };
+        }
+        if (curr.answer.type === 'text') {
+          return {
+            ...acc,
+            [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
+          };
+        }
+        return acc;
+      }, {});
       setAnswers(res);
-      setRegistered(queryData.events_getCurrent.selfRelation.registration.id);
     }
-  });
+  };
 
   useEffect(() => {
-    const fetchEventData = async () => {
-      await getEventTokenMutation(event.id);
-      return getEvent();
-    };
-    fetchEventData();
-  }, [event.id]);
+    getAnswersFromProps(user);
+  }, [user.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
-  const [registered, setRegistered] = useState('');
 
   const getAnswer = (id: string): string | string[] => {
     return answers[id];
@@ -147,30 +127,19 @@ export default function RegistrationPage({
     };
   };
 
-  const handleRegistration = () => {
-    getRegisterSelfMutation(event.id, generateAnswerDTO());
-  };
   const handleModify = () => {
-    getModifyFilledInForm(registered, generateAnswerDTO());
+    getModifyFilledInForm(user.registration.id, generateAnswerDTO());
   };
   const handleDelete = () => {
-    getRegisterDeleteMutation(registered);
+    getRegisterDeleteMutation(user.registration.id);
   };
-
-  if (called && loading) {
-    return <div>Loading</div>;
-  }
-
-  if (error) {
-    return <div>Error {error.message}</div>;
-  }
 
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
         <form>
-          {data &&
-            data.events_getCurrent.registrationForm.questions.map((q) => (
+          {event?.registrationForm &&
+            event?.registrationForm.questions.map((q) => (
               <Box key={q.id}>
                 <Box>{q.question}</Box>
                 {q.metadata.type === 'text' && (
@@ -215,15 +184,10 @@ export default function RegistrationPage({
                   )}
               </Box>
             ))}
-          {!registered && (
-            <Button text="Regisztráció" onClick={handleRegistration} />
-          )}
-          {registered && (
-            <>
-              <Button text="Módosítás" onClick={handleModify} />
-              <Button text="Regisztráció törlése" onClick={handleDelete} />
-            </>
-          )}
+          <>
+            <Button text="Módosítás" onClick={handleModify} />
+            <Button text="Regisztráció törlése" onClick={handleDelete} />
+          </>
         </form>
       </Flex>
     </Layout>
