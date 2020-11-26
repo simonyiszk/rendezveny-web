@@ -17,7 +17,6 @@ import { FormInvalidFormInputException } from './exceptions/FormInvalidFormInput
 import { Registration } from '../../data/models/Registration';
 import { FormRequiredQuestionNotAnsweredException } from './exceptions/FormRequiredQuestionNotAnsweredException';
 import { FormInvalidFormAnswerException } from './exceptions/FormInvalidFormAnswerException';
-import { checkPermission } from '../utils/permissions/CheckPermissions';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import {
 	EventRepository,
@@ -107,10 +106,8 @@ export class FormManager extends BaseManager {
 	public async getFilledInForm(
 		@AuthContext() eventContext: EventContext,
 		@AuthEvent() event: Event,
-		registration: Registration
+		@AuthRegistration() registration: Registration
 	): Promise<FilledInForm> {
-		checkPermission(!eventContext.isRegistered(event) || registration.id === eventContext.getRegistrationId());
-
 		const answers = (await this.formAnswerRepository.find({ registration }))
 			.sort((a1, a2) => a1.formQuestion.order - a2.formQuestion.order);
 

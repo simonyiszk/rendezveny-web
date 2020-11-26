@@ -11,6 +11,12 @@ export class EventRegistrationDTO {
 	public id: string = '';
 
 	@Field({
+		description: 'The date of registration',
+		nullable: true
+	})
+	public registrationDate?: Date;
+
+	@Field({
 		description: 'Indicates whether the user attended the event'
 	})
 	public didAttend: boolean = false;

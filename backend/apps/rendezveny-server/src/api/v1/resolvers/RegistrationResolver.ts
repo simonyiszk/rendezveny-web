@@ -42,6 +42,7 @@ export class RegistrationResolver {
 		const registration = await this.registrationManager.getRegistrationById(eventContext, event, id);
 		return {
 			id: registration.id,
+			registrationDate: registration.registrationDate ?? undefined,
 			didAttend: typeof registration.attendDate === 'object'
 		};
 	}
@@ -74,6 +75,7 @@ export class RegistrationResolver {
 		
 		return {
 			id: registration.id,
+			registrationDate: registration.registrationDate ?? undefined,
 			didAttend: Boolean(registration.attendDate)
 		};
 	}
@@ -113,6 +115,7 @@ export class RegistrationResolver {
 
 		return {
 			id: registration.id,
+			registrationDate: registration.registrationDate ?? undefined,
 			didAttend: Boolean(registration.attendDate)
 		};
 	}

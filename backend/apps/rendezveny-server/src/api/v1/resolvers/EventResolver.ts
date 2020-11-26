@@ -557,6 +557,8 @@ export class EventResolver {
 			name: event.name,
 			uniqueName: event.uniqueName,
 			description: event.description,
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			hostingClubs: event.hostingClubs ?? [],
 			place: event.place ?? undefined,
 			capacity: event.capacity ?? undefined,
 			isClosedEvent: event.isClosedEvent,
