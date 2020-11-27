@@ -101,19 +101,19 @@ export class AuthManager {
 			await this.userRepository.save(user);
 		}
 		else {
+			const newAuthSCHIdentity = new AuthSCHIdentity({
+				externalId: internalId,
+				email: email
+			});
+			await this.authSCHIdentityRepository.save(newAuthSCHIdentity);
+
 			user = new User({
 				name: displayName,
 				role: UserRole.USER,
-				isSuspended: false
+				isSuspended: false,
+				authSCHIdentity: newAuthSCHIdentity
 			});
 			await this.userRepository.save(user);
-
-			const newAuthSCHIdentity = new AuthSCHIdentity({
-				externalId: internalId,
-				email: email,
-				user: user
-			});
-			await this.authSCHIdentityRepository.save(newAuthSCHIdentity);
 		}
 		await user.loadRelation(this.userRepository, 'memberships');
 
