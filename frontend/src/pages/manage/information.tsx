@@ -16,7 +16,10 @@ import { Club, Event, User } from '../../interfaces';
 import { useClubsGetAllQuery } from '../../utils/api/information/ClubsGetAllQuery';
 import { useClubsGetOtherMembersQuery } from '../../utils/api/information/ClubsGetOtherMembersQuery';
 import { useEventGetInformationQuery } from '../../utils/api/information/EventGetInformationQuery';
-import { useEventInformationMutation } from '../../utils/api/information/EventInformationMutation';
+import {
+  useEventCreateMutation,
+  useEventInformationMutation,
+} from '../../utils/api/information/EventInformationMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
@@ -66,7 +69,11 @@ export default function InformationPage({
     getEventInformationMutation,
     _eventMutationResult,
   ] = useEventInformationMutation();
-
+  const [
+    getEventCreateMutation,
+    _eventMutationResult2,
+  ] = useEventCreateMutation();
+  console.log(_eventMutationResult2.error);
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
       const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
@@ -122,6 +129,7 @@ export default function InformationPage({
           (user, index, self) =>
             self.findIndex((t) => t.id === user.id) === index,
         );
+      console.log(resultAllUser);
       setAllUsers(resultAllUser);
     },
   );
@@ -146,21 +154,37 @@ export default function InformationPage({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    getEventInformationMutation(
-      event.id,
-      eventName,
-      eventStart.toISOString(),
-      eventEnd.toISOString(),
-      eventRegStart.toISOString(),
-      eventRegEnd.toISOString(),
-      eventPlace,
-      organizers.concat(chiefOrganizers).map((o) => o.id),
-      chiefOrganizers.map((o) => o.id),
-      eventClosed,
-      eventCapacity,
-      regLink,
-      organizerClubs.map((c) => c.id),
-    );
+    if (event) {
+      getEventInformationMutation(
+        event.id,
+        eventName,
+        eventStart.toISOString(),
+        eventEnd.toISOString(),
+        eventRegStart.toISOString(),
+        eventRegEnd.toISOString(),
+        eventPlace,
+        organizers.concat(chiefOrganizers).map((o) => o.id),
+        chiefOrganizers.map((o) => o.id),
+        eventClosed,
+        eventCapacity,
+        regLink,
+        organizerClubs.map((c) => c.id),
+      );
+    } else {
+      getEventCreateMutation(
+        eventName,
+        eventStart.toISOString(),
+        eventEnd.toISOString(),
+        eventRegStart.toISOString(),
+        eventRegEnd.toISOString(),
+        eventPlace,
+        chiefOrganizers.map((o) => o.id),
+        eventClosed,
+        eventCapacity,
+        regLink,
+        organizerClubs.map((c) => c.id),
+      );
+    }
     /* if (event) {
       navigate('/manage', { state: { event } });
     } else {
