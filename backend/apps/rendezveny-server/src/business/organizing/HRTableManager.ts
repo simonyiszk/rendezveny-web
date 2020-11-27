@@ -178,6 +178,8 @@ export class HRTableManager extends BaseManager {
 
 		await this.hrSegmentRepository.save(modifiedSegments);
 
+		origTask.hrSegments = modifiedSegments;
+
 		return origTask;
 	}
 
