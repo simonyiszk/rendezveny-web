@@ -168,3 +168,22 @@ export const useEventCreateMutation = () => {
   };
   return [getMutation, mutationResults];
 };
+
+export const eventDeleteMutation = gql`
+  mutation e_eventDeleteMutation($id: String!) {
+    events_deleteEvent(id: $id)
+  }
+`;
+
+export const useEventDeleteMutation = () => {
+  const [mutation, mutationResults] = useMutation(eventDeleteMutation);
+
+  const getMutation = (id: string) => {
+    return mutation({
+      variables: {
+        id,
+      },
+    });
+  };
+  return [getMutation, mutationResults];
+};

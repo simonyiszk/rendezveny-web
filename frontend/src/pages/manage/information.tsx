@@ -18,6 +18,7 @@ import { useClubsGetOtherMembersQuery } from '../../utils/api/information/ClubsG
 import { useEventGetInformationQuery } from '../../utils/api/information/EventGetInformationQuery';
 import {
   useEventCreateMutation,
+  useEventDeleteMutation,
   useEventInformationMutation,
 } from '../../utils/api/information/EventInformationMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
@@ -73,7 +74,11 @@ export default function InformationPage({
     getEventCreateMutation,
     _eventMutationResult2,
   ] = useEventCreateMutation();
-  console.log(_eventMutationResult2.error);
+  const [
+    getEventDeleteMutation,
+    _eventMutationResult3,
+  ] = useEventDeleteMutation();
+
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
       const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
@@ -152,8 +157,7 @@ export default function InformationPage({
     fetchEventData();
   }, [event?.id]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (event) {
       getEventInformationMutation(
         event.id,
@@ -191,6 +195,9 @@ export default function InformationPage({
       navigate('/');
     } */
   };
+  const handleDelete = () => {
+    getEventDeleteMutation(event.id);
+  };
   const onChangeOrganizers = (
     selectedList: User[],
     _selectedItem: User,
@@ -204,7 +211,7 @@ export default function InformationPage({
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <form onSubmit={handleSubmit}>
+        <form>
           <Box>
             <Box>Esemény neve</Box>
             <Input
@@ -319,7 +326,13 @@ export default function InformationPage({
               closeIcon="cancel"
             />
           </Box>
-          <button type="submit">{event ? 'Edit' : 'Create'}</button>
+          {!event && <Button text="Létrehozás" onClick={handleSubmit} />}
+          {event && (
+            <>
+              <Button text="Módosítás" onClick={handleSubmit} />
+              <Button text="Törlés" onClick={handleDelete} />
+            </>
+          )}
         </form>
       </Flex>
     </Layout>
