@@ -134,3 +134,29 @@ export enum ClubRole {
   CLUB_MANAGER,
   MEMBER,
 }
+
+// LOG
+
+export interface Log {
+  args: string;
+  at: Date;
+  id: string;
+  ip: string;
+  issuerId: string;
+  query: string;
+  result: ResultType;
+  token: string;
+  type: IssuerType;
+}
+
+export enum ResultType {
+  BUSINESS_ERROR,
+  OTHER_ERROR,
+  SUCCESS,
+  UNAUTHORIZED,
+}
+
+export enum IssuerType {
+  PUBLIC,
+  USER,
+}

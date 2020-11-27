@@ -64,7 +64,9 @@ export default function Header(): JSX.Element {
             <MenuButton>Profil</MenuButton>
             <MenuList>
               <MenuItem>Profil</MenuItem>
-              <MenuItem>Logok</MenuItem>
+              <MenuItem as={Link} to="/logs">
+                Logok
+              </MenuItem>
               <MenuItem onClick={handleLogout}>Kilépés</MenuItem>
             </MenuList>
           </Menu>
