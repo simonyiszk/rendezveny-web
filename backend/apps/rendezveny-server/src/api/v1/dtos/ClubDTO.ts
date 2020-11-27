@@ -17,6 +17,11 @@ export class ClubDTO {
 	})
 	public name: string = '';
 
+	@Field({
+		description: 'The SCH id of the club'
+	})
+	public externalId: number = 0;
+
 	@Field(_ => PaginatedMembershipDTO, {
 		description: 'The club memberships of the club'
 	})

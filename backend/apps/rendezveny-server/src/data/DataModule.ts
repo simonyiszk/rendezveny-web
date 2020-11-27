@@ -18,10 +18,12 @@ import {
 	TemporaryIdentityRepository, UserRepository
 } from './repositories/repositories';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthSCHIdentity } from './models/AuthSCHIdentity';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([
+			AuthSCHIdentity,
 			ClubRepository,
 			ClubMembershipRepository,
 			EventRepository,

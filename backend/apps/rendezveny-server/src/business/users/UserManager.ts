@@ -33,6 +33,7 @@ import {
 	UserRepository
 } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { nameof } from '../../utils/nameof';
 /* eslint-enable max-len */
 
 @Manager()
@@ -50,7 +51,12 @@ export class UserManager extends BaseManager {
 	public async getAllUsers(
 		@AuthContext() _accessContext: AccessContext
 	): Promise<{ users: User[], count: number}> {
-		const [users, count] = await this.userRepository.findAndCount();
+		const [users, count] = await this.userRepository.findAndCount({
+			relations: [
+				nameof<User>('localIdentity'),
+				nameof<User>('authSCHIdentity')
+			]
+		});
 		return { users, count };
 	}
 
@@ -62,6 +68,10 @@ export class UserManager extends BaseManager {
 		checkPagination(pageSize, offset);
 
 		const [users, count] = await this.userRepository.findAndCount({
+			relations: [
+				nameof<User>('localIdentity'),
+				nameof<User>('authSCHIdentity')
+			],
 			take: pageSize,
 			skip: offset * pageSize
 		});
@@ -74,7 +84,12 @@ export class UserManager extends BaseManager {
 		id: string,
 		options?: { event?: Event }
 	): Promise<User> {
-		const user = await this.userRepository.findOne({ id });
+		const user = await this.userRepository.findOne({ id }, {
+			relations: [
+				nameof<User>('localIdentity'),
+				nameof<User>('authSCHIdentity')
+			]
+		});
 
 		if(!user) {
 			return this.getUserFail(accessContext, id, options?.event);

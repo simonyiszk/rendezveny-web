@@ -81,7 +81,8 @@ export class ClubManager extends BaseManager {
 	@AuthorizeGuard(IsAdmin())
 	public async addClub(
 		@AuthContext() accessContext: AccessContext,
-		name: string
+		name: string,
+		externalId: number
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
 
@@ -91,7 +92,7 @@ export class ClubManager extends BaseManager {
 			throw new ClubWithNameExistsException(name);
 		}
 		else {
-			const club = new Club({ name });
+			const club = new Club({ name, externalId });
 			return this.clubRepository.save(club);
 		}
 	}
@@ -101,7 +102,8 @@ export class ClubManager extends BaseManager {
 	public async editClub(
 		@AuthContext() accessContext: AccessContext,
 		@AuthClub() club: Club,
-		name: string
+		name: string,
+		externalId: number
 	): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
 
@@ -112,6 +114,7 @@ export class ClubManager extends BaseManager {
 		}
 		else {
 			club.name = name;
+			club.externalId = externalId;
 			return this.clubRepository.save(club);
 		}
 	}

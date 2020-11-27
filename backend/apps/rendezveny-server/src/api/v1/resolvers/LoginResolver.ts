@@ -41,6 +41,30 @@ export class LoginResolver {
 		};
 	}
 
+	@Mutation(_ => LoginDTO, {
+		name: 'login_withAuthSCHIdentity',
+		description: 'Logs the user in with AuthSCH'
+	})
+	@UseFilters(BusinessExceptionFilter)
+	@Transactional()
+	public async loginWithAuthSCHIdentity(
+		@Args('authorizationCode', {
+			description: 'The Oauth2 authorization code'
+		}) authorizationCode: string
+	): Promise<LoginDTO> {
+		const { access, refresh, user } = await this.authManager.loginWithAuthSCHIdentity(authorizationCode);
+		return {
+			access: access,
+			refresh: refresh,
+			role: LoginResolver.transformUserRule(user.role),
+			memberships: user.memberships.map(membership => ({
+				club: membership.club,
+				user: membership.user,
+				role: MembershipResolver.transformClubRole(membership.clubRole)
+			}))
+		};
+	}
+
 	@Mutation(_ => GraphQLString, {
 		name: 'login_withRefreshToken',
 		description: 'Logs the user in with a refresh token'

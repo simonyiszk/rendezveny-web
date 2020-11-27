@@ -6,6 +6,7 @@ import { RefreshToken } from './RefreshToken';
 import { Registration } from './Registration';
 import { Organizer } from './Organizer';
 import { BaseEntity } from '../utils/BaseEntity';
+import { AuthSCHIdentity } from './AuthSCHIdentity';
 
 @Entity()
 export class User extends BaseEntity<User> {
@@ -26,6 +27,11 @@ export class User extends BaseEntity<User> {
 		onDelete: 'CASCADE'
 	})
 	public localIdentity?: LocalIdentity;
+
+	@OneToOne(_ => AuthSCHIdentity, authSCHIdentity => authSCHIdentity.user, {
+		onDelete: 'CASCADE'
+	})
+	public authSCHIdentity?: AuthSCHIdentity;
 
 	@OneToMany(_ => ClubMembership, membership => membership.user, {
 		onDelete: 'CASCADE'
@@ -52,6 +58,7 @@ export class User extends BaseEntity<User> {
 		role?: UserRole,
 		isSuspended?: boolean,
 		localIdentity?: LocalIdentity,
+		authSCHIdentity?: AuthSCHIdentity,
 		memberships?: ClubMembership[]
 	}) {
 		super();
@@ -61,6 +68,9 @@ export class User extends BaseEntity<User> {
 			this.isSuspended = params.isSuspended ?? false;
 			if(params.localIdentity) {
 				this.localIdentity = params.localIdentity;
+			}
+			if(params.authSCHIdentity) {
+				this.authSCHIdentity = params.authSCHIdentity;
 			}
 			if(params.memberships) {
 				this.memberships = params.memberships;

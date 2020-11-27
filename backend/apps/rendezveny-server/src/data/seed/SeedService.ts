@@ -25,6 +25,7 @@ import { HRTable } from '../models/HRTable';
 import { HRTask } from '../models/HRTask';
 import { HRSegment } from '../models/HRSegment';
 import { Log } from '../models/Log';
+import { AuthSCHIdentity } from '../models/AuthSCHIdentity';
 
 @Injectable()
 export class SeedService {
@@ -33,6 +34,7 @@ export class SeedService {
 		@InjectRepository(Club) private readonly clubRepository: Repository<Club>,
 		@InjectRepository(User) private readonly userRepository: Repository<User>,
 		@InjectRepository(LocalIdentity) private readonly localIdentityRepository: Repository<LocalIdentity>,
+		@InjectRepository(AuthSCHIdentity) private readonly authSCHIdentityRepository: Repository<AuthSCHIdentity>,
 		@InjectRepository(ClubMembership) private readonly membershipRepository: Repository<ClubMembership>,
 		@InjectRepository(RefreshToken) private readonly refreshTokenRepository: Repository<RefreshToken>,
 		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
@@ -56,6 +58,7 @@ export class SeedService {
 			await this.clubRepository.clear();
 			await this.userRepository.clear();
 			await this.localIdentityRepository.clear();
+			await this.authSCHIdentityRepository.clear();
 			await this.membershipRepository.clear();
 			await this.refreshTokenRepository.clear();
 			await this.eventRepository.clear();
@@ -126,13 +129,13 @@ export class SeedService {
 
 		/* Clubs */
 
-		const geekClub = new Club({ name: 'Geek Club' });
+		const geekClub = new Club({ name: 'Geek Club', externalId: 1 });
 		await this.clubRepository.save(geekClub);
 
-		const fencingClub = new Club({ name: 'Fencing Club' });
+		const fencingClub = new Club({ name: 'Fencing Club', externalId: 2 });
 		await this.clubRepository.save(fencingClub);
 
-		const bookClub = new Club({ name: 'Book Club' });
+		const bookClub = new Club({ name: 'Book Club', externalId: 3 });
 		await this.clubRepository.save(bookClub);
 
 		/* Membershisp */

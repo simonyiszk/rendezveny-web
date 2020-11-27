@@ -1,4 +1,4 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, HttpModule, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClubManager } from './clubs/ClubManager';
 import { DataModule } from '../data/DataModule';
@@ -30,6 +30,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 			useFactory: async(configService: ConfigService) => ({
 				secret: configService.get('token.secret')
 			})
+		}),
+		HttpModule.register({
+			timeout: 5000
 		})
 	],
 	providers: [

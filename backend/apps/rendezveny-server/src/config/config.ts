@@ -16,5 +16,9 @@ export default (): Record<string, unknown> => ({
 		domain: process.env.DOMAIN ?? 'localhost:3000',
 		rateLimit: parseInt(process.env.RATE_LIMIT ?? '100')
 	},
+	authsch: {
+		clientId: 'clientId',
+		secretKey: 'secretKey'
+	},
 	debug: process.env.DEBUG !== undefined
 });

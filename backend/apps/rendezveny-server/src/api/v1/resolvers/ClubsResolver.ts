@@ -63,9 +63,10 @@ export class ClubsResolver {
 	@Transactional()
 	public async addClub(
 		@AccessCtx() accessContext: AccessContext,
-		@Args('name', { description: 'The name of the club' }) name: string
+		@Args('name', { description: 'The name of the club' }) name: string,
+		@Args('externalId', { description: 'The SCH id of the club' }) externalId: number
 	): Promise<ClubDTO> {
-		return this.clubManager.addClub(accessContext, name);
+		return this.clubManager.addClub(accessContext, name, externalId);
 	}
 
 	@Mutation(_ => ClubDTO, {
@@ -78,10 +79,11 @@ export class ClubsResolver {
 	public async editClub(
 		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the club' }) id: string,
-		@Args('name', { description: 'The name of the club' }) name: string
+		@Args('name', { description: 'The name of the club' }) name: string,
+		@Args('externalId', { description: 'The SCH id of the club' }) externalId: number
 	): Promise<ClubDTO> {
 		const club = await this.clubManager.getClubById(accessContext, id);
-		return this.clubManager.editClub(accessContext, club, name);
+		return this.clubManager.editClub(accessContext, club, name, externalId);
 	}
 
 	@Mutation(_ => GraphQLBoolean, {

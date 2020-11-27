@@ -18,6 +18,10 @@ import { TemporaryIdentity } from '../models/TemporaryIdentity';
 import { User } from '../models/User';
 import { BaseRepository } from '../utils/BaseRepository';
 import { Log } from '../models/Log';
+import { AuthSCHIdentity } from '../models/AuthSCHIdentity';
+
+@EntityRepository(AuthSCHIdentity)
+export class AuthSCHIdentityRepository extends BaseRepository<AuthSCHIdentity> {}
 
 @EntityRepository(Club)
 export class ClubRepository extends BaseRepository<Club> {}
