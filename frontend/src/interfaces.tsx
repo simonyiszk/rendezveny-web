@@ -34,7 +34,7 @@ export interface User {
   id: string;
   name: string;
   clubMemberships: {
-    nodes: Membership;
+    nodes: Membership[];
   };
   registration: EventRegistration;
 }
@@ -43,7 +43,7 @@ export interface Club {
   id: string;
   name: string;
   clubMemberships: {
-    nodes: Membership;
+    nodes: Membership[];
   };
 }
 

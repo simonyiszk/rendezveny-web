@@ -14,6 +14,7 @@ import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Club, Event, User } from '../../interfaces';
 import { useClubsGetAllQuery } from '../../utils/api/information/ClubsGetAllQuery';
+import { useClubsGetOtherMembersQuery } from '../../utils/api/information/ClubsGetOtherMembersQuery';
 import { useEventGetInformationQuery } from '../../utils/api/information/EventGetInformationQuery';
 import { useEventInformationMutation } from '../../utils/api/information/EventInformationMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
@@ -101,18 +102,44 @@ export default function InformationPage({
       setOrganizerClubs(queryData.events_getOne.hostingClubs);
     },
   );
+  const [getOtherMembers, _getOtherMembers] = useClubsGetOtherMembersQuery(
+    (queryData) => {
+      console.log(queryData);
+      const resultAllUser = queryData.users_getSelf.clubMemberships.nodes
+        .reduce((acc, curr) => {
+          const resultClubMembers = curr.club.clubMemberships.nodes.reduce(
+            (acc2, curr2) => {
+              return [
+                ...acc2,
+                { id: curr2.user.id, name: curr2.user.name } as User,
+              ];
+            },
+            [] as User[],
+          );
+          return [...acc, ...resultClubMembers];
+        }, [] as User[])
+        .filter(
+          (user, index, self) =>
+            self.findIndex((t) => t.id === user.id) === index,
+        );
+      setAllUsers(resultAllUser);
+    },
+  );
+
   const [getClubs, _getClubs] = useClubsGetAllQuery((queryData) => {
     console.log(queryData);
     setAllClubs(queryData.clubs_getAll.nodes);
   });
-  console.log(_getClubs.error);
+
   useEffect(() => {
     const fetchEventData = async () => {
       if (event) {
         await getEventTokenMutation(event.id);
         getOrganizers({ variables: { id: event.id } });
-        getClubs();
+      } else {
+        getOtherMembers();
       }
+      getClubs();
     };
     fetchEventData();
   }, [event?.id]);
