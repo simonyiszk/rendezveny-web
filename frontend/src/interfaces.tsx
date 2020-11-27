@@ -33,19 +33,18 @@ export interface Event {
 export interface User {
   id: string;
   name: string;
-  clubs: Club[];
+  clubMemberships: {
+    nodes: Membership;
+  };
   registration: EventRegistration;
 }
 
 export interface Club {
   id: string;
   name: string;
-  users: User[];
-}
-
-export interface HistoryYear {
-  year: number;
-  events: Event[];
+  clubMemberships: {
+    nodes: Membership;
+  };
 }
 
 export interface EventRelation {
@@ -122,4 +121,16 @@ export interface EventRegistrationFormAnswersInput {
 export interface EventRegistrationFormAnswerInput {
   answer: string;
   id: string;
+}
+
+// CLUB
+
+export interface Membership {
+  club: Club;
+  role: ClubRole;
+  user: User;
+}
+export enum ClubRole {
+  CLUB_MANAGER,
+  MEMBER,
 }
