@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from '../../data/models/Event';
 import {
@@ -15,14 +16,21 @@ import { HRSegment } from '../../data/models/HRSegment';
 import { UserDoesNotExistsException } from '../users/exceptions/UserDoesNotExistsException';
 import { OrganizerAlreadyIsAnOrganizerException } from './exceptions/OrganizerAlreadyIsAnOrganizerException';
 import { DEFAULT } from '../../data/models/OrganizerNotificationSettings';
-import { OrganizerRepository, UserRepository } from '../../data/repositories/repositories';
+import { HRSegmentRepository, OrganizerRepository, UserRepository } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { BaseManager, Manager } from '../utils/BaseManager';
+import { HRSegmentDoesNotExistsException } from './exceptions/HRSegmentDoesNotExistsException';
+import { nameof } from '../../utils/nameof';
+import { HRSegmentOrganizerAlreadyRegisteredException } from './exceptions/HRSegmentOrganizerAlreadyRegisteredException';
+import { HRSegmentIsFullException } from './exceptions/HRSegmentIsFullException';
+import { checkPermission } from '../utils/permissions/CheckPermissions';
+/* eslint-enable max-len */
 
 @Manager()
 export class OrganizerManager extends BaseManager {
 	public constructor(
 		@InjectRepository(OrganizerRepository) private readonly organizerRepository: OrganizerRepository,
+		@InjectRepository(HRSegmentRepository) private readonly hrSegmentRepository: HRSegmentRepository,
 		@InjectRepository(UserRepository) private readonly userRepository: UserRepository,
 	) {
 		super();
@@ -119,5 +127,60 @@ export class OrganizerManager extends BaseManager {
 		organizer: Organizer
 	): Promise<void> {
 		await this.organizerRepository.remove(organizer);
+	}
+
+	@Transactional()
+	@AuthorizeGuard(IsOrganizer())
+	public async registerOrganizerToHRTask(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event,
+		organizer: Organizer,
+		hrSegmentId: string
+	): Promise<void> {
+		checkPermission(eventContext.isChiefOrganizer(event) || eventContext.getUserId() === organizer.userId);
+
+		const hrSegment = await this.hrSegmentRepository.findOne(hrSegmentId, {
+			relations: [nameof<HRSegment>('organizers')]
+		});
+		if(!hrSegment) {
+			throw new HRSegmentDoesNotExistsException();
+		}
+
+		if(hrSegment.organizers.some(o => o.id === organizer.id)) {
+			throw new HRSegmentOrganizerAlreadyRegisteredException();
+		}
+
+		if(hrSegment.capacity <= hrSegment.organizers.length) {
+			throw new HRSegmentIsFullException();
+		}
+
+		hrSegment.organizers.push(organizer);
+		await this.hrSegmentRepository.save(hrSegment);
+	}
+
+	@Transactional()
+	@AuthorizeGuard(IsOrganizer())
+	public async unregisterOrganizerFromHRTask(
+		@AuthContext() eventContext: EventContext,
+		@AuthEvent() event: Event,
+		organizer: Organizer,
+		hrSegmentId: string
+	): Promise<void> {
+		checkPermission(eventContext.isChiefOrganizer(event) || eventContext.getUserId() === organizer.userId);
+
+		await organizer.loadRelation(this.organizerRepository, 'hrSegments');
+
+		const hrSegment = await this.hrSegmentRepository.findOne(hrSegmentId, {
+			relations: [nameof<HRSegment>('organizers')]
+		});
+		if(!hrSegment) {
+			throw new HRSegmentDoesNotExistsException();
+		}
+
+		hrSegment.organizers = hrSegment.organizers.filter(o => o.id !== organizer.id);
+		organizer.hrSegments = organizer.hrSegments.filter(s => s.id !== hrSegmentId);
+
+		await this.hrSegmentRepository.save(hrSegment);
+		await this.organizerRepository.save(organizer);
 	}
 }

@@ -220,7 +220,7 @@ export class HRTableManager extends BaseManager {
 			isLocked: hrTable.isLocked,
 			tasks: hrTable.hrTasks.sort((t1, t2) => t1.order - t2.order).map(task => ({
 				id: task.id,
-				name: task.id,
+				name: task.name,
 				start: task.start,
 				end: task.end,
 				isLocked: task.isLocked,

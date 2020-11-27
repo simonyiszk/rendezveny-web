@@ -99,4 +99,42 @@ export class OrganizerResolver {
 			return [];
 		}
 	}
+
+	@Mutation(_ => GraphQLBoolean, {
+		name: 'organizer_registerToHRTask',
+		description: 'Registers the organizer for a HR task'
+	})
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthEventGuard)
+	@Transactional()
+	public async registerToHRTask(
+		@EventCtx() eventContext: EventContext,
+		@Args('id', { description: 'The id of organizer' }) id: string,
+		@Args('hrSegmentId', { description: 'The id of the segment to register to' }) hrSegmentId: string,
+	): Promise<boolean> {
+		const event = await this.eventManager.getEventById(eventContext.getEventId());
+		const organizer = await this.organizerManager.getOrganizerById(eventContext, event, id);
+		await this.organizerManager.registerOrganizerToHRTask(eventContext, event, organizer, hrSegmentId);
+
+		return true;
+	}
+
+	@Mutation(_ => GraphQLBoolean, {
+		name: 'organizer_unregisterFromHRTask',
+		description: 'Unregisters an organizer from a HR task'
+	})
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthEventGuard)
+	@Transactional()
+	public async unregisterFromHRTask(
+		@EventCtx() eventContext: EventContext,
+		@Args('id', { description: 'The id of organizer' }) id: string,
+		@Args('hrSegmentId', { description: 'The id of the segment to register to' }) hrSegmentId: string,
+	): Promise<boolean> {
+		const event = await this.eventManager.getEventById(eventContext.getEventId());
+		const organizer = await this.organizerManager.getOrganizerById(eventContext, event, id);
+		await this.organizerManager.unregisterOrganizerFromHRTask(eventContext, event, organizer, hrSegmentId);
+
+		return true;
+	}
 }
