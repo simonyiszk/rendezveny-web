@@ -2,36 +2,33 @@ import React, { useEffect, useState } from 'react';
 
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
-import { Event, HistoryYear } from '../interfaces';
+import { Event, HistoryYears } from '../interfaces';
+import { useEventGetHistoryQuery } from '../utils/api/history/EventsGetHistoryQuery';
 
 export default function HistoryPage(): JSX.Element {
-  const [histories, setHistories] = useState<HistoryYear[]>([]);
+  const getEvents = useEventGetHistoryQuery((queryData) => {
+    const history = queryData.events_getAll.nodes.reduce((acc, curr) => {
+      const key = new Date(curr.start).getFullYear();
+      (acc[key] = acc[key] || []).push(curr);
+      return acc;
+    }, {} as HistoryYears);
+    setAllEvent(history);
+  });
 
-  useEffect(() => {
-    setHistories([
-      {
-        year: 2020,
-        events: [
-          { id: 1, name: 'Test event 1', startDate: '2020-11-10' },
-          { id: 4, name: 'Test event 4', startDate: '2020-11-10' },
-        ],
-      },
-      {
-        year: 2019,
-        events: [
-          { id: 1, name: 'Test event 1', startDate: '2020-11-10' },
-          { id: 4, name: 'Test event 4', startDate: '2020-11-10' },
-        ],
-      },
-    ]);
-  }, []);
+  const [allEvent, setAllEvent] = useState<HistoryYears>({});
+
+  if (getEvents.error) {
+    // navigate('/');
+    return <div>Error</div>;
+  }
 
   return (
     <Layout>
-      {histories.map((h) => (
+      {Object.entries(allEvent).map(([key, value]) => (
         <EventSection
-          text={h.year.toString()}
-          listOfEvents={h.events}
+          key={key}
+          text={key}
+          listOfEvents={value}
           withControls={false}
         />
       ))}

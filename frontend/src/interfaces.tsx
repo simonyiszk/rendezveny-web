@@ -30,6 +30,10 @@ export interface Event {
   };
 }
 
+export interface HistoryYears {
+  [year: string]: Event[];
+}
+
 export interface User {
   id: string;
   name: string;
