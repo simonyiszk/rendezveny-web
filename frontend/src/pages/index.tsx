@@ -12,7 +12,7 @@ import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 export default function IndexPage(): JSX.Element {
-  const [getEvents, { error }] = useEventGetAllQuery((queryData) => {
+  const getEvents = useEventGetAllQuery((queryData) => {
     setOrganizedEvents(queryData.organizedEvents.nodes);
     setRegisteredEvents(queryData.registeredEvents.nodes);
     setAvailableEvents(queryData.availableEvents.nodes);
@@ -22,14 +22,7 @@ export default function IndexPage(): JSX.Element {
   const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
 
-  useEffect(() => {
-    const fetchEventData = async () => {
-      getEvents();
-    };
-    fetchEventData();
-  }, []);
-
-  if (error) {
+  if (getEvents.error) {
     navigate('/login');
     return <div>Error {error.message}</div>;
   }

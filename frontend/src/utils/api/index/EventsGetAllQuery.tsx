@@ -1,8 +1,9 @@
 import {
   gql,
   OperationVariables,
-  QueryTuple,
+  QueryResult,
   useLazyQuery,
+  useQuery,
 } from '@apollo/client';
 
 import { Event } from '../../../interfaces';
@@ -47,7 +48,7 @@ export const eventGetAllQuery = gql`
     }
   }
 `;
-interface QueryResult {
+interface QueryResultL {
   organizedEvents: {
     nodes: Event[];
   };
@@ -59,10 +60,10 @@ interface QueryResult {
   };
 }
 export const useEventGetAllQuery = (
-  cb: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetAllQuery, {
+  cb: (data: QueryResultL) => void,
+): QueryResult<QueryResultL, OperationVariables> => {
+  const getQuery = useQuery<QueryResultL>(eventGetAllQuery, {
     onCompleted: cb,
   });
-  return [getQuery, data];
+  return getQuery;
 };
