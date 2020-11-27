@@ -16,3 +16,8 @@ export function getEventToken(): string | null {
 export function setEventToken(_token: string): void {
   localStorage.setItem(eventToken, _token);
 }
+
+export function resetTokens(): void {
+  localStorage.removeItem(authToken);
+  localStorage.removeItem(eventToken);
+}

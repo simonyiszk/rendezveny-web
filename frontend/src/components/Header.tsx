@@ -1,3 +1,4 @@
+import { useApolloClient } from '@apollo/client';
 import {
   Box,
   Button,
@@ -14,8 +15,17 @@ import React from 'react';
 
 import logoSmall from '../assets/images/simonyi_white_small.svg';
 import logo from '../assets/images/simonyi_white_white.svg';
+import useLogoutService from '../utils/services/LogoutService';
 
 export default function Header(): JSX.Element {
+  const client = useApolloClient();
+  const getLogoutService = useLogoutService(client);
+
+  const handleLogout = () => {
+    getLogoutService();
+    window.location = '/login';
+  };
+
   return (
     <Flex p={1} backgroundColor="simonyi">
       <Box>
@@ -55,9 +65,7 @@ export default function Header(): JSX.Element {
             <MenuList>
               <MenuItem>Profil</MenuItem>
               <MenuItem>Logok</MenuItem>
-              <MenuItem as={Link} to="/login">
-                Kilépés
-              </MenuItem>
+              <MenuItem onClick={handleLogout}>Kilépés</MenuItem>
             </MenuList>
           </Menu>
         </Flex>

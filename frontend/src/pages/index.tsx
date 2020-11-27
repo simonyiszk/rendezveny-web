@@ -24,7 +24,7 @@ export default function IndexPage(): JSX.Element {
 
   if (getEvents.error) {
     navigate('/login');
-    return <div>Error {getEvents.error}</div>;
+    return <div>Error</div>;
   }
 
   return (
