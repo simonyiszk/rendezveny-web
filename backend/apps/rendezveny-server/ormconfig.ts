@@ -1,10 +1,15 @@
+import config from './src/config/config';
+
+const { host, port, username, password, database } = config().database as never;
+
 export = {
 	type: 'mysql',
-	host: 'localhost',
-	port: 3306,
-	username: 'rendezveny',
-	password: 'rendezveny',
-	database: 'rendezveny_db',
+
+	host: host,
+	port: port,
+	username: username,
+	password: password,
+	database: database,
 
 	synchronize: false,
 	entities: [

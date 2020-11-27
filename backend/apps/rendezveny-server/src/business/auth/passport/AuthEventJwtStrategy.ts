@@ -8,14 +8,15 @@ import { AuthInvalidTokenException } from '../exceptions/AuthInvalidTokenExcepti
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthJwtGuard } from './AuthJwtGuard';
 import { EventContext, EventToken, isEventToken } from '../tokens/EventToken';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthEventJwtStrategy extends PassportStrategy(Strategy, 'event') {
-	public constructor() {
+	public constructor(configService: ConfigService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-			ignoreExpiration: true,
-			secretOrKey: 'rendezveny'
+			ignoreExpiration: configService.get<boolean>('debug'),
+			secretOrKey: configService.get('token.secret')
 		});
 	}
 

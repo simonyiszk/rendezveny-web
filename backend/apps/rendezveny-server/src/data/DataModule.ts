@@ -17,6 +17,7 @@ import {
 	TagRepository,
 	TemporaryIdentityRepository, UserRepository
 } from './repositories/repositories';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
 	imports: [
@@ -50,20 +51,19 @@ export class DataModule {
 	public static forRoot(): DynamicModule[] {
 		return [
 			TypeOrmModule.forRootAsync({
-				useFactory: async() => {
-					const ormconfig = await import('../../ormconfig');
-					return {
-						type: ormconfig.type as 'mysql',
-						host: ormconfig.host,
-						port: ormconfig.port,
-						username: ormconfig.username,
-						password: ormconfig.password,
-						database: ormconfig.database,
+				imports: [ConfigModule],
+				inject: [ConfigService],
+				useFactory: async(configService: ConfigService) => ({
+						type: 'mysql',
+						host: configService.get('database.host'),
+						port: configService.get('database.port'),
+						username: configService.get('database.username'),
+						password: configService.get('database.password'),
+						database: configService.get('database.database'),
 
 						autoLoadEntities: true,
 						logging: ['warn', 'error']
-					};
-				}
+					})
 			})
 		];
 	}

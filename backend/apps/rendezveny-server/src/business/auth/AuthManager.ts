@@ -18,6 +18,7 @@ import { RefreshContext, RefreshToken } from './tokens/RefreshToken';
 import { AccessToken } from './tokens/AccessToken';
 import { LocalIdentityRepository, RefreshTokenRepository, UserRepository } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthManager {
@@ -26,7 +27,8 @@ export class AuthManager {
 		@InjectRepository(LocalIdentityRepository) private readonly localIdentityRepository: LocalIdentityRepository,
 		@InjectRepository(RefreshTokenRepository) private readonly refreshTokenRepository: RefreshTokenRepository,
 		private readonly jwtService: JwtService,
-		private readonly cryptoService: CryptoService
+		private readonly cryptoService: CryptoService,
+		private readonly configService: ConfigService
 	) {}
 
 	@Transactional()
@@ -62,7 +64,7 @@ export class AuthManager {
 				} as RefreshToken;
 
 				const refreshToken = await this.jwtService.signAsync(refreshPayload, {
-					expiresIn: '90d'
+					expiresIn: this.configService.get('token.refreshValidity')
 				});
 
 				return {
@@ -106,7 +108,7 @@ export class AuthManager {
 							rol: m.clubRole
 						}))
 					} as AccessToken, {
-						expiresIn: '5m'
+						expiresIn: this.configService.get('token.accessValidity')
 					}),
 					user: user
 				};

@@ -53,6 +53,7 @@ import {
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { EventUniqueNameValidationException } from './exceptions/EventUniqueNameValidationException';
 import { EventCapacityValidationException } from './exceptions/EventCapacityValidationException';
+import { ConfigService } from '@nestjs/config';
 
 /* eslint-enable max-len */
 
@@ -66,7 +67,8 @@ export class EventManager extends BaseManager {
 		@InjectRepository(ClubRepository) private readonly clubRepository: ClubRepository,
 		@InjectRepository(TemporaryIdentityRepository)
 		private readonly tempIdentityRepository: TemporaryIdentityRepository,
-		private readonly jwtService: JwtService
+		private readonly jwtService: JwtService,
+		private readonly configService: ConfigService
 	) {
 		super();
 	}
@@ -415,7 +417,7 @@ export class EventManager extends BaseManager {
 				}
 				: 'none'
 		} as EventToken, {
-			expiresIn: '5m'
+			expiresIn: this.configService.get('token.eventValidity')
 		});
 	}
 

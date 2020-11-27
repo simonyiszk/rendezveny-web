@@ -18,13 +18,18 @@ import { OrganizerManager } from './organizing/OrganizerManager';
 import { HRTableManager } from './organizing/HRTableManager';
 import { LoggingInterceptor } from './log/LoggingInterceptor';
 import { LogManager } from './log/LogManager';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
 	imports: [
 		DataModule,
 		PassportModule,
-		JwtModule.register({
-			secret: 'rendezveny'
+		JwtModule.registerAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: async(configService: ConfigService) => ({
+				secret: configService.get('token.secret')
+			})
 		})
 	],
 	providers: [
