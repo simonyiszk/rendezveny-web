@@ -6,24 +6,17 @@ import {
   useMutation,
   useQuery,
 } from '@apollo/client';
-import {
-  Box,
-  Checkbox,
-  CheckboxGroup,
-  Flex,
-  Input,
-  Radio,
-  RadioGroup,
-  Select,
-} from '@chakra-ui/core';
+import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
 import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../components/Button';
+import { Checkbox, CheckboxGroup } from '../components/CheckBoxGroup';
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import LinkButton from '../components/LinkButton';
+import { Radio, RadioGroup } from '../components/RadioGroup';
 import {
   Event,
   EventRegistrationForm,
@@ -123,6 +116,8 @@ export default function RegistrationPage({
     return answers[id];
   };
   const setAnswer = (id: string, text: string | string[]): void => {
+    console.log('setanswer');
+    console.log(text);
     setAnswers({ ...answers, [id]: text });
   };
 
@@ -169,60 +164,86 @@ export default function RegistrationPage({
     <Layout>
       <Flex flexDir="column" alignItems="center">
         <form>
-          {data &&
-            data.events_getCurrent.registrationForm.questions.map((q) => (
-              <Box key={q.id}>
-                <Box>{q.question}</Box>
-                {q.metadata.type === 'text' && (
-                  <Input
-                    value={getAnswer(q.id) || ''}
-                    onChange={(e) => setAnswer(q.id, e.target.value)}
-                  />
-                )}
-                {q.metadata.type === 'multiple_choice' &&
-                  (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                    .multipleAnswers && (
-                    <CheckboxGroup
-                      value={getAnswer(q.id) || []}
-                      onChange={(e: string[]) => setAnswer(q.id, e)}
-                    >
-                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                        (option) => (
-                          <Checkbox key={option.id} value={option.id}>
-                            {option.text}
-                          </Checkbox>
-                        ),
-                      )}
-                    </CheckboxGroup>
+          <Grid
+            gridTemplateColumns={['1fr', null, '1fr 1fr']}
+            rowGap={['0', null, '1rem']}
+          >
+            {data &&
+              data.events_getCurrent.registrationForm.questions.map((q) => (
+                <React.Fragment key={q.id}>
+                  <Box>{q.question}</Box>
+                  {q.metadata.type === 'text' && (
+                    <Input
+                      mb={['1rem', null, '0']}
+                      value={getAnswer(q.id) || ''}
+                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                    />
                   )}
-                {q.metadata.type === 'multiple_choice' &&
-                  !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                    .multipleAnswers && (
-                    <RadioGroup
-                      value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                      onChange={(e: string[]) =>
-                        setAnswer(q.id, [e.target.value])
-                      }
-                    >
-                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                        (option) => (
-                          <Radio key={option.id} value={option.id}>
-                            {option.text}
-                          </Radio>
-                        ),
-                      )}
-                    </RadioGroup>
-                  )}
-              </Box>
-            ))}
+                  {q.metadata.type === 'multiple_choice' &&
+                    (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                      .multipleAnswers && (
+                      <CheckboxGroup
+                        flexDir="column"
+                        value={getAnswer(q.id) || []}
+                        onChangeCb={(e: string[]): void => setAnswer(q.id, e)}
+                      >
+                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                          (option) => (
+                            <Checkbox key={option.id} value={option.id} mb={2}>
+                              {option.text}
+                            </Checkbox>
+                          ),
+                        )}
+                      </CheckboxGroup>
+                    )}
+                  {q.metadata.type === 'multiple_choice' &&
+                    !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                      .multipleAnswers && (
+                      <RadioGroup
+                        flexDir="column"
+                        value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
+                        onChangeCb={(e: string): void => setAnswer(q.id, [e])}
+                      >
+                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                          (option) => (
+                            <Radio key={option.id} value={option.id} mb={2}>
+                              {option.text}
+                            </Radio>
+                          ),
+                        )}
+                      </RadioGroup>
+                    )}
+                </React.Fragment>
+              ))}
+          </Grid>
           {!registered && (
-            <Button text="Regisztráció" onClick={handleRegistration} />
+            <Flex justifyContent="center" mt={4}>
+              <Button
+                width={['100%', null, '45%']}
+                text="Regisztráció"
+                onClick={handleRegistration}
+              />
+            </Flex>
           )}
           {registered && (
-            <>
-              <Button text="Módosítás" onClick={handleModify} />
-              <Button text="Regisztráció törlése" onClick={handleDelete} />
-            </>
+            <Flex
+              justifyContent={['center', null, 'space-between']}
+              flexDir={['column', null, 'row']}
+              mt={4}
+            >
+              <Button
+                width={['100%', null, '45%']}
+                text="Módosítás"
+                onClick={handleModify}
+              />
+              <Button
+                width={['100%', null, '45%']}
+                text="Regisztráció törlése"
+                backgroundColor="red"
+                mt={[4, null, 0]}
+                onClick={handleDelete}
+              />
+            </Flex>
           )}
         </form>
       </Flex>
