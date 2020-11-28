@@ -13,12 +13,10 @@ import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 export default function IndexPage(): JSX.Element {
   const getEvents = useEventGetAllQuery((queryData) => {
-    setOrganizedEvents(queryData.organizedEvents.nodes);
     setRegisteredEvents(queryData.registeredEvents.nodes);
     setAvailableEvents(queryData.availableEvents.nodes);
   });
 
-  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
 
@@ -29,22 +27,15 @@ export default function IndexPage(): JSX.Element {
 
   return (
     <Layout>
-      <ProtectedComponent>
-        <LinkButton
-          text="Rendezvény létrehozása"
-          width={['100%', null, '15rem']}
-          to="/manage/information"
-          state={{ event: null }}
-        />
-      </ProtectedComponent>
-      <EventSection text="Kezelt rendezvények" listOfEvents={organizedEvents} />
       <EventSection
-        text="Regisztrált rendezvények"
         listOfEvents={registeredEvents}
+        color="simonyi"
+        linkTo="/registration"
       />
       <EventSection
-        text="Közelgő rendezvények"
         listOfEvents={availableEvents}
+        color="gray"
+        linkTo="/registration"
       />
     </Layout>
   );

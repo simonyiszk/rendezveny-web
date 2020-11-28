@@ -6,28 +6,25 @@ import EventBox from './EventBox';
 import SectionHeader from './SectionHeader';
 
 interface Props extends BoxProps {
-  text: string;
   listOfEvents: Event[];
-  withControls?: boolean;
+  color: string;
+  linkTo?: string;
+  sectionText?: string;
 }
 
 export default function EventSection({
-  text,
   listOfEvents,
-  withControls = true,
+  color,
+  linkTo,
+  sectionText,
 }: Props): JSX.Element {
   return (
-    <Box>
-      {listOfEvents.length > 0 && (
-        <div>
-          <SectionHeader text={text} />
-          <Box pl={['0', null, '0.5rem']}>
-            {listOfEvents.map((e: Event) => (
-              <EventBox key={e.id} event={e} withControls={withControls} />
-            ))}
-          </Box>
-        </div>
-      )}
+    <Box mt={4}>
+      {sectionText && <SectionHeader text={sectionText} />}
+      {listOfEvents.length > 0 &&
+        listOfEvents.map((e: Event) => (
+          <EventBox key={e.id} event={e} color={color} linkTo={linkTo} />
+        ))}
     </Box>
   );
 }
