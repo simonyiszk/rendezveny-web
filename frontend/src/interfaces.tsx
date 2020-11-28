@@ -13,6 +13,7 @@ export interface Event {
   registrationAllowed: boolean;
   capacity: number;
   hostingClubs: Club[];
+  hrTable: HRTable;
   relations: {
     nodes: EventRelation[];
   };
@@ -29,7 +30,6 @@ export interface Event {
     registration: EventRegistration;
   };
 }
-
 export interface HistoryYears {
   [year: string]: Event[];
 }
@@ -43,14 +43,6 @@ export interface User {
   registration: EventRegistration;
 }
 
-export interface Club {
-  id: string;
-  name: string;
-  clubMemberships: {
-    nodes: Membership[];
-  };
-}
-
 export interface EventRelation {
   email: string;
   isMemberOfHostingClub: boolean;
@@ -59,15 +51,13 @@ export interface EventRelation {
   registration: EventRegistration;
   userId: string;
 }
-
 export interface EventRegistration {
   id: string;
   didAttend: boolean;
   formAnswer: EventRegistrationFormAnswers;
 }
-
 export interface EventOrganizer {
-  hrSegmentIds: string;
+  hrSegmentIds: string[];
   id: string;
   isChiefOrganizer: boolean;
 }
@@ -128,7 +118,13 @@ export interface EventRegistrationFormAnswerInput {
 }
 
 // CLUB
-
+export interface Club {
+  id: string;
+  name: string;
+  clubMemberships: {
+    nodes: Membership[];
+  };
+}
 export interface Membership {
   club: Club;
   role: ClubRole;
@@ -163,4 +159,28 @@ export enum ResultType {
 export enum IssuerType {
   PUBLIC,
   USER,
+}
+
+// HR TABLE
+export interface HRTable {
+  id: string;
+  isLocked: boolean;
+  tasks: HRTask[];
+}
+export interface HRTask {
+  end: Date;
+  id: string;
+  isLocked: boolean;
+  name: string;
+  segments: HRSegment[];
+  start: Date;
+}
+export interface HRSegment {
+  capacity: number;
+  end: Date;
+  id: string;
+  isLocked: boolean;
+  isRequired: boolean;
+  organizers: EventRelation[];
+  start: Date;
 }

@@ -48,13 +48,12 @@ export default function ManagePage({
           />
         </ProtectedComponent>
         <ProtectedComponent>
-          <Button
-            text="HR tábla szerkesztése"
+          <LinkButton
+            text="HR tábla"
             width={['100%', null, '30rem']}
             mb="1rem"
-            onClick={() => {
-              console.log('Clicked');
-            }}
+            to="/manage/hrtable"
+            state={{ event }}
           />
         </ProtectedComponent>
         <ProtectedComponent>
