@@ -6,7 +6,7 @@ import {
   useQuery,
 } from '@apollo/client';
 
-import { HRTable } from '../../../interfaces';
+import { Event } from '../../../interfaces';
 
 export const eventGetHRTableQuery = gql`
   query e_eventGetHRTable {
@@ -34,14 +34,18 @@ export const eventGetHRTableQuery = gql`
           }
         }
       }
+      selfRelation {
+        userId
+        organizer {
+          id
+          hrSegmentIds
+        }
+      }
     }
   }
 `;
 interface QueryResultL {
-  events_getCurrent: {
-    id: string;
-    hrTable: HRTable;
-  };
+  events_getCurrent: Event;
 }
 export const useEventGetHRTableQuery = (
   cb: (data: QueryResultL) => void,

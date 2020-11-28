@@ -1,16 +1,22 @@
 import { Box, BoxProps, Flex, Grid } from '@chakra-ui/core';
 import React from 'react';
 
-import { HRSegment, HRTable } from '../interfaces';
+import { HRCallback, HRSegment, HRTable } from '../interfaces';
 import Button from './Button';
 import HRTaskComp from './HRTaskComp';
 import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   hrtable: HRTable;
+  hrcb: HRCallback;
+  ownSegmentIds: string[];
 }
 
-export default function HRTableComp({ hrtable }: Props): JSX.Element {
+export default function HRTableComp({
+  hrtable,
+  hrcb,
+  ownSegmentIds,
+}: Props): JSX.Element {
   const getAllSegment = () => {
     return hrtable.tasks.reduce((acc, curr) => {
       const res = curr.segments.reduce((acc2, curr2) => {
@@ -76,16 +82,26 @@ export default function HRTableComp({ hrtable }: Props): JSX.Element {
   return (
     <Box>
       <Box>HR Tábla</Box>
-      <Grid templateColumns={`repeat(${getNumOfColumns()}, 1fr)`}>
-        {generateTimeSequence().map((t, idx) => (
-          <Box key={t[0]} style={{ gridColumn: `${idx + 2} / ${idx + 3}` }}>
-            {t[0]} - {t[1]}
-          </Box>
-        ))}
+      <Flex flexDir="column" mt={8}>
+        <Grid templateColumns={`repeat(${getNumOfColumns()}, 1fr)`}>
+          <Box>Pozíció</Box>
+          {generateTimeSequence().map((t, idx) => (
+            <Box key={t[0]}>
+              {t[0]} - {t[1]}
+            </Box>
+          ))}
+        </Grid>
         {hrtable.tasks.map((t) => (
-          <HRTaskComp key={t.id} hrtask={t} calc={calcPosByTimes} />
+          <HRTaskComp
+            key={t.id}
+            hrtask={t}
+            calc={calcPosByTimes}
+            nCols={getNumOfColumns()}
+            hrcb={hrcb}
+            ownSegmentIds={ownSegmentIds}
+          />
         ))}
-      </Grid>
+      </Flex>
     </Box>
   );
 }

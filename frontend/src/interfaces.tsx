@@ -23,12 +23,8 @@ export interface Event {
   chiefOrganizers: {
     nodes: EventRelation[];
   };
-  selfRelation: {
-    registration: EventRegistration;
-  };
-  selfRelation2: {
-    registration: EventRegistration;
-  };
+  selfRelation: EventRelation;
+  selfRelation2: EventRelation;
 }
 export interface HistoryYears {
   [year: string]: Event[];
@@ -183,4 +179,10 @@ export interface HRSegment {
   isRequired: boolean;
   organizers: EventRelation[];
   start: Date;
+}
+export interface HRCallback {
+  signUps: string[];
+  signOffs: string[];
+  signUpCb: (id: string) => void;
+  signOffCb: (id: string) => void;
 }
