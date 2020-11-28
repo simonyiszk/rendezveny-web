@@ -1,81 +1,39 @@
 import { gql, useQuery } from '@apollo/client';
-import { Flex, Heading } from '@chakra-ui/core';
-import { navigate, PageProps } from 'gatsby';
+import { navigate } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../components/Button';
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import LinkButton from '../components/LinkButton';
+import SectionHeader from '../components/SectionHeader';
 import { Event } from '../interfaces';
+import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
-interface PageState {
-  event: Event;
-}
-interface Props {
-  location: PageProps<null, null, PageState>['location'];
-}
+export default function ManagePage(): JSX.Element {
+  const getEvents = useEventGetAllQuery((queryData) => {
+    setOrganizedEvents(queryData.organizedEvents.nodes);
+  });
 
-export default function ManagePage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
-  // const { event } = location.state;
+  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
+
+  if (getEvents.error) {
+    navigate('/login');
+    return <div>Error</div>;
+  }
+
   return (
     <Layout>
-      <Heading textAlign="center" mb="2rem">
-        {event.name} kezelése
-      </Heading>
-      <Flex flexDir="column" alignItems="center">
-        <ProtectedComponent>
-          <LinkButton
-            text="Résztvevők kezelése"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to="/manage/members"
-            state={{ event }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent>
-          <LinkButton
-            text="Rendezvény kezelése"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to="/manage/details"
-            state={{ event }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent>
-          <LinkButton
-            text="HR tábla"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to="/manage/hrtable"
-            state={{ event }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent>
-          <LinkButton
-            text="Adatok szerkesztése"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to="/manage/information"
-            state={{ event }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent>
-          <Button
-            text="Regisztrációs form"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            onClick={() => {
-              console.log('Clicked');
-            }}
-          />
-        </ProtectedComponent>
-      </Flex>
+      <ProtectedComponent>
+        <LinkButton
+          text="Rendezvény létrehozása"
+          width={['100%', null, '15rem']}
+          to="/manage/information"
+          state={{ event: null }}
+        />
+      </ProtectedComponent>
+      <EventSection text="Kezelt rendezvények" listOfEvents={organizedEvents} />
     </Layout>
   );
 }

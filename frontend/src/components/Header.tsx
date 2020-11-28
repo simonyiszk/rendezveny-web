@@ -51,7 +51,10 @@ export default function Header(): JSX.Element {
             <MenuButton>Rendezvények</MenuButton>
             <MenuList>
               <MenuItem as={Link} to="/">
-                Rendezvények
+                Regisztráció
+              </MenuItem>
+              <MenuItem as={Link} to="/manage">
+                Kezelés
               </MenuItem>
               <MenuItem as={Link} to="/history">
                 Történet
