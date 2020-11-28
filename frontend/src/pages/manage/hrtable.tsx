@@ -1,23 +1,44 @@
+import { gql, useApolloClient, useQuery } from '@apollo/client';
 import { Box } from '@chakra-ui/core';
+import { PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../components/Button';
 import EventSection from '../../components/EventSection';
 import HRTableComp from '../../components/HRTableComp';
 import { Layout } from '../../components/Layout';
-import { Event } from '../../interfaces';
+import { Event, EventOrganizer, HRTable } from '../../interfaces';
 import { useEventGetHRTableQuery } from '../../utils/api/hrtable/HRGetTableQuery';
 import {
   usehrtableRegisterMutation,
   usehrtableUnRegisterMutation,
 } from '../../utils/api/hrtable/HRTableOrganizerSelfMutation';
-/* TODO EVENT TOKEN FRISSITES */
+import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 
-export default function HistoryPage(): JSX.Element {
-  const getHRTable = useEventGetHRTableQuery((queryData) => {
+interface PageState {
+  event: Event;
+}
+interface Props {
+  location: PageProps<null, null, PageState>['location'];
+}
+
+export default function HRTablePage({
+  location: {
+    state: { event },
+  },
+}: Props): JSX.Element {
+  const [getHRTable, _getHRTable] = useEventGetHRTableQuery((queryData) => {
     console.log('QUERYDATA', queryData);
+    setOrganizer(queryData.events_getOne.selfRelation.organizer);
+    setHRTable(queryData.events_getOne.hrTable);
+    setSignUps([]);
+    setSignOffs([]);
   });
 
+  const client = useApolloClient();
+  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
+    client,
+  );
   const [
     getRegisterMutation,
     _getRegisterMutation,
@@ -27,14 +48,27 @@ export default function HistoryPage(): JSX.Element {
     _getUnRegisterMutation,
   ] = usehrtableUnRegisterMutation();
 
+  const [hrTable, setHRTable] = useState<HRTable>();
+  const [organizer, setOrganizer] = useState<EventOrganizer>();
   const [signUps, setSignUps] = useState<string[]>([]);
   const [signOffs, setSignOffs] = useState<string[]>([]);
 
-  if (getHRTable.called && getHRTable.loading) return <div>Loading</div>;
+  useEffect(() => {
+    const fetchEventData = async () => {
+      await getEventTokenMutation(event.id);
+      getHRTable({ variables: { id: event.id } });
+    };
+    fetchEventData();
+    console.log(event.id);
+  }, [event.id]);
 
-  if (getHRTable.error) {
+  if (!hrTable || !organizer) return <div>Loading</div>;
+  console.log(hrTable);
+  console.log(organizer);
+
+  if (_getHRTable.error) {
     // navigate('/');
-    console.log(getHRTable.error);
+    console.log(_getHRTable.error);
     return <div>Error</div>;
   }
 
@@ -50,33 +84,20 @@ export default function HistoryPage(): JSX.Element {
   };
   const handleSubmit = async () => {
     await Promise.all(
-      signOffs.map((s) =>
-        getUnRegisterMutation(
-          s,
-          getHRTable.data?.events_getCurrent.selfRelation.organizer.id,
-        ),
-      ),
+      signOffs.map((s) => getUnRegisterMutation(s, organizer.id)),
     );
-    await Promise.all(
-      signUps.map((s) =>
-        getRegisterMutation(
-          s,
-          getHRTable.data?.events_getCurrent.selfRelation.organizer.id,
-        ),
-      ),
-    );
+    await Promise.all(signUps.map((s) => getRegisterMutation(s, organizer.id)));
+    setSignUps([]);
+    setSignOffs([]);
     console.log('DONE');
   };
 
   return (
     <Layout>
       <HRTableComp
-        hrtable={getHRTable.data?.events_getCurrent.hrTable}
+        hrtable={hrTable}
         hrcb={{ signUps, signOffs, signUpCb, signOffCb }}
-        ownSegmentIds={
-          getHRTable.data?.events_getCurrent.selfRelation.organizer
-            ?.hrSegmentIds ?? []
-        }
+        ownSegmentIds={organizer?.hrSegmentIds ?? []}
       />
       <Button text="Mentés" onClick={handleSubmit} />
     </Layout>

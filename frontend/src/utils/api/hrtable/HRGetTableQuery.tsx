@@ -1,7 +1,7 @@
 import {
   gql,
   OperationVariables,
-  QueryResult,
+  QueryTuple,
   useLazyQuery,
   useQuery,
 } from '@apollo/client';
@@ -9,8 +9,8 @@ import {
 import { Event } from '../../../interfaces';
 
 export const eventGetHRTableQuery = gql`
-  query e_eventGetHRTable {
-    events_getCurrent {
+  query e_eventGetHRTable($id: String!) {
+    events_getOne(id: $id) {
       id
       name
       hrTable {
@@ -45,13 +45,13 @@ export const eventGetHRTableQuery = gql`
   }
 `;
 interface QueryResultL {
-  events_getCurrent: Event;
+  events_getOne: Event;
 }
 export const useEventGetHRTableQuery = (
   cb: (data: QueryResultL) => void,
-): QueryResult<QueryResultL, OperationVariables> => {
-  const getQuery = useQuery<QueryResultL>(eventGetHRTableQuery, {
+): QueryTuple<QueryResultL, OperationVariables> => {
+  const [getQuery, data] = useLazyQuery<QueryResultL>(eventGetHRTableQuery, {
     onCompleted: cb,
   });
-  return getQuery;
+  return [getQuery, data];
 };
