@@ -163,7 +163,7 @@ export default function RegistrationPage({
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <form>
+        <Box as="form" minWidth="50%">
           <Grid
             gridTemplateColumns={['1fr', null, '1fr 1fr']}
             rowGap={['0', null, '1rem']}
@@ -245,7 +245,7 @@ export default function RegistrationPage({
               />
             </Flex>
           )}
-        </form>
+        </Box>
       </Flex>
     </Layout>
   );
