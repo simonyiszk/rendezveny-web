@@ -7,6 +7,7 @@ import {
   Link as ChakraLink,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuItem,
   MenuList,
 } from '@chakra-ui/core';
@@ -48,31 +49,35 @@ export default function Header(): JSX.Element {
       <Flex flexGrow={1} justifyContent="flex-end">
         <Flex mr="1rem">
           <Menu>
-            <MenuButton>Rendezvények</MenuButton>
+            <MenuButton fontWeight="bold">Rendezvények</MenuButton>
             <MenuList>
-              <MenuItem as={Link} to="/">
+              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/">
                 Regisztráció
               </MenuItem>
-              <MenuItem as={Link} to="/manage">
-                Kezelés
-              </MenuItem>
-              <MenuItem as={Link} to="/history">
+              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/history">
                 Történet
+              </MenuItem>
+              <MenuDivider />
+              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/manage">
+                Kezelés
               </MenuItem>
             </MenuList>
           </Menu>
         </Flex>
         <Flex mr="1rem">
           <Menu>
-            <MenuButton>Profil</MenuButton>
+            <MenuButton fontWeight="bold">Profil</MenuButton>
             <MenuList>
-              <MenuItem as={Link} to="/profile">
+              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/profile">
                 Profil
               </MenuItem>
-              <MenuItem as={Link} to="/logs">
+              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/logs">
                 Logok
               </MenuItem>
-              <MenuItem onClick={handleLogout}>Kilépés</MenuItem>
+              <MenuDivider />
+              <MenuItem _hover={{ bg: 'simonyi' }} onClick={handleLogout}>
+                Kilépés
+              </MenuItem>
             </MenuList>
           </Menu>
         </Flex>
