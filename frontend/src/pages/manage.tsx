@@ -33,7 +33,11 @@ export default function ManagePage(): JSX.Element {
           state={{ event: null }}
         />
       </ProtectedComponent>
-      <EventSection text="Kezelt rendezvények" listOfEvents={organizedEvents} />
+      <EventSection
+        listOfEvents={organizedEvents}
+        color="simonyi"
+        linkTo="/manage/event"
+      />
     </Layout>
   );
 }

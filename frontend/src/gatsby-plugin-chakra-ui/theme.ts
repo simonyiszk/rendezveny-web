@@ -11,5 +11,6 @@ export default {
   },
   fonts: {
     body: 'Montserrat',
+    heading: 'Montserrat',
   },
 };

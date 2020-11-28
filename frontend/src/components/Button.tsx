@@ -19,6 +19,9 @@ export default function Button({
       alignItems="center"
       backgroundColor="simonyi"
       cursor="pointer"
+      boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
+      borderRadius="5px"
+      fontWeight="bold"
       onClick={onClick}
       {...props}
     >
