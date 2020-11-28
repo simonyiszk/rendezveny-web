@@ -24,14 +24,16 @@ export default function HistoryPage(): JSX.Element {
 
   return (
     <Layout>
-      {Object.entries(allEvent).map(([key, value]) => (
-        <EventSection
-          key={key}
-          text={key}
-          listOfEvents={value}
-          withControls={false}
-        />
-      ))}
+      {Object.entries(allEvent)
+        .sort((a, b) => parseInt(b[0], 10) - parseInt(a[0], 10))
+        .map(([key, value]) => (
+          <EventSection
+            key={key}
+            listOfEvents={value}
+            color="gray"
+            sectionText={key}
+          />
+        ))}
     </Layout>
   );
 }
