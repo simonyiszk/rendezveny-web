@@ -1,7 +1,8 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
 import { gql, useApolloClient, useQuery } from '@apollo/client';
-import { Box, Flex, Input, Select } from '@chakra-ui/core';
+import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
+import { getMonth, getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import { Multiselect } from 'multiselect-react-dropdown';
@@ -223,72 +224,99 @@ export default function DetailsPage({
   const onChangeClubs = (selectedList: Club[], _selectedItem: Club): void => {
     setOrganizerClubs(selectedList);
   };
+
+  const datePickerCustomHeader = ({ date, decreaseMonth, increaseMonth }) => (
+    <Flex
+      fontSize="1rem"
+      fontWeight="bold"
+      justifyContent="space-between"
+      px={4}
+    >
+      <Box cursor="pointer" onClick={decreaseMonth}>
+        {'<'}
+      </Box>
+      <Flex>
+        <Box mr={1}>{getYear(date)}.</Box>
+        <Box>{date.toLocaleString('default', { month: 'long' })}</Box>
+      </Flex>
+      <Box cursor="pointer" onClick={increaseMonth}>
+        {'>'}
+      </Box>
+    </Flex>
+  );
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <form>
-          <Box>
-            <Box>Esemény neve</Box>
+        <Box as="form" minWidth="50%">
+          <Grid
+            gridTemplateColumns={['1fr', null, '1fr 1fr']}
+            rowGap={['0', null, '1rem']}
+          >
+            <Label>Esemény neve</Label>
             <Input
               name="eventName"
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
             />
-          </Box>
-          <Box>
-            <Box>Esemény kezdete</Box>
-            <DatePicker
-              name="eventStart"
-              selected={eventStart}
-              onChange={(date) => setEventStart(date)}
-              dateFormat="yyyy.MM.dd. HH:mm"
-              locale="hu"
-              showTimeSelect
-            />
-          </Box>
-          <Box>
-            <Box>Esemény vége</Box>
-            <DatePicker
-              name="eventEnd"
-              selected={eventEnd}
-              onChange={(date) => setEventEnd(date)}
-              dateFormat="yyyy.MM.dd. HH:mm"
-              locale="hu"
-              showTimeSelect
-            />
-          </Box>
-          <Box>
-            <Box>Regisztráció kezdete</Box>
-            <DatePicker
-              name="eventRegStart"
-              selected={eventRegStart}
-              onChange={(date) => setEventRegStart(date)}
-              dateFormat="yyyy.MM.dd. HH:mm"
-              locale="hu"
-              showTimeSelect
-            />
-          </Box>
-          <Box>
-            <Box>Regisztráció vége</Box>
-            <DatePicker
-              name="eventRegEnd"
-              selected={eventRegEnd}
-              onChange={(date) => setEventRegEnd(date)}
-              dateFormat="yyyy.MM.dd. HH:mm"
-              locale="hu"
-              showTimeSelect
-            />
-          </Box>
-          <Box>
-            <Box>Esemény helyszíne</Box>
+            <Label>Esemény kezdete</Label>
+            <Box>
+              <DatePicker
+                name="eventStart"
+                selected={eventStart}
+                onChange={(date) => setEventStart(date)}
+                dateFormat="yyyy.MM.dd. HH:mm"
+                locale="hu"
+                showTimeSelect
+                renderCustomHeader={datePickerCustomHeader}
+                timeCaption="Időpont"
+              />
+            </Box>
+            <Label>Esemény vége</Label>
+            <Box>
+              <DatePicker
+                name="eventEnd"
+                selected={eventEnd}
+                onChange={(date) => setEventEnd(date)}
+                dateFormat="yyyy.MM.dd. HH:mm"
+                locale="hu"
+                showTimeSelect
+                renderCustomHeader={datePickerCustomHeader}
+                timeCaption="Időpont"
+              />
+            </Box>
+            <Label>Regisztráció kezdete</Label>
+            <Box>
+              <DatePicker
+                name="eventRegStart"
+                selected={eventRegStart}
+                onChange={(date) => setEventRegStart(date)}
+                dateFormat="yyyy.MM.dd. HH:mm"
+                locale="hu"
+                showTimeSelect
+                renderCustomHeader={datePickerCustomHeader}
+                timeCaption="Időpont"
+              />
+            </Box>
+            <Label>Regisztráció vége</Label>
+            <Box>
+              <DatePicker
+                name="eventRegEnd"
+                selected={eventRegEnd}
+                onChange={(date) => setEventRegEnd(date)}
+                dateFormat="yyyy.MM.dd. HH:mm"
+                locale="hu"
+                showTimeSelect
+                renderCustomHeader={datePickerCustomHeader}
+                timeCaption="Időpont"
+              />
+            </Box>
+            <Label>Esemény helyszíne</Label>
             <Input
               name="eventPlace"
               value={eventPlace}
               onChange={(e) => setEventPlace(e.target.value)}
             />
-          </Box>
-          <Box>
-            <Box>Fő szervezők</Box>
+            <Label>Fő szervezők</Label>
             <Multiselect
               name="chiefOrganizers"
               options={allUsers}
@@ -298,10 +326,14 @@ export default function DetailsPage({
               onRemove={onChangeChiefOrganizers}
               avoidHighlightFirstOption
               closeIcon="cancel"
+              style={{
+                chips: {
+                  background: '#6abd51',
+                },
+              }}
+              placeholder=""
             />
-          </Box>
-          <Box>
-            <Box>Szervezők</Box>
+            <Label>Szervezők</Label>
             <Multiselect
               name="organizers"
               options={allUsers}
@@ -311,10 +343,14 @@ export default function DetailsPage({
               onRemove={onChangeOrganizers}
               avoidHighlightFirstOption
               closeIcon="cancel"
+              style={{
+                chips: {
+                  background: '#6abd51',
+                },
+              }}
+              placeholder=""
             />
-          </Box>
-          <Box>
-            <Box>Esemény látogathatósága</Box>
+            <Label>Esemény látogathatósága</Label>
             <Select
               name="eventClosed"
               value={eventClosed ? 'Zárt' : 'Nyílt'}
@@ -323,26 +359,20 @@ export default function DetailsPage({
               <option value="Zárt">Zárt</option>
               <option value="Nyílt">Nyílt</option>
             </Select>
-          </Box>
-          <Box>
-            <Box>Esemény létszám korlátja</Box>
+            <Label>Esemény létszám korlátja</Label>
             <Input
               name="capacity"
               type="number"
               value={eventCapacity}
               onChange={(e) => setEventCapacity(parseInt(e.target.value, 10))}
             />
-          </Box>
-          <Box>
-            <Box>Esemény meghivó linkje</Box>
+            <Label>Esemény meghivó linkje</Label>
             <Input
               name="regLink"
               value={regLink}
               onChange={(e) => setRegLink(e.target.value)}
             />
-          </Box>
-          <Box>
-            <Box>Jelentkezés</Box>
+            <Label>Jelentkezés</Label>
             <Select
               name="application"
               value={application ? 'Igen' : 'Nem'}
@@ -351,9 +381,7 @@ export default function DetailsPage({
               <option value="Igen">Igen</option>
               <option value="Nem">Nem</option>
             </Select>
-          </Box>
-          <Box>
-            <Box>Szerező körök</Box>
+            <Label>Szerező körök</Label>
             <Multiselect
               name="organizerClubs"
               options={allClubs}
@@ -363,17 +391,53 @@ export default function DetailsPage({
               onRemove={onChangeClubs}
               avoidHighlightFirstOption
               closeIcon="cancel"
+              style={{
+                chips: {
+                  background: '#6abd51',
+                },
+              }}
+              placeholder=""
             />
-          </Box>
-          {!event && <Button text="Létrehozás" onClick={handleSubmit} />}
-          {event && (
-            <>
-              <Button text="Módosítás" onClick={handleSubmit} />
-              <Button text="Törlés" onClick={handleDelete} />
-            </>
+          </Grid>
+          {!event && (
+            <Flex justifyContent="center" mt={4}>
+              <Button
+                width={['100%', null, '45%']}
+                text="Létrehozás"
+                onClick={handleSubmit}
+              />
+            </Flex>
           )}
-        </form>
+          {event && (
+            <Flex
+              justifyContent={['center', null, 'space-between']}
+              flexDir={['column', null, 'row']}
+              mt={4}
+            >
+              <Button
+                width={['100%', null, '45%']}
+                text="Módosítás"
+                onClick={handleSubmit}
+              />
+              <Button
+                width={['100%', null, '45%']}
+                text="Törlés"
+                backgroundColor="red"
+                mt={[4, null, 0]}
+                onClick={handleDelete}
+              />
+            </Flex>
+          )}
+        </Box>
       </Flex>
     </Layout>
   );
 }
+
+const Label = ({ children }): JSX.Element => {
+  return (
+    <Box mt={['1rem', null, 0]} minHeight={['0', null, '2rem']}>
+      {children}
+    </Box>
+  );
+};
