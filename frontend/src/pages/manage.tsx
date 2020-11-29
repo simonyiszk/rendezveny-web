@@ -11,14 +11,12 @@ import { Event } from '../interfaces';
 import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
-export default function IndexPage(): JSX.Element {
+export default function ManagePage(): JSX.Element {
   const getEvents = useEventGetAllQuery((queryData) => {
-    setRegisteredEvents(queryData.registeredEvents.nodes);
-    setAvailableEvents(queryData.availableEvents.nodes);
+    setOrganizedEvents(queryData.organizedEvents.nodes);
   });
 
-  const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
-  const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
+  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
 
   if (getEvents.error) {
     navigate('/login');
@@ -27,15 +25,18 @@ export default function IndexPage(): JSX.Element {
 
   return (
     <Layout>
+      <ProtectedComponent access={['admin, club_manager']}>
+        <LinkButton
+          text="Rendezvény létrehozása"
+          width={['100%', null, '15rem']}
+          to="/manage/details"
+          state={{ event: null }}
+        />
+      </ProtectedComponent>
       <EventSection
-        listOfEvents={registeredEvents}
+        listOfEvents={organizedEvents}
         color="simonyi"
-        linkTo="/registration"
-      />
-      <EventSection
-        listOfEvents={availableEvents}
-        color="gray"
-        linkTo="/registration"
+        linkTo="/manage/event"
       />
     </Layout>
   );
