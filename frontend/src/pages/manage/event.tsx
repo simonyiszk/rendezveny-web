@@ -1,4 +1,4 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql, useApolloClient, useQuery } from '@apollo/client';
 import { Flex, Heading } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event } from '../../interfaces';
+import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 
 interface PageState {
@@ -22,7 +23,16 @@ export default function EventPage({
     state: { event },
   },
 }: Props): JSX.Element {
-  // const { event } = location.state;
+  const client = useApolloClient();
+  const [getEventTokenMutation, _] = useEventTokenMutation(client);
+
+  useEffect(() => {
+    const fetchEventData = async () => {
+      await getEventTokenMutation(event.id);
+    };
+    fetchEventData();
+  }, [event?.id]);
+
   return (
     <Layout>
       <Heading textAlign="center" mb="2rem">
