@@ -390,8 +390,7 @@ export class EventResolver {
 
 	@Query(_ => PaginatedRegistrationFormTemplateQuestionDTO, {
 		name: 'events_getRegistrationFormTemplates',
-		description: 'Gets one event based on its id',
-		nullable: true
+		description: 'Gets the registration form templates'
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
