@@ -26,6 +26,7 @@ import { HRTask } from '../models/HRTask';
 import { HRSegment } from '../models/HRSegment';
 import { Log } from '../models/Log';
 import { AuthSCHIdentity } from '../models/AuthSCHIdentity';
+import { FormQuestionTemplate } from '../models/FormQuestionTemplate';
 
 @Injectable()
 export class SeedService {
@@ -39,6 +40,7 @@ export class SeedService {
 		@InjectRepository(RefreshToken) private readonly refreshTokenRepository: Repository<RefreshToken>,
 		@InjectRepository(Event) private readonly eventRepository: Repository<Event>,
 		@InjectRepository(Registration) private readonly registrationRepository: Repository<Registration>,
+		@InjectRepository(FormQuestionTemplate) private readonly formTempRepository: Repository<FormQuestionTemplate>,
 		@InjectRepository(FormQuestion) private readonly formQuestionRepository: Repository<FormQuestion>,
 		@InjectRepository(FormQuestionAnswer) private readonly formAnswerRepository: Repository<FormQuestionAnswer>,
 		@InjectRepository(TemporaryIdentity) private readonly tempIdentityRepository: Repository<TemporaryIdentity>,
@@ -63,6 +65,7 @@ export class SeedService {
 			await this.refreshTokenRepository.clear();
 			await this.eventRepository.clear();
 			await this.registrationRepository.clear();
+			await this.formTempRepository.clear();
 			await this.formQuestionRepository.clear();
 			await this.formAnswerRepository.clear();
 			await this.tempIdentityRepository.clear();
@@ -280,6 +283,19 @@ export class SeedService {
 		await this.registrationRepository.save(johnGalaDinner);
 
 		/* Form */
+
+		await this.formTempRepository.save(new FormQuestionTemplate({
+			question: 'Food preference',
+			type: FormQuestionType.MULTIPLE_CHOICE,
+			typeMetadata: {
+				type: 'multiple_choice',
+				multipleAnswers: false,
+				options: [
+					{ id: 'regular', text: 'Regular' },
+					{ id: 'vegi', text: 'Vegetarian' }
+				]
+			}
+		}));
 
 		const foodPreference = new FormQuestion({
 			question: 'Food preference',

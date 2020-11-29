@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { createUnionType, Field, InputType, ObjectType } from '@nestjs/graphql';
 import { GraphQLString } from 'graphql';
+import { PaginatedDTO } from '../utils/PaginatedDTO';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function EventRegistrationFormTypeQuestionDTO<T>(t: T) {
@@ -97,6 +98,31 @@ export class EventRegistrationFormQuestionDTO {
 	})
 	public isRequired: boolean = false;
 }
+
+@ObjectType({
+	description: 'The data of one question of the registration form (template)'
+})
+export class RegistrationFormTemplateQuestionDTO {
+	@Field({
+		description: 'The id of the question'
+	})
+	public id: string = '';
+
+	@Field({
+		description: 'The question'
+	})
+	public question: string = '';
+
+	@Field(_ => EventRegistrationFormQuestionMetadataDTO, {
+		description: 'The metadata of the question type'
+	})
+	public metadata?: typeof EventRegistrationFormQuestionMetadataDTO;
+}
+
+@ObjectType({
+	description: 'The data of one question of the registration form (template)'
+})
+export class PaginatedRegistrationFormTemplateQuestionDTO extends PaginatedDTO(RegistrationFormTemplateQuestionDTO) {}
 
 @ObjectType({
 	description: 'The data of the registration form for an event'

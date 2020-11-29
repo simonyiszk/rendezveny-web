@@ -17,7 +17,7 @@ import { nameof } from '../../../utils/nameof';
 import {
 	EventRegistrationFormDTO,
 	EventRegistrationFormInput,
-	EventRegistrationFormQuestionMetadataDTO
+	EventRegistrationFormQuestionMetadataDTO, PaginatedRegistrationFormTemplateQuestionDTO
 } from '../dtos/EventRegistrationFormDTO';
 import { FormManager } from '../../../business/registration/FormManager';
 import { HRTableDTO, HRTableInput } from '../dtos/HRTableDTO';
@@ -27,6 +27,7 @@ import { ClubManager } from '../../../business/clubs/ClubManager';
 import { HRTableState } from '../../../business/organizing/HRTableState';
 import { Event } from '../../../data/models/Event';
 import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
+import { FormTemplateManager } from '../../../business/registration/FormTemplateManager';
 
 @Resolver((_: never) => EventDTO)
 @UseInterceptors(LoggingInterceptor)
@@ -36,6 +37,7 @@ export class EventResolver {
 		private readonly clubManager: ClubManager,
 		private readonly eventManager: EventManager,
 		private readonly formManager: FormManager,
+		private readonly formTemplateManager: FormTemplateManager,
 		private readonly hrTableManager: HRTableManager
 	) {}
 
@@ -384,6 +386,34 @@ export class EventResolver {
 		const event = await this.eventManager.getEventById(eventDTO.id);
 		const eventRelation = await this.eventManager.getSelfRelation2(accessContext, event);
 		return this.returnEventRelationDTO(eventRelation);
+	}
+
+	@Query(_ => PaginatedRegistrationFormTemplateQuestionDTO, {
+		name: 'events_getRegistrationFormTemplates',
+		description: 'Gets one event based on its id',
+		nullable: true
+	})
+	@UseFilters(BusinessExceptionFilter)
+	@UseGuards(AuthAccessGuard)
+	public async getRegistrationFormTemplates(
+		@AccessCtx() accessContext: AccessContext,
+		@PageSize() pageSize: number,
+		@Offset() offset: number,
+	): Promise<PaginatedRegistrationFormTemplateQuestionDTO> {
+		const { templates, count } = await this.formTemplateManager.getAllTemplatesPaginated(
+			accessContext, pageSize, offset
+		);
+
+		return {
+			nodes: templates.map(template => ({
+				id: template.id,
+				question: template.question,
+				metadata: template.typeMetadata as typeof EventRegistrationFormQuestionMetadataDTO
+			})),
+			totalCount: count,
+			pageSize: pageSize,
+			offset: offset
+		};
 	}
 
 	@ResolveField(nameof<EventDTO>('registrationForm'), _ => EventRegistrationFormDTO)
