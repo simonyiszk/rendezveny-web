@@ -29,7 +29,7 @@ export default function EventPage({
         {event.name} kezelése
       </Heading>
       <Flex flexDir="column" alignItems="center">
-        <ProtectedComponent>
+        <ProtectedComponent access={['organizer']}>
           <LinkButton
             text="Résztvevők kezelése"
             width={['100%', null, '30rem']}
@@ -38,7 +38,9 @@ export default function EventPage({
             state={{ event }}
           />
         </ProtectedComponent>
-        <ProtectedComponent>
+        <ProtectedComponent
+          access={['chieforganizer', 'club_manager', 'admin']}
+        >
           <LinkButton
             text="Rendezvény kezelése"
             width={['100%', null, '30rem']}
@@ -47,7 +49,7 @@ export default function EventPage({
             state={{ event }}
           />
         </ProtectedComponent>
-        <ProtectedComponent>
+        <ProtectedComponent access={['organizer']}>
           <LinkButton
             text="HR tábla"
             width={['100%', null, '30rem']}
@@ -56,7 +58,7 @@ export default function EventPage({
             state={{ event }}
           />
         </ProtectedComponent>
-        <ProtectedComponent>
+        <ProtectedComponent access={['organizer']}>
           <Button
             text="Regisztrációs form"
             width={['100%', null, '30rem']}

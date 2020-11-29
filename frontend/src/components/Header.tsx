@@ -16,6 +16,7 @@ import React from 'react';
 
 import logoSmall from '../assets/images/simonyi_white_small.svg';
 import logo from '../assets/images/simonyi_white_white.svg';
+import ProtectedComponent from '../utils/protection/ProtectedComponent';
 import useLogoutService from '../utils/services/LogoutService';
 
 export default function Header(): JSX.Element {
@@ -71,9 +72,11 @@ export default function Header(): JSX.Element {
               <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/profile">
                 Profil
               </MenuItem>
-              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/logs">
-                Logok
-              </MenuItem>
+              <ProtectedComponent access={['admin']}>
+                <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/logs">
+                  Logok
+                </MenuItem>
+              </ProtectedComponent>
               <MenuDivider />
               <MenuItem _hover={{ bg: 'simonyi' }} onClick={handleLogout}>
                 Kilépés

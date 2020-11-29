@@ -25,7 +25,7 @@ export default function ManagePage(): JSX.Element {
 
   return (
     <Layout>
-      <ProtectedComponent>
+      <ProtectedComponent access={['admin, club_manager']}>
         <LinkButton
           text="Rendezvény létrehozása"
           width={['100%', null, '15rem']}

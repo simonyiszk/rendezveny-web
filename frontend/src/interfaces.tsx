@@ -38,6 +38,10 @@ export interface User {
   };
   registration: EventRegistration;
 }
+export enum UserRole {
+  ADMIN,
+  USER,
+}
 
 export interface EventRelation {
   email: string;
@@ -105,7 +109,6 @@ export interface EventRegistrationFormTextAnswer {
   type: string;
   text: string;
 }
-
 export interface EventRegistrationFormAnswersInput {
   answers: EventRegistrationFormAnswerInput[];
 }
@@ -133,7 +136,6 @@ export enum ClubRole {
 }
 
 // LOG
-
 export interface Log {
   args: string;
   at: Date;
@@ -145,14 +147,12 @@ export interface Log {
   token: string;
   type: IssuerType;
 }
-
 export enum ResultType {
   BUSINESS_ERROR,
   OTHER_ERROR,
   SUCCESS,
   UNAUTHORIZED,
 }
-
 export enum IssuerType {
   PUBLIC,
   USER,
