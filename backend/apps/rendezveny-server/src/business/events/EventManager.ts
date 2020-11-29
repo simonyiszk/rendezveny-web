@@ -653,7 +653,8 @@ export class EventManager extends BaseManager {
 			let organizer: Organizer | undefined;
 
 			const isInstantChief = user.role === UserRole.ADMIN
-				|| event.hostingClubs.some(club => club.memberships
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				|| event.hostingClubs.some(club => (club.memberships ?? [])
 					.filter(m => m.user.id === user.id)
 					.some(m => m.clubRole === ClubRole.CLUB_MANAGER));
 
