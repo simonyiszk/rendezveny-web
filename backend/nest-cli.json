@@ -16,15 +16,6 @@
 			"compilerOptions": {
 				"tsConfigPath": "apps/rendezveny-server/tsconfig.app.json"
 			}
-		},
-		"rendezveny-mail": {
-			"type": "application",
-			"root": "apps/rendezveny-mail",
-			"entryFile": "main",
-			"sourceRoot": "apps/rendezveny-mail/src",
-			"compilerOptions": {
-				"tsConfigPath": "apps/rendezveny-mail/tsconfig.app.json"
-			}
 		}
 	}
 }

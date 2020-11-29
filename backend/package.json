@@ -12,7 +12,7 @@
 		"start": "nest start",
 		"start:dev": "DEBUG=1 nest start --watch",
 		"start:debug": "DEBUG=1 nest start --debug --watch",
-		"start:prod": "node dist/main",
+		"start:prod": "node dist/apps/rendezveny-server/main",
 		"seed:dev": "ts-node -r tsconfig-paths/register apps/rendezveny-server/src/data/seed/seed-database.ts",
 		"lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
 		"test": "jest",
