@@ -54,6 +54,8 @@ import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { EventUniqueNameValidationException } from './exceptions/EventUniqueNameValidationException';
 import { EventCapacityValidationException } from './exceptions/EventCapacityValidationException';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '../../data/models/UserRole';
+import { ClubRole } from '../../data/models/ClubRole';
 
 /* eslint-enable max-len */
 
@@ -390,8 +392,14 @@ export class EventManager extends BaseManager {
 	public async getEventToken(
 		@AuthContext() accessContext: AccessContext,
 		@AuthEvent() event: Event
-	): Promise<string> {
+	): Promise<{ token: string, relation: EventRelation }> {
 		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
+
+		const user = await this.userRepository.findOne(accessContext.getUserId(), {
+			relations: [
+				nameof<User>('memberships')
+			]
+		});
 
 		const registered = event.registrations
 			.find(registration => registration.user?.id === accessContext.getUserId());
@@ -405,20 +413,23 @@ export class EventManager extends BaseManager {
 		const isOrganizing = typeof organizing !== 'undefined' || managerOfHost || accessContext.isAdmin();
 		const isChief = (accessContext.isAdmin() || managerOfHost) ? true : organizing?.isChief ?? false;
 
-		return this.jwtService.sign({
-			typ: 'event',
-			eid: event.id,
-			reg: registered ? { typ: 'per', rid: registered.id, uid: registered.userId } : 'none',
-			org: isOrganizing
-				? {
-					uid: accessContext.getUserId(),
-					chf: isChief,
-					typ: organizing ? 'per' : 'tmp'
-				}
-				: 'none'
-		} as EventToken, {
-			expiresIn: this.configService.get('token.eventValidity')
-		});
+		return {
+			token: this.jwtService.sign({
+				typ: 'event',
+				eid: event.id,
+				reg: registered ? { typ: 'per', rid: registered.id, uid: registered.userId } : 'none',
+				org: isOrganizing
+					? {
+						uid: accessContext.getUserId(),
+						chf: isChief,
+						typ: organizing ? 'per' : 'tmp'
+					}
+					: 'none'
+			} as EventToken, {
+				expiresIn: this.configService.get('token.eventValidity')
+			}),
+			relation: (await this.returnRelatedUsers(event, [user!], [], 1)).relations[0]
+		};
 	}
 
 	@AuthorizeGuard(IsChiefOrganizer())
@@ -641,6 +652,11 @@ export class EventManager extends BaseManager {
 			let registration: Registration | undefined;
 			let organizer: Organizer | undefined;
 
+			const isInstantChief = user.role === UserRole.ADMIN
+				|| event.hostingClubs.some(club => club.memberships
+					.filter(m => m.user.id === user.id)
+					.some(m => m.clubRole === ClubRole.CLUB_MANAGER));
+
 			if(event.registrations.some(reg => reg.user?.id === user.id)) {
 				relation = relation | EventRelationType.REGISTERED;
 				registration = event.registrations.find(reg => reg.user?.id === user.id)!;
@@ -648,11 +664,11 @@ export class EventManager extends BaseManager {
 			if(event.registrations.some(reg => reg.user?.id === user.id && reg.attendDate)) {
 				relation = relation | EventRelationType.ATTENDED;
 			}
-			if(event.organizers.some(org => org.user.id === user.id)) {
+			if(event.organizers.some(org => org.user.id === user.id) || isInstantChief) {
 				relation = relation | EventRelationType.ORGANIZER;
 				organizer = event.organizers.find(org => org.user.id === user.id)!;
 			}
-			if(event.organizers.some(org => org.user.id === user.id && org.isChief)) {
+			if(event.organizers.some(org => org.user.id === user.id && org.isChief) || isInstantChief) {
 				relation = relation | EventRelationType.CHIEF_ORGANIZER;
 			}
 			if(user.memberships.some(membership => event.hostingClubs.some(club => club.id === membership.club.id))) {

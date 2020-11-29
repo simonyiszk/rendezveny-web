@@ -28,6 +28,7 @@ import { HRTableState } from '../../../business/organizing/HRTableState';
 import { Event } from '../../../data/models/Event';
 import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 import { FormTemplateManager } from '../../../business/registration/FormTemplateManager';
+import { EventLoginDTO } from '../dtos/EventLoginDTO';
 
 @Resolver((_: never) => EventDTO)
 @UseInterceptors(LoggingInterceptor)
@@ -306,7 +307,7 @@ export class EventResolver {
 		return true;
 	}
 
-	@Mutation(_ => GraphQLString, {
+	@Mutation(_ => EventLoginDTO, {
 		name: 'events_getToken',
 		description: 'Gets one event based on its id'
 	})
@@ -315,9 +316,14 @@ export class EventResolver {
 	public async getEventToken(
 		@AccessCtx() accessContext: AccessContext,
 		@Args('id', { description: 'The id of the event' }) id: string
-	): Promise<string> {
+	): Promise<EventLoginDTO> {
 		const event = await this.eventManager.getEventById(id);
-		return this.eventManager.getEventToken(accessContext, event);
+		const { token, relation } = await this.eventManager.getEventToken(accessContext, event);
+
+		return {
+			eventToken: token,
+			relation: this.returnEventRelationDTO(relation)
+		};
 	}
 
 	@ResolveField(nameof<EventDTO>('relations'), _ => PaginatedEventRelationDTO)
@@ -548,6 +554,9 @@ export class EventResolver {
 			// eslint-disable-next-line no-undefined
 			userId: relation.user instanceof User ? relation.user.id : undefined,
 			isMemberOfHostingClub: relation.isHostingClubMember(),
+			isRegistered: relation.isRegistered(),
+			isOrganizer: relation.isOrganizer(),
+			isChiefOrganizer: relation.isChiefOrganizer(),
 			registration: relation.isRegistered()
 			? {
 				id: relation.getRegistration().id,
