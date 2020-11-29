@@ -14,6 +14,7 @@ export const eventInformationMutation = gql`
     $isClosedEvent: Boolean!
     $capacity: Float!
     $uniqueName: String!
+    $registrationAllowed: Boolean!
     $hostingClubIds: [String!]
   ) {
     events_modifyEvent(
@@ -29,6 +30,7 @@ export const eventInformationMutation = gql`
       isClosedEvent: $isClosedEvent
       capacity: $capacity
       uniqueName: $uniqueName
+      registrationAllowed: $registrationAllowed
       hostingClubIds: $hostingClubIds
     ) {
       id
@@ -41,11 +43,7 @@ export const eventInformationMutation = gql`
       isClosedEvent
       capacity
       uniqueName
-      relations(chiefOrganizer: true) {
-        nodes {
-          userId
-        }
-      }
+      registrationAllowed
       hostingClubs {
         id
       }
@@ -69,6 +67,7 @@ export const useEventInformationMutation = () => {
     isClosedEvent: boolean,
     capacity: number,
     uniqueName: string,
+    registrationAllowed: boolean,
     hostingClubIds: string[],
   ) => {
     return mutation({
@@ -85,6 +84,7 @@ export const useEventInformationMutation = () => {
         isClosedEvent,
         capacity,
         uniqueName,
+        registrationAllowed,
         hostingClubIds,
       },
     });
@@ -104,6 +104,7 @@ export const eventCreateMutation = gql`
     $isClosedEvent: Boolean!
     $capacity: Float!
     $uniqueName: String!
+    $registrationAllowed: Boolean!
     $hostingClubIds: [String!]!
   ) {
     events_addEvent(
@@ -118,6 +119,7 @@ export const eventCreateMutation = gql`
       isClosedEvent: $isClosedEvent
       capacity: $capacity
       uniqueName: $uniqueName
+      registrationAllowed: $registrationAllowed
       hostingClubIds: $hostingClubIds
     ) {
       id
@@ -148,6 +150,7 @@ export const useEventCreateMutation = () => {
     isClosedEvent: boolean,
     capacity: number,
     uniqueName: string,
+    registrationAllowed: boolean,
     hostingClubIds: string[],
   ) => {
     return mutation({
@@ -162,6 +165,7 @@ export const useEventCreateMutation = () => {
         isClosedEvent,
         capacity,
         uniqueName,
+        registrationAllowed,
         hostingClubIds,
       },
     });

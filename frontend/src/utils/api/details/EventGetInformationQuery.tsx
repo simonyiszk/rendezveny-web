@@ -20,6 +20,7 @@ export const eventGetInformationQuery = gql`
       place
       isClosedEvent
       capacity
+      registrationAllowed
       hostingClubs {
         id
         name

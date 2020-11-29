@@ -57,15 +57,6 @@ export default function EventPage({
           />
         </ProtectedComponent>
         <ProtectedComponent>
-          <LinkButton
-            text="Adatok szerkesztése"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to="/manage/information"
-            state={{ event }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent>
           <Button
             text="Regisztrációs form"
             width={['100%', null, '30rem']}
