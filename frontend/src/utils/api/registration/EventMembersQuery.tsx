@@ -40,6 +40,7 @@ export const eventGetMembersQuery = gql`
           registration {
             id
             didAttend
+            registrationDate
           }
         }
       }

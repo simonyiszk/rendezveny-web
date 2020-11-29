@@ -21,19 +21,17 @@ export default function MemberSection({
   return (
     <Box>
       {listOfMembers.length > 0 && (
-        <div>
+        <Box>
           <SectionHeader text={text} />
-          <Box pl={['0', null, '0.5rem']}>
-            {listOfMembers.map((e: User) => (
-              <MemberBox
-                key={e.id}
-                user={e}
-                event={event}
-                setAttendCb={setAttendCb}
-              />
-            ))}
-          </Box>
-        </div>
+          {listOfMembers.map((e: User) => (
+            <MemberBox
+              key={e.id}
+              user={e}
+              event={event}
+              setAttendCb={setAttendCb}
+            />
+          ))}
+        </Box>
       )}
     </Box>
   );

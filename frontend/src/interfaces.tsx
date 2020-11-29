@@ -50,6 +50,7 @@ export interface EventRelation {
 export interface EventRegistration {
   id: string;
   didAttend: boolean;
+  registrationDate: string;
   formAnswer: EventRegistrationFormAnswers;
 }
 export interface EventOrganizer {

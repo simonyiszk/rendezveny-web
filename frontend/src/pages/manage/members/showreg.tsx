@@ -6,24 +6,17 @@ import {
   useMutation,
   useQuery,
 } from '@apollo/client';
-import {
-  Box,
-  Checkbox,
-  CheckboxGroup,
-  Flex,
-  Input,
-  Radio,
-  RadioGroup,
-  Select,
-} from '@chakra-ui/core';
+import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
 import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../../components/Button';
+import { Checkbox, CheckboxGroup } from '../../../components/CheckBoxGroup';
 import EventSection from '../../../components/EventSection';
 import { Layout } from '../../../components/Layout';
 import LinkButton from '../../../components/LinkButton';
+import { Radio, RadioGroup } from '../../../components/RadioGroup';
 import {
   Event,
   EventRegistration,
@@ -110,57 +103,71 @@ export default function MembersPage({
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <form>
-          {event?.registrationForm &&
-            event.registrationForm.questions.map((q) => (
-              <Box key={q.id}>
-                <Box>{q.question}</Box>
-                {q.metadata.type === 'text' && (
-                  <Input isDisabled value={getAnswer(q.id) || ''} />
-                )}
-                {q.metadata.type === 'multiple_choice' &&
-                  (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                    .multipleAnswers && (
-                    <CheckboxGroup value={getAnswer(q.id) || []}>
-                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                        (option) => (
-                          <Checkbox
-                            isDisabled
-                            key={option.id}
-                            value={option.id}
-                          >
-                            {option.text}
-                          </Checkbox>
-                        ),
-                      )}
-                    </CheckboxGroup>
+        <Box as="form" minWidth="50%">
+          <Grid
+            gridTemplateColumns={['1fr', null, '1fr 1fr']}
+            rowGap={['0', null, '1rem']}
+          >
+            {event?.registrationForm &&
+              event.registrationForm.questions.map((q) => (
+                <React.Fragment key={q.id}>
+                  <Box>{q.question}</Box>
+                  {q.metadata.type === 'text' && (
+                    <Input
+                      isDisabled
+                      mb={['1rem', null, '0']}
+                      value={getAnswer(q.id) || ''}
+                    />
                   )}
-                {q.metadata.type === 'multiple_choice' &&
-                  !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                    .multipleAnswers && (
-                    <RadioGroup
-                      value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                    >
-                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                        (option) => (
-                          <Radio isDisabled key={option.id} value={option.id}>
-                            {option.text}
-                          </Radio>
-                        ),
-                      )}
-                    </RadioGroup>
-                  )}
-              </Box>
-            ))}
-          <LinkButton
-            text="Szerkesztés"
-            to="/manage/members/editreg"
-            state={{
-              user: { ...user, registration: currentRegistration },
-              event,
-            }}
-          />
-        </form>
+                  {q.metadata.type === 'multiple_choice' &&
+                    (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                      .multipleAnswers && (
+                      <CheckboxGroup
+                        isDisabled
+                        flexDir="column"
+                        value={getAnswer(q.id) || []}
+                      >
+                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                          (option) => (
+                            <Checkbox key={option.id} value={option.id} mb={2}>
+                              {option.text}
+                            </Checkbox>
+                          ),
+                        )}
+                      </CheckboxGroup>
+                    )}
+                  {q.metadata.type === 'multiple_choice' &&
+                    !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                      .multipleAnswers && (
+                      <RadioGroup
+                        isDisabled
+                        flexDir="column"
+                        value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
+                      >
+                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                          (option) => (
+                            <Radio key={option.id} value={option.id} mb={2}>
+                              {option.text}
+                            </Radio>
+                          ),
+                        )}
+                      </RadioGroup>
+                    )}
+                </React.Fragment>
+              ))}
+          </Grid>
+          <Flex justifyContent="center" mt={4}>
+            <LinkButton
+              width={['100%', null, '45%']}
+              text="Szerkesztés"
+              to="/manage/members/editreg"
+              state={{
+                user: { ...user, registration: currentRegistration },
+                event,
+              }}
+            />
+          </Flex>
+        </Box>
       </Flex>
     </Layout>
   );
