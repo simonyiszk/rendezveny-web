@@ -34,32 +34,26 @@ export default function HRTaskComp({
   };
 
   return (
-    <Grid
-      templateColumns={`repeat(${nCols}, 1fr)`}
-      mt={4}
-      border="1px solid black"
-      onClick={(e) => {
-        if (hredit) hredit(hrtask);
-      }}
-    >
-      <Box
-        borderRight="solid 1px black"
-        style={{
-          gridRow: `1 / ${hrtask.segments.length + 1}`,
+    <>
+      <Box>{hrtask.name}</Box>
+      <Grid
+        templateColumns={`repeat(${nCols}, 1fr)`}
+        border="1px solid black"
+        onClick={(e) => {
+          if (hredit) hredit(hrtask);
         }}
       >
-        {hrtask.name}
-      </Box>
-      {sortSegments().map((s, idx) => (
-        <HRSegmentComp
-          key={s.id}
-          hrsegment={s}
-          calc={calc}
-          row={idx}
-          hrcb={hrcb}
-          ownSegmentIds={ownSegmentIds}
-        />
-      ))}
-    </Grid>
+        {sortSegments().map((s, idx) => (
+          <HRSegmentComp
+            key={s.id}
+            hrsegment={s}
+            calc={calc}
+            row={idx}
+            hrcb={hrcb}
+            ownSegmentIds={ownSegmentIds}
+          />
+        ))}
+      </Grid>
+    </>
   );
 }

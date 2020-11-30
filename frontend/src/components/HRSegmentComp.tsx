@@ -50,7 +50,7 @@ export default function HRSegmentComp({
   return (
     <Box
       style={{
-        gridColumn: `${startPos + 2} / ${endPost + 2}`,
+        gridColumn: `${startPos + 1} / ${endPost + 1}`,
         gridRow: `${row + 1} / ${row + 2}`,
       }}
       backgroundColor={getBGColor()}
