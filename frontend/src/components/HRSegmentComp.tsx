@@ -9,7 +9,7 @@ interface Props extends BoxProps {
   hrsegment: HRSegment;
   calc: (start: Date, end: Date) => [number, number];
   row: number;
-  hrcb: HRCallback;
+  hrcb?: HRCallback;
   ownSegmentIds: string[];
 }
 
@@ -31,16 +31,19 @@ export default function HRSegmentComp({
     return 'yellow';
   };
   const getBorder = () => {
+    if (!hrcb) return '';
     if (hrcb.signUps.includes(hrsegment.id)) return 'solid 4px green';
     if (hrcb.signOffs.includes(hrsegment.id)) return 'solid 4px red';
     return '';
   };
   const getText = () => {
+    if (!hrcb) return '';
     if (hrcb.signUps.includes(hrsegment.id)) return 'UP';
     if (hrcb.signOffs.includes(hrsegment.id)) return 'DOWN';
     return hrsegment.organizers.map((o) => o.name).join(', ');
   };
   const handleClick = () => {
+    if (!hrcb) return;
     if (ownSegmentIds.includes(hrsegment.id)) hrcb.signOffCb(hrsegment.id);
     else hrcb.signUpCb(hrsegment.id);
   };

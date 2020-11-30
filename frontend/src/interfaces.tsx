@@ -187,3 +187,10 @@ export interface HRCallback {
   signUpCb: (id: string) => void;
   signOffCb: (id: string) => void;
 }
+export interface HREditCallback {
+  addNewSegment: (taskId: string) => void;
+  editTask: (taskId: string) => void;
+  deleteTask: (taskId: string) => void;
+  editSegment: (segmentId: string) => void;
+  deleteSegment: (segmentId: string) => void;
+}

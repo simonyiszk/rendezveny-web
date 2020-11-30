@@ -10,7 +10,8 @@ interface Props extends BoxProps {
   hrtask: HRTask;
   calc: (start: Date, end: Date) => [number, number];
   nCols: number;
-  hrcb: HRCallback;
+  hrcb?: HRCallback;
+  hredit?: (task: HRTask) => void;
   ownSegmentIds: string[];
 }
 
@@ -19,6 +20,7 @@ export default function HRTaskComp({
   calc,
   nCols,
   hrcb,
+  hredit,
   ownSegmentIds,
 }: Props): JSX.Element {
   const sortSegments = () => {
@@ -36,6 +38,9 @@ export default function HRTaskComp({
       templateColumns={`repeat(${nCols}, 1fr)`}
       mt={4}
       border="1px solid black"
+      onClick={(e) => {
+        if (hredit) hredit(hrtask);
+      }}
     >
       <Box
         borderRight="solid 1px black"

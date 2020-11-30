@@ -40,6 +40,7 @@ export default function DetailsPage({
     state: { event },
   },
 }: Props): JSX.Element {
+  console.log(event);
   const [organizers, setOrganizers] = useState<User[]>([]);
   const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -84,6 +85,7 @@ export default function DetailsPage({
 
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
+      console.log(queryData);
       const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
         (acc, curr) => {
           return [...acc, { id: curr.userId, name: curr.name } as User];
