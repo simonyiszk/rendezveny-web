@@ -23,7 +23,7 @@ interface QueryResultL {
   };
 }
 export const useLogGetAllQuery = (
-  cb: (data: QueryResultL) => void,
+  cb?: (data: QueryResultL) => void,
 ): QueryResult<QueryResultL, OperationVariables> => {
   const getQuery = useQuery<QueryResultL>(logGetAllQuery, {
     onCompleted: cb,

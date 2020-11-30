@@ -1,24 +1,22 @@
-import { gql, useQuery } from '@apollo/client';
 import { Box } from '@chakra-ui/core';
 import { navigate } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-import Button from '../components/Button';
-import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
-import LinkButton from '../components/LinkButton';
-import LogBox from '../components/LogBox';
-import SectionHeader from '../components/SectionHeader';
-import { ClubRole, User } from '../interfaces';
+import Loading from '../components/Loading';
+import { ClubRole } from '../interfaces';
 import { useProfileGetSelfQuery } from '../utils/api/profile/UserGetSelfQuery';
-import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 export default function LogsPage(): JSX.Element {
   const getEvents = useProfileGetSelfQuery();
 
+  if (getEvents.called && getEvents.loading) {
+    return <Loading />;
+  }
+
   if (getEvents.error) {
     navigate('/');
-    return <div>Error</div>;
+    return <Box>Error</Box>;
   }
   return (
     <Layout>
