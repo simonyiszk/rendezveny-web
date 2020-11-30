@@ -4,7 +4,6 @@ import React from 'react';
 
 import { User } from '../interfaces';
 import Button from './Button';
-import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   user: User;

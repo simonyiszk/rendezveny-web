@@ -3,8 +3,6 @@ import { Link } from 'gatsby';
 import React from 'react';
 
 import { Event } from '../interfaces';
-import Button from './Button';
-import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   event: Event;

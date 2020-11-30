@@ -2,9 +2,7 @@ import { Box, BoxProps, Flex, Grid } from '@chakra-ui/core';
 import React from 'react';
 
 import { HRCallback, HRSegment, HRTask } from '../interfaces';
-import Button from './Button';
 import HRTaskComp from './HRTaskComp';
-import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   hrtasks: HRTask[];
