@@ -1,3 +1,5 @@
+import { ApolloError } from '@apollo/client';
+
 export interface Event {
   id: string;
   name: string;
@@ -193,4 +195,11 @@ export interface HREditCallback {
   deleteTask: (taskId: string) => void;
   editSegment: (segmentId: string) => void;
   deleteSegment: (segmentId: string) => void;
+}
+
+// UTIL
+export interface MutationProps {
+  onCompleted: () => void;
+  onError: (error: ApolloError) => void;
+  refetchQueries: any;
 }

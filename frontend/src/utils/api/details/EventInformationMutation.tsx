@@ -1,4 +1,6 @@
-import { gql, useMutation } from '@apollo/client';
+import { FetchResult, gql, MutationResult, useMutation } from '@apollo/client';
+
+import { MutationProps } from '../../../interfaces';
 
 export const eventInformationMutation = gql`
   mutation e_eventInformationMutation(
@@ -51,8 +53,34 @@ export const eventInformationMutation = gql`
   }
 `;
 
-export const useEventInformationMutation = () => {
-  const [mutation, mutationResults] = useMutation(eventInformationMutation);
+export const useEventInformationMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [
+  (
+    id: string,
+    name: string,
+    start: string,
+    end: string,
+    registrationStart: string,
+    registrationEnd: string,
+    place: string,
+    organizerIds: string[],
+    chiefOrganizerIds: string[],
+    isClosedEvent: boolean,
+    capacity: number,
+    uniqueName: string,
+    registrationAllowed: boolean,
+    hostingClubIds: string[],
+  ) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(eventInformationMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
   const getMutation = (
     id: string,
@@ -69,7 +97,7 @@ export const useEventInformationMutation = () => {
     uniqueName: string,
     registrationAllowed: boolean,
     hostingClubIds: string[],
-  ) => {
+  ): Promise<FetchResult> => {
     return mutation({
       variables: {
         id,
@@ -136,8 +164,32 @@ export const eventCreateMutation = gql`
   }
 `;
 
-export const useEventCreateMutation = () => {
-  const [mutation, mutationResults] = useMutation(eventCreateMutation);
+export const useEventCreateMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [
+  (
+    name: string,
+    start: string,
+    end: string,
+    registrationStart: string,
+    registrationEnd: string,
+    place: string,
+    chiefOrganizerIds: string[],
+    isClosedEvent: boolean,
+    capacity: number,
+    uniqueName: string,
+    registrationAllowed: boolean,
+    hostingClubIds: string[],
+  ) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(eventCreateMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
   const getMutation = (
     name: string,
@@ -152,7 +204,7 @@ export const useEventCreateMutation = () => {
     uniqueName: string,
     registrationAllowed: boolean,
     hostingClubIds: string[],
-  ) => {
+  ): Promise<FetchResult> => {
     return mutation({
       variables: {
         name,
@@ -179,10 +231,18 @@ export const eventDeleteMutation = gql`
   }
 `;
 
-export const useEventDeleteMutation = () => {
-  const [mutation, mutationResults] = useMutation(eventDeleteMutation);
+export const useEventDeleteMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [(id: string) => Promise<FetchResult>, MutationResult] => {
+  const [mutation, mutationResults] = useMutation(eventDeleteMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
-  const getMutation = (id: string) => {
+  const getMutation = (id: string): Promise<FetchResult> => {
     return mutation({
       variables: {
         id,

@@ -9,9 +9,7 @@ import { Radio, RadioGroup } from '../../../components/RadioGroup';
 import {
   Event,
   EventRegistrationFormAnswersInput,
-  EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
-  EventRegistrationFormTextAnswer,
   EventRelation,
 } from '../../../interfaces';
 import {

@@ -1,18 +1,9 @@
+import { FetchResult, gql, MutationResult, useMutation } from '@apollo/client';
+
 import {
-  ApolloError,
-  FetchResult,
-  gql,
-  MutationResult,
-  useMutation,
-} from '@apollo/client';
-
-import { EventRegistrationFormAnswersInput } from '../../../interfaces';
-
-interface MutationProps {
-  onCompleted: () => void;
-  onError: (error: ApolloError) => void;
-  refetchQueries: any;
-}
+  EventRegistrationFormAnswersInput,
+  MutationProps,
+} from '../../../interfaces';
 
 export const registerSelfMutation = gql`
   mutation registerSelfMutation(

@@ -33,8 +33,7 @@ export default function MembersPage({ location }: Props): JSX.Element {
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
   const { event, user } = state;
-  console.log('SHOWREG ELEJE', event);
-  console.log(user);
+
   const [answers, setAnswers] = useState<AnswerState>({});
 
   const [
@@ -79,7 +78,6 @@ export default function MembersPage({ location }: Props): JSX.Element {
   }
 
   if (!event || !user || getRegistrationError) {
-    console.log('HIBA', !event, !user, getRegistrationError);
     if (typeof window !== 'undefined') {
       navigate('/manage');
     }
