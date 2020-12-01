@@ -38,8 +38,10 @@ export class ApiV1Module {
 					playground: configService.get<boolean>('debug'),
 					path: '/api/v1',
 
-					cors: configService.get<boolean>('debug') === false
-						? false
+					cors: configService.get<boolean>('debug') === true
+						? {
+							origin: true
+						}
 						: {
 							origin: configService.get('security.domain'),
 							methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],

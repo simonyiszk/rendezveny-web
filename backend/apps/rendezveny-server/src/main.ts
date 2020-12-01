@@ -28,6 +28,11 @@ async function bootstrap() {
 			max: configService.get('security.rateLimit')
 		}));
 	}
+	else {
+		app.enableCors({
+			origin: true
+		});
+	}
 
 	// eslint-disable-next-line no-magic-numbers
 	await app.listen(3000);
