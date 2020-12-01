@@ -1,45 +1,28 @@
-import {
-  getApolloContext,
-  gql,
-  useApolloClient,
-  useLazyQuery,
-  useMutation,
-  useQuery,
-} from '@apollo/client';
-import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
+import { Box, Flex, Grid, Input, useToast } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../../components/Button';
 import { Checkbox, CheckboxGroup } from '../../../components/CheckboxGroup';
-import EventSection from '../../../components/EventSection';
 import { Layout } from '../../../components/Layout';
-import LinkButton from '../../../components/LinkButton';
 import { Radio, RadioGroup } from '../../../components/RadioGroup';
 import {
   Event,
-  EventRegistration,
-  EventRegistrationForm,
+  EventRegistrationFormAnswersInput,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
-  EventRegistrationFormTextQuestion,
-  User,
+  EventRelation,
 } from '../../../interfaces';
-import { useEventGetCurrentQuery } from '../../../utils/api/registration/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../../../utils/api/registration/EventGetRegistrationQuery';
 import {
-  registerDeleteMutation,
   useModifyFilledInForm,
   useRegisterDeleteMutation,
-  useRegisterSelfMutation,
 } from '../../../utils/api/registration/RegistrationMutation';
-import { useEventTokenMutation } from '../../../utils/api/token/EventsGetTokenMutation';
-import ProtectedComponent from '../../../utils/protection/ProtectedComponent';
 
 interface PageState {
-  user: User;
+  user: EventRelation;
   event: Event;
+  answers: AnswerState;
 }
 interface Props {
   location: PageProps<null, null, PageState>['location'];
@@ -53,61 +36,78 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state);
-  const { event, user } = state;
-  const [getModifyFilledInForm, _getModifyFilledInForm] = useModifyFilledInForm(
-    {
-      onCompleted: () => {},
-      onError: () => {},
-      refetchQueries: () => {},
+  const { event, user, answers } = state;
+
+  const [newAnswers, setNewAnswers] = useState<AnswerState>({});
+
+  const getAnswersFromProps = (): void => {
+    setNewAnswers(answers);
+  };
+
+  const toast = useToast();
+  const makeToast = (
+    title: string,
+    isError = false,
+    description = '',
+  ): void => {
+    toast({
+      title,
+      description,
+      status: isError ? 'error' : 'success',
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+  const [getModifyFilledInForm] = useModifyFilledInForm({
+    onCompleted: () => {
+      makeToast('Sikeres módosítás');
+      navigate(-1);
     },
-  );
-  const [
-    getRegisterDeleteMutation,
-    _getRegisterDeleteMutation,
-  ] = useRegisterDeleteMutation({
-    onCompleted: () => {},
-    onError: () => {},
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {},
+  });
+  const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
+    onCompleted: () => {
+      makeToast('Sikeres leiratkozás');
+      navigate('/manage/members', { state: { event } });
+    },
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
     refetchQueries: () => {},
   });
 
-  const getAnswersFromProps = (u: User) => {
-    if (u.registration) {
-      const res = u.registration.formAnswer.answers.reduce((acc, curr) => {
-        if (curr.answer.type === 'multiple_choice') {
-          return {
-            ...acc,
-            [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
-              .options,
-          };
-        }
-        if (curr.answer.type === 'text') {
-          return {
-            ...acc,
-            [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
-          };
-        }
-        return acc;
-      }, {});
-      setAnswers(res);
-    }
-  };
-
   useEffect(() => {
-    getAnswersFromProps(user);
-  }, [user?.id]);
+    if (user && answers) getAnswersFromProps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.userId]);
 
-  const [answers, setAnswers] = useState<AnswerState>({});
+  if (!answers) {
+    if (typeof window !== 'undefined') {
+      navigate('/manage/members/showreg', { state: { event, user } });
+    }
+    return <Box>Error</Box>;
+  }
+
+  if (!event || !user) {
+    if (typeof window !== 'undefined') {
+      navigate('/');
+    }
+    return <Box>Error</Box>;
+  }
 
   const getAnswer = (id: string): string | string[] => {
-    return answers[id];
+    return newAnswers[id];
   };
   const setAnswer = (id: string, text: string | string[]): void => {
-    setAnswers({ ...answers, [id]: text });
+    setNewAnswers({ ...newAnswers, [id]: text });
   };
 
-  const generateAnswerDTO = () => {
+  const generateAnswerDTO = (): EventRegistrationFormAnswersInput => {
     return {
-      answers: Object.entries(answers).map(([key, value]) => {
+      answers: Object.entries(newAnswers).map(([key, value]) => {
         return {
           id: key,
           answer: JSON.stringify(
@@ -126,10 +126,10 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
     };
   };
 
-  const handleModify = () => {
+  const handleModify = (): void => {
     getModifyFilledInForm(user.registration.id, generateAnswerDTO());
   };
-  const handleDelete = () => {
+  const handleDelete = (): void => {
     getRegisterDeleteMutation(user.registration.id);
   };
 
@@ -149,7 +149,9 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
                     <Input
                       mb={['1rem', null, '0']}
                       value={getAnswer(q.id) || ''}
-                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                      onChange={(e: React.FormEvent): void => {
+                        setAnswer(q.id, (e.target as HTMLInputElement).value);
+                      }}
                     />
                   )}
                   {q.metadata.type === 'multiple_choice' &&
@@ -158,7 +160,7 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
                       <CheckboxGroup
                         flexDir="column"
                         value={getAnswer(q.id) || []}
-                        onChangeCb={(e: string[]) => setAnswer(q.id, e)}
+                        onChangeCb={(e: string[]): void => setAnswer(q.id, e)}
                       >
                         {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
                           (option) => (
@@ -175,7 +177,7 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
                       <RadioGroup
                         flexDir="column"
                         value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                        onChangeCb={(e: string) => setAnswer(q.id, [e])}
+                        onChangeCb={(e: string): void => setAnswer(q.id, [e])}
                       >
                         {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
                           (option) => (

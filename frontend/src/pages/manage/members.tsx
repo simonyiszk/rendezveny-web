@@ -1,18 +1,15 @@
-import { gql, useApolloClient, useQuery } from '@apollo/client';
-import { Box, Flex, Input, Select } from '@chakra-ui/core';
+import { useApolloClient } from '@apollo/client';
+import { useToast } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../components/Button';
-import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
-import LinkButton from '../../components/LinkButton';
+import Loading from '../../components/Loading';
 import MemberSection from '../../components/MemberSection';
-import { Event, User } from '../../interfaces';
+import { Event, EventRelation } from '../../interfaces';
 import { useEventGetMembersQuery } from '../../utils/api/registration/EventMembersQuery';
 import { useSetAttendMutation } from '../../utils/api/registration/RegistrationMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
-import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 
 interface PageState {
   event: Event;
@@ -26,48 +23,75 @@ export default function MembersPage({ location }: Props): JSX.Element {
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state);
   const { event } = state;
-  const [registeredUsers, setRegisteredUsers] = useState<User[]>([]);
-  const [currentEvent, setCurrentEvent] = useState<Event>();
+
+  const [registeredUsers, setRegisteredUsers] = useState<EventRelation[]>([]);
+
+  const [
+    getEventRegs,
+    {
+      called: getEventCalled,
+      loading: getEventLoading,
+      error: getEventError,
+      data: getEventData,
+    },
+  ] = useEventGetMembersQuery((queryData) => {
+    setRegisteredUsers(queryData.events_getOne.relations.nodes);
+  });
 
   const client = useApolloClient();
-  const [getEventTokenMutation, _] = useEventTokenMutation(client);
+  const [
+    getEventTokenMutation,
+    { error: eventTokenMutationError },
+  ] = useEventTokenMutation(client, () => {
+    getEventRegs({ variables: { id: event.id } });
+  });
 
-  const [getSetAttendMutation, _getSetAttendMutation] = useSetAttendMutation({
-    onCompleted: () => {},
-    onError: () => {},
+  const toast = useToast();
+  const makeToast = (
+    title: string,
+    isError = false,
+    description = '',
+  ): void => {
+    toast({
+      title,
+      description,
+      status: isError ? 'error' : 'success',
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+
+  const [getSetAttendMutation] = useSetAttendMutation({
+    onCompleted: () => {
+      makeToast('Sikeres belépés');
+    },
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
     refetchQueries: () => {},
   });
 
-  const [getEventData, { error }] = useEventGetMembersQuery((queryData) => {
-    const resultRegisteredUsers = queryData.events_getOne.relations.nodes.reduce(
-      (acc, curr) => {
-        return [
-          ...acc,
-          {
-            id: curr.userId,
-            name: curr.name,
-            registration: curr.registration,
-          } as User,
-        ];
-      },
-      [] as User[],
-    );
-    setRegisteredUsers(resultRegisteredUsers);
-    setCurrentEvent(queryData.events_getOne);
-  });
   useEffect(() => {
-    const fetchEventData = async () => {
-      await getEventTokenMutation(event.id);
-      getEventData({ variables: { id: event.id } });
-    };
-    fetchEventData();
+    if (event) getEventTokenMutation(event.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
 
-  const handleAttend = (user: User) => {
+  if (getEventCalled && getEventLoading) {
+    return <Loading />;
+  }
+
+  if (!event || eventTokenMutationError || getEventError) {
+    if (typeof window !== 'undefined') {
+      navigate('/manage');
+    }
+    return <div>Error</div>;
+  }
+
+  const handleSetAttend = (user: EventRelation): void => {
     getSetAttendMutation(user.registration.id, !user.registration.didAttend);
     setRegisteredUsers(
       registeredUsers.map((u) => {
-        if (u.id !== user.id) return u;
+        if (u.userId !== user.userId) return u;
         const newUser = {
           ...u,
           registration: {
@@ -85,8 +109,13 @@ export default function MembersPage({ location }: Props): JSX.Element {
       <MemberSection
         text="Résztvevők"
         listOfMembers={registeredUsers}
-        event={currentEvent}
-        setAttendCb={handleAttend}
+        eventL={
+          {
+            ...event,
+            registrationForm: getEventData?.events_getOne.registrationForm,
+          } as Event
+        }
+        setAttendCb={handleSetAttend}
       />
     </Layout>
   );

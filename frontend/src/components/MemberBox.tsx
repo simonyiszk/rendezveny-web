@@ -2,18 +2,18 @@ import { Box, BoxProps, Flex } from '@chakra-ui/core';
 import { Link } from 'gatsby';
 import React from 'react';
 
-import { User } from '../interfaces';
+import { EventRelation } from '../interfaces';
 import Button from './Button';
 
 interface Props extends BoxProps {
-  user: User;
-  event: Event;
-  setAttendCb: (user: User) => void;
+  user: EventRelation;
+  eventL: Event;
+  setAttendCb: (user: EventRelation) => void;
 }
 
 export default function MemberBox({
   user,
-  event,
+  eventL,
   setAttendCb,
 }: Props): JSX.Element {
   const convertDateToText = (d: string): string => {
@@ -29,7 +29,7 @@ export default function MemberBox({
       <Box flexGrow={1} mr={4}>
         <Link
           to="/manage/members/showreg"
-          state={{ user, event }}
+          state={{ user, event: eventL }}
           style={{ width: '100%' }}
         >
           <Flex
@@ -54,7 +54,9 @@ export default function MemberBox({
       <Box flexBasis="4.25rem">
         <Button
           text={user.registration.didAttend ? '✓' : 'X'}
-          onClick={() => setAttendCb(user)}
+          onClick={(): void => {
+            setAttendCb(user);
+          }}
           boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
           borderRadius="5px"
           width="100%"

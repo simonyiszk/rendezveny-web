@@ -55,7 +55,7 @@ export const useEventGetMembersQuery = (
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(eventGetMembersQuery, {
     onCompleted: cb,
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   });
   return [getQuery, data];
 };
@@ -91,7 +91,7 @@ export const useRegistrationGetOneQuery = (
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(registrationGetOneQuery, {
     onCompleted: cb,
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   });
   return [getQuery, data];
 };

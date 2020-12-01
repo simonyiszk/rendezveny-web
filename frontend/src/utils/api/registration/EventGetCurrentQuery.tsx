@@ -40,7 +40,7 @@ interface QueryResult {
   events_getOne: Event;
 }
 export const useEventGetCurrentQuery = (
-  cb,
+  cb: (data: QueryResult) => void,
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(eventGetCurrentQuery, {
     onCompleted: cb,

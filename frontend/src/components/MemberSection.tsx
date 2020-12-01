@@ -1,21 +1,21 @@
 import { Box, BoxProps } from '@chakra-ui/core';
 import React from 'react';
 
-import { User } from '../interfaces';
+import { EventRelation } from '../interfaces';
 import MemberBox from './MemberBox';
 import SectionHeader from './SectionHeader';
 
 interface Props extends BoxProps {
   text: string;
-  listOfMembers: User[];
-  event: Event;
-  setAttendCb: (user: User) => void;
+  listOfMembers: EventRelation[];
+  eventL: Event;
+  setAttendCb: (user: EventRelation) => void;
 }
 
 export default function MemberSection({
   text,
   listOfMembers,
-  event,
+  eventL,
   setAttendCb,
 }: Props): JSX.Element {
   return (
@@ -23,11 +23,11 @@ export default function MemberSection({
       {listOfMembers.length > 0 && (
         <Box>
           <SectionHeader text={text} />
-          {listOfMembers.map((e: User) => (
+          {listOfMembers.map((e: EventRelation) => (
             <MemberBox
-              key={e.id}
+              key={e.userId}
               user={e}
-              event={event}
+              eventL={eventL}
               setAttendCb={setAttendCb}
             />
           ))}

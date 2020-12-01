@@ -1,44 +1,23 @@
-import {
-  getApolloContext,
-  gql,
-  useApolloClient,
-  useLazyQuery,
-  useMutation,
-  useQuery,
-} from '@apollo/client';
-import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
+import { Box, Flex, Grid, Input } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../../components/Button';
 import { Checkbox, CheckboxGroup } from '../../../components/CheckboxGroup';
-import EventSection from '../../../components/EventSection';
 import { Layout } from '../../../components/Layout';
 import LinkButton from '../../../components/LinkButton';
+import Loading from '../../../components/Loading';
 import { Radio, RadioGroup } from '../../../components/RadioGroup';
 import {
   Event,
-  EventRegistration,
-  EventRegistrationForm,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
-  EventRegistrationFormTextQuestion,
-  User,
+  EventRelation,
 } from '../../../interfaces';
-import { useEventGetCurrentQuery } from '../../../utils/api/registration/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../../../utils/api/registration/EventGetRegistrationQuery';
 import { useRegistrationGetOneQuery } from '../../../utils/api/registration/EventMembersQuery';
-import {
-  useModifyFilledInForm,
-  useRegisterDeleteMutation,
-  useRegisterSelfMutation,
-} from '../../../utils/api/registration/RegistrationMutation';
-import { useEventTokenMutation } from '../../../utils/api/token/EventsGetTokenMutation';
-import ProtectedComponent from '../../../utils/protection/ProtectedComponent';
 
 interface PageState {
-  user: User;
+  user: EventRelation;
   event: Event;
 }
 interface Props {
@@ -54,49 +33,61 @@ export default function MembersPage({ location }: Props): JSX.Element {
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state);
   const { event, user } = state;
-  const [getRegistration, _getRegistration] = useRegistrationGetOneQuery(
-    (queryData) => {
-      if (queryData.registration_getOne) {
-        const res = queryData.registration_getOne.formAnswer.answers.reduce(
-          (acc, curr) => {
-            if (curr.answer.type === 'multiple_choice') {
-              return {
-                ...acc,
-                [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
-                  .options,
-              };
-            }
-            if (curr.answer.type === 'text') {
-              return {
-                ...acc,
-                [curr.id]: (curr.answer as EventRegistrationFormTextAnswer)
-                  .text,
-              };
-            }
-            return acc;
-          },
-          {},
-        );
-        setAnswers(res);
-        setCurrentRegistration(queryData.registration_getOne);
-      }
+  console.log('SHOWREG ELEJE', event);
+  console.log(user);
+  const [answers, setAnswers] = useState<AnswerState>({});
+
+  const [
+    getRegistration,
+    {
+      loading: getRegistrationLoading,
+      called: getRegistrationCalled,
+      error: getRegistrationError,
     },
-  );
+  ] = useRegistrationGetOneQuery((queryData) => {
+    if (queryData.registration_getOne) {
+      const res = queryData.registration_getOne.formAnswer.answers.reduce(
+        (acc, curr) => {
+          if (curr.answer.type === 'multiple_choice') {
+            return {
+              ...acc,
+              [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
+                .options,
+            };
+          }
+          if (curr.answer.type === 'text') {
+            return {
+              ...acc,
+              [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
+            };
+          }
+          return acc;
+        },
+        {},
+      );
+      setAnswers(res);
+    }
+  });
 
   useEffect(() => {
-    getRegistration({ variables: { id: user.registration.id } });
-  }, [user?.id]);
+    if (user) getRegistration({ variables: { id: user.registration.id } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.userId]);
 
-  const [answers, setAnswers] = useState<AnswerState>({});
-  const [currentRegistration, setCurrentRegistration] = useState<
-    EventRegistration
-  >();
+  if (getRegistrationCalled && getRegistrationLoading) {
+    return <Loading />;
+  }
+
+  if (!event || !user || getRegistrationError) {
+    console.log('HIBA', !event, !user, getRegistrationError);
+    if (typeof window !== 'undefined') {
+      navigate('/manage');
+    }
+    return <Box>Error</Box>;
+  }
 
   const getAnswer = (id: string): string | string[] => {
     return answers[id];
-  };
-  const setAnswer = (id: string, text: string | string[]): void => {
-    setAnswers({ ...answers, [id]: text });
   };
 
   return (
@@ -161,8 +152,9 @@ export default function MembersPage({ location }: Props): JSX.Element {
               text="Szerkesztés"
               to="/manage/members/editreg"
               state={{
-                user: { ...user, registration: currentRegistration },
                 event,
+                user,
+                answers,
               }}
             />
           </Flex>

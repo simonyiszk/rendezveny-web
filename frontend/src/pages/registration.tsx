@@ -104,7 +104,7 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
   });
 
   const toast = useToast();
-  const makeSuccessToast = (
+  const makeToast = (
     title: string,
     isError = false,
     description = '',
@@ -119,10 +119,10 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
   };
   const [getRegisterSelfMutation] = useRegisterSelfMutation({
     onCompleted: () => {
-      makeSuccessToast('Sikeres regisztráció');
+      makeToast('Sikeres regisztráció');
     },
     onError: (error) => {
-      makeSuccessToast('Hiba', true, error.message);
+      makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
       getCurrent({ variables: { id: event.id } });
@@ -130,10 +130,10 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
   });
   const [getModifyFilledInForm] = useModifyFilledInForm({
     onCompleted: () => {
-      makeSuccessToast('Sikeres módosítás');
+      makeToast('Sikeres módosítás');
     },
     onError: (error) => {
-      makeSuccessToast('Hiba', true, error.message);
+      makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
       getCurrent({ variables: { id: event.id } });
@@ -141,10 +141,10 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
   });
   const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
     onCompleted: () => {
-      makeSuccessToast('Sikeres leiratkozás');
+      makeToast('Sikeres leiratkozás');
     },
     onError: (error) => {
-      makeSuccessToast('Hiba', true, error.message);
+      makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
       getCurrent({ variables: { id: event.id } });
@@ -235,7 +235,9 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
                       <CheckboxGroup
                         flexDir="column"
                         value={getAnswer(q.id) || []}
-                        onChangeCb={(e: string[]): void => setAnswer(q.id, e)}
+                        onChangeCb={(e: string[]): void => {
+                          setAnswer(q.id, e);
+                        }}
                       >
                         {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
                           (option) => (
@@ -252,7 +254,9 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
                       <RadioGroup
                         flexDir="column"
                         value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                        onChangeCb={(e: string): void => setAnswer(q.id, [e])}
+                        onChangeCb={(e: string): void => {
+                          setAnswer(q.id, [e]);
+                        }}
                       >
                         {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
                           (option) => (
