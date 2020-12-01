@@ -1,5 +1,5 @@
-import { gql, useApolloClient, useMutation } from '@apollo/client';
-import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
+import { useApolloClient } from '@apollo/client';
+import { Box, Flex, Grid, Input } from '@chakra-ui/core';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 
@@ -12,18 +12,19 @@ export default function LoginPage(): JSX.Element {
   const [password, setPassword] = useState('');
 
   const client = useApolloClient();
-  const [loginMutation, _] = useLoginMutation(client);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await loginMutation(username, password);
+  const [loginMutation] = useLoginMutation(client, () => {
     navigate('/');
+  });
+
+  const handleSubmit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    loginMutation(username, password);
   };
 
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <Box as="form" minWidth="50%">
+        <Box as="form" onSubmit={handleSubmit} minWidth="50%">
           <Grid
             gridTemplateColumns={['1fr', null, '1fr 1fr']}
             rowGap={['0', null, '1rem']}
@@ -33,7 +34,9 @@ export default function LoginPage(): JSX.Element {
             <Input
               name="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e: React.FormEvent): void => {
+                setUsername((e.target as HTMLInputElement).value);
+              }}
             />
             <Box>Jelszó</Box>
 
@@ -41,14 +44,17 @@ export default function LoginPage(): JSX.Element {
               name="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.FormEvent): void => {
+                setPassword((e.target as HTMLInputElement).value);
+              }}
             />
           </Grid>
           <Flex justifyContent="center" mt={4}>
             <Button
               width={['100%', null, '45%']}
               text="Bejelentkezés"
-              onClick={handleSubmit}
+              as="button"
+              onClick={(): void => {}}
             />
           </Flex>
         </Box>
