@@ -1,10 +1,4 @@
-import {
-  gql,
-  OperationVariables,
-  QueryResult,
-  useLazyQuery,
-  useQuery,
-} from '@apollo/client';
+import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
 
 import { Event } from '../../../interfaces';
 

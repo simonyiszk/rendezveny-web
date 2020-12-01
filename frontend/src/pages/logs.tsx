@@ -14,7 +14,9 @@ export default function LogsPage(): JSX.Element {
     return <Loading />;
   }
   if (getLogs.error) {
-    navigate('/');
+    if (typeof window !== 'undefined') {
+      navigate('/');
+    }
     return <Box>Error</Box>;
   }
 

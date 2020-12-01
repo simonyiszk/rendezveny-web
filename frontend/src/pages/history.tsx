@@ -24,7 +24,9 @@ export default function HistoryPage(): JSX.Element {
   }
 
   if (getEvents.error) {
-    navigate('/');
+    if (typeof window !== 'undefined') {
+      navigate('/');
+    }
     return <div>Error</div>;
   }
 

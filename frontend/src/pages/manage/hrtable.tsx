@@ -23,11 +23,11 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function HRTablePage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
+export default function HRTablePage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
   const [getHRTable, _getHRTable] = useEventGetHRTableQuery((queryData) => {
     console.log('QUERYDATA', queryData);
     setOrganizer(queryData.events_getOne.selfRelation.organizer);
@@ -60,12 +60,13 @@ export default function HRTablePage({
       getHRTable({ variables: { id: event.id } });
     };
     fetchEventData();
-    console.log(event.id);
-  }, [event.id]);
+  }, [event?.id]);
 
   if (!organizer) return <div>Loading</div>;
   if (!hrTable) {
-    navigate('/manage/hrtable/new', { state: { event } });
+    if (typeof window !== 'undefined') {
+      navigate('/manage/hrtable/new', { state: { event } });
+    }
     return <div>Loading</div>;
   }
   console.log(hrTable);

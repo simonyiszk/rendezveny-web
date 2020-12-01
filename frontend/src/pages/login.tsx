@@ -13,7 +13,9 @@ export default function LoginPage(): JSX.Element {
 
   const client = useApolloClient();
   const [loginMutation] = useLoginMutation(client, () => {
-    navigate('/');
+    if (typeof window !== 'undefined') {
+      navigate('/');
+    }
   });
 
   const handleSubmit = (e: React.FormEvent): void => {

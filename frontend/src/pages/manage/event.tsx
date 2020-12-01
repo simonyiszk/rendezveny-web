@@ -18,11 +18,11 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function EventPage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
+export default function EventPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
 
@@ -36,7 +36,7 @@ export default function EventPage({
   return (
     <Layout>
       <Heading textAlign="center" mb="2rem">
-        {event.name} kezelése
+        {event?.name} kezelése
       </Heading>
       <Flex flexDir="column" alignItems="center">
         <ProtectedComponent access={['organizer']}>

@@ -7,7 +7,6 @@ import {
   useQuery,
 } from '@apollo/client';
 import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
-import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -50,11 +49,11 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function MembersPage({
-  location: {
-    state: { user, event },
-  },
-}: Props): JSX.Element {
+export default function MembersPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event, user } = state;
   const [getRegistration, _getRegistration] = useRegistrationGetOneQuery(
     (queryData) => {
       if (queryData.registration_getOne) {
@@ -86,7 +85,7 @@ export default function MembersPage({
 
   useEffect(() => {
     getRegistration({ variables: { id: user.registration.id } });
-  }, [user.id]);
+  }, [user?.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
   const [currentRegistration, setCurrentRegistration] = useState<

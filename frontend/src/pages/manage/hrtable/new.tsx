@@ -54,11 +54,11 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function HRTablePage({
-  location: {
-    state: { event, hrTable },
-  },
-}: Props): JSX.Element {
+export default function HRTablePage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event, hrTable } = state;
   console.log(hrTable);
   const datePickerCustomHeader = ({ date, decreaseMonth, increaseMonth }) => (
     <Flex
@@ -112,7 +112,7 @@ export default function HRTablePage({
       }
     };
     fetchEventData();
-  }, [event.id]);
+  }, [event?.id]);
 
   const openModalLoadTask = (task: HRTask): void => {
     setNewTask(task);

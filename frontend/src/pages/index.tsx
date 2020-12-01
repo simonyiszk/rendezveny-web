@@ -12,7 +12,6 @@ export default function IndexPage(): JSX.Element {
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
 
   const getEvents = useEventGetAllQuery((queryData) => {
-    console.log('INDEX', queryData);
     setRegisteredEvents(queryData.registeredEvents.nodes);
     setAvailableEvents(queryData.availableEvents.nodes);
   });
@@ -22,7 +21,9 @@ export default function IndexPage(): JSX.Element {
   }
 
   if (getEvents.error) {
-    navigate('/login');
+    if (typeof window !== 'undefined') {
+      navigate('/login');
+    }
     return <div>Error</div>;
   }
 

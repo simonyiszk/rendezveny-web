@@ -7,7 +7,6 @@ import {
   useQuery,
 } from '@apollo/client';
 import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
-import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -50,19 +49,26 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function EditMemberRegPage({
-  location: {
-    state: { user, event },
-  },
-}: Props): JSX.Element {
-  const [
-    getModifyFilledInForm,
-    _getModifyFilledInForm,
-  ] = useModifyFilledInForm();
+export default function EditMemberRegPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event, user } = state;
+  const [getModifyFilledInForm, _getModifyFilledInForm] = useModifyFilledInForm(
+    {
+      onCompleted: () => {},
+      onError: () => {},
+      refetchQueries: () => {},
+    },
+  );
   const [
     getRegisterDeleteMutation,
     _getRegisterDeleteMutation,
-  ] = useRegisterDeleteMutation();
+  ] = useRegisterDeleteMutation({
+    onCompleted: () => {},
+    onError: () => {},
+    refetchQueries: () => {},
+  });
 
   const getAnswersFromProps = (u: User) => {
     if (u.registration) {
@@ -88,7 +94,7 @@ export default function EditMemberRegPage({
 
   useEffect(() => {
     getAnswersFromProps(user);
-  }, [user.id]);
+  }, [user?.id]);
 
   const [answers, setAnswers] = useState<AnswerState>({});
 

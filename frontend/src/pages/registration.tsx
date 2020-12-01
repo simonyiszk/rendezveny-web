@@ -35,11 +35,11 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function RegistrationPage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
+export default function RegistrationPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
   const [answers, setAnswers] = useState<AnswerState>({});
   const [registered, setRegistered] = useState('');
   const [questionCounter, setQuestionCounter] = useState(0);
@@ -52,7 +52,6 @@ export default function RegistrationPage({
       error: getCurrentError,
     },
   ] = useEventGetCurrentQuery((queryData) => {
-    console.log('CURRENT', queryData);
     if (queryData.events_getOne.selfRelation.registration) {
       const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
@@ -90,7 +89,6 @@ export default function RegistrationPage({
       data: getEventData,
     },
   ] = useEventGetRegistrationQuery((queryData) => {
-    console.log('GETEVENT', queryData);
     setQuestionCounter(
       queryData.events_getOne.registrationForm.questions.length,
     );
@@ -166,7 +164,9 @@ export default function RegistrationPage({
   }
 
   if (!event || eventTokenMutationError || getEventError || getCurrentError) {
-    navigate('/');
+    if (typeof window !== 'undefined') {
+      navigate('/');
+    }
     return <Box>Error</Box>;
   }
 
