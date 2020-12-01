@@ -31,6 +31,7 @@
     "gatsby-plugin-typescript": "^2.4.16",
     "gatsby-source-filesystem": "^2.3.37",
     "gatsby-source-graphql": "^2.7.7",
+    "isomorphic-fetch": "^3.0.0",
     "multiselect-react-dropdown": "^1.6.1",
     "node-fetch": "^2.6.1",
     "react": "^16.13.1",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@testing-library/react": "^10.4.7",
     "@testing-library/react-hooks": "^3.4.1",
+    "@types/isomorphic-fetch": "0.0.35",
     "@types/jest": "^26.0.8",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.26.0",

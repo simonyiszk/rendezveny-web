@@ -12,7 +12,7 @@ import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../../components/Button';
-import { Checkbox, CheckboxGroup } from '../../../components/CheckBoxGroup';
+import { Checkbox, CheckboxGroup } from '../../../components/CheckboxGroup';
 import EventSection from '../../../components/EventSection';
 import { Layout } from '../../../components/Layout';
 import LinkButton from '../../../components/LinkButton';
