@@ -28,3 +28,8 @@ export default function EventSection({
     </Box>
   );
 }
+
+EventSection.defaultProps = {
+  linkTo: '',
+  sectionText: '',
+};

@@ -1,6 +1,18 @@
-import { gql, useMutation } from '@apollo/client';
+import {
+  ApolloError,
+  FetchResult,
+  gql,
+  MutationResult,
+  useMutation,
+} from '@apollo/client';
 
 import { EventRegistrationFormAnswersInput } from '../../../interfaces';
+
+interface MutationProps {
+  onCompleted: () => void;
+  onError: (error: ApolloError) => void;
+  refetchQueries: any;
+}
 
 export const registerSelfMutation = gql`
   mutation registerSelfMutation(
@@ -13,13 +25,27 @@ export const registerSelfMutation = gql`
   }
 `;
 
-export const useRegisterSelfMutation = () => {
-  const [mutation, mutationResults] = useMutation(registerSelfMutation);
+export const useRegisterSelfMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [
+  (
+    eventId: string,
+    filledInForm: EventRegistrationFormAnswersInput,
+  ) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(registerSelfMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
   const getMutation = (
     eventId: string,
     filledInForm: EventRegistrationFormAnswersInput,
-  ) => {
+  ): Promise<FetchResult> => {
     return mutation({
       variables: {
         eventId,
@@ -43,13 +69,27 @@ export const modifyFilledInForm = gql`
   }
 `;
 
-export const useModifyFilledInForm = () => {
-  const [mutation, mutationResults] = useMutation(modifyFilledInForm);
+export const useModifyFilledInForm = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [
+  (
+    id: string,
+    filledInForm: EventRegistrationFormAnswersInput,
+  ) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(modifyFilledInForm, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
   const getMutation = (
     id: string,
     filledInForm: EventRegistrationFormAnswersInput,
-  ) => {
+  ): Promise<FetchResult> => {
     return mutation({
       variables: {
         id,
@@ -66,10 +106,18 @@ export const registerDeleteMutation = gql`
   }
 `;
 
-export const useRegisterDeleteMutation = () => {
-  const [mutation, mutationResults] = useMutation(registerDeleteMutation);
+export const useRegisterDeleteMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [(id: string) => Promise<FetchResult>, MutationResult] => {
+  const [mutation, mutationResults] = useMutation(registerDeleteMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
-  const getMutation = (id: string) => {
+  const getMutation = (id: string): Promise<FetchResult> => {
     return mutation({
       variables: {
         id,
@@ -85,10 +133,19 @@ export const setAttendMutation = gql`
   }
 `;
 
-export const useSetAttendMutation = () => {
-  const [mutation, mutationResults] = useMutation(setAttendMutation);
+export const useSetAttendMutation = ({
+  onCompleted,
+  onError,
+}: MutationProps): [
+  (id: string, attended: boolean) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(setAttendMutation, {
+    onCompleted,
+    onError,
+  });
 
-  const getMutation = (id: string, attended: boolen) => {
+  const getMutation = (id: string, attended: boolean): Promise<FetchResult> => {
     return mutation({
       variables: {
         id,

@@ -5,11 +5,12 @@ import {
   useLazyQuery,
 } from '@apollo/client';
 
-import { Event } from '../../interfaces';
+import { Event } from '../../../interfaces';
 
 export const eventGetCurrentQuery = gql`
-  query e_eventGetCurrent {
-    events_getCurrent {
+  query e_eventGetCurrent($id: String!) {
+    events_getOne(id: $id) {
+      id
       selfRelation {
         userId
         email
@@ -36,14 +37,14 @@ export const eventGetCurrentQuery = gql`
   }
 `;
 interface QueryResult {
-  events_getCurrent: Event;
+  events_getOne: Event;
 }
 export const useEventGetCurrentQuery = (
   cb,
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(eventGetCurrentQuery, {
     onCompleted: cb,
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   });
   return [getQuery, data];
 };

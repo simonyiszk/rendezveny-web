@@ -1,24 +1,24 @@
 import { Box, BoxProps, Flex, Grid } from '@chakra-ui/core';
 import React from 'react';
 
-import { HRCallback, HRSegment, HRTable } from '../interfaces';
-import Button from './Button';
+import { HRCallback, HRSegment, HRTask } from '../interfaces';
 import HRTaskComp from './HRTaskComp';
-import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
-  hrtable: HRTable;
-  hrcb: HRCallback;
+  hrtasks: HRTask[];
+  hrcb?: HRCallback;
+  hredit?: (task: HRTask) => void;
   ownSegmentIds: string[];
 }
 
 export default function HRTableComp({
-  hrtable,
+  hrtasks,
   hrcb,
+  hredit,
   ownSegmentIds,
 }: Props): JSX.Element {
   const getAllSegment = () => {
-    return hrtable.tasks.reduce((acc, curr) => {
+    return hrtasks.reduce((acc, curr) => {
       const res = curr.segments.reduce((acc2, curr2) => {
         return [...acc2, curr2];
       }, [] as HRSegment[]);
@@ -26,7 +26,7 @@ export default function HRTableComp({
     }, [] as HRSegment[]);
   };
 
-  const getNumOfRows = () => {
+  const getNumOfSegments = () => {
     return getAllSegment().length;
   };
   const getColumns = () => {
@@ -43,6 +43,7 @@ export default function HRTableComp({
     return [minStart, maxEnd];
   };
   const generateTimeSequence = () => {
+    if (getNumOfSegments() === 0) return [];
     const [minStart, maxEnd] = getColumns();
     minStart.setMinutes(Math.floor(minStart.getMinutes() / 15) * 15);
     maxEnd.setMinutes(Math.floor(maxEnd.getMinutes() / 15) * 15);
@@ -51,6 +52,7 @@ export default function HRTableComp({
     while (iter < maxEnd) {
       const nextIter = new Date(iter.getTime() + 15 * 1000 * 60);
       res.push([
+        iter.toISOString(),
         iter.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         nextIter.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       ]);
@@ -59,9 +61,10 @@ export default function HRTableComp({
     return res;
   };
   const getNumOfColumns = () => {
+    if (getNumOfSegments() === 0) return 1;
     const [minStart, maxEnd] = getColumns();
     return Math.ceil(
-      (Math.abs(maxEnd.getTime() - minStart.getTime()) / 36e5) * 4 + 1,
+      (Math.abs(maxEnd.getTime() - minStart.getTime()) / 36e5) * 4,
     );
   };
   const calcPosByTimes = (start: Date, end: Date): [number, number] => {
@@ -78,29 +81,35 @@ export default function HRTableComp({
     ];
   };
 
-  console.log(getNumOfColumns(), getNumOfRows());
   return (
     <Box>
       <Box>HR Tábla</Box>
       <Flex flexDir="column" mt={8}>
-        <Grid templateColumns={`repeat(${getNumOfColumns()}, 1fr)`}>
+        <Grid
+          templateColumns={`5rem ${getNumOfColumns() * 5}rem`}
+          rowGap="1rem"
+          overflow="auto"
+        >
           <Box>Pozíció</Box>
-          {generateTimeSequence().map((t, idx) => (
-            <Box key={t[0]}>
-              {t[0]} - {t[1]}
-            </Box>
+          <Grid templateColumns={`repeat(${getNumOfColumns()}, 1fr)`}>
+            {generateTimeSequence().map((t) => (
+              <Box key={t[0]}>
+                {t[1]} - {t[2]}
+              </Box>
+            ))}
+          </Grid>
+          {hrtasks.map((t) => (
+            <HRTaskComp
+              key={t.id}
+              hrtask={t}
+              calc={calcPosByTimes}
+              nCols={getNumOfColumns()}
+              hrcb={hrcb}
+              hredit={hredit}
+              ownSegmentIds={ownSegmentIds}
+            />
           ))}
         </Grid>
-        {hrtable.tasks.map((t) => (
-          <HRTaskComp
-            key={t.id}
-            hrtask={t}
-            calc={calcPosByTimes}
-            nCols={getNumOfColumns()}
-            hrcb={hrcb}
-            ownSegmentIds={ownSegmentIds}
-          />
-        ))}
       </Flex>
     </Box>
   );

@@ -4,7 +4,6 @@ import React from 'react';
 
 import { User } from '../interfaces';
 import Button from './Button';
-import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   user: User;
@@ -62,7 +61,7 @@ export default function MemberBox({
           height="100%"
           py={1}
           px={2}
-          backgroundColor={user.registration.didAttend ? 'simonyi' : 'red'}
+          backgroundColor={user.registration.didAttend ? 'simonyi' : 'red.500'}
           flexDir="column"
           alignItems="center"
           justifyContent="center"

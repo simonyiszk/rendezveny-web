@@ -25,7 +25,9 @@ export default function Header(): JSX.Element {
 
   const handleLogout = () => {
     getLogoutService();
-    window.location = '/login';
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   };
 
   return (

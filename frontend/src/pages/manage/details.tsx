@@ -1,18 +1,15 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { gql, useApolloClient, useQuery } from '@apollo/client';
+import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
-import { getMonth, getYear } from 'date-fns';
+import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
-import { navigate, PageProps } from 'gatsby';
-import { Multiselect } from 'multiselect-react-dropdown';
+import { PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 
 import Button from '../../components/Button';
-import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
-import LinkButton from '../../components/LinkButton';
 import { Club, Event, User } from '../../interfaces';
 import { useClubsGetAllQuery } from '../../utils/api/details/ClubsGetAllQuery';
 import { useClubsGetOtherMembersQuery } from '../../utils/api/details/ClubsGetOtherMembersQuery';
@@ -23,8 +20,6 @@ import {
   useEventInformationMutation,
 } from '../../utils/api/details/EventInformationMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
-import { useUsersGetAllQuery } from '../../utils/api/UsersGetAllQuery';
-import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 
 registerLocale('hu', hu);
 
@@ -35,11 +30,11 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function DetailsPage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
+export default function DetailsPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
   const [organizers, setOrganizers] = useState<User[]>([]);
   const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -84,6 +79,7 @@ export default function DetailsPage({
 
   const [getOrganizers, { error }] = useEventGetInformationQuery(
     (queryData) => {
+      console.log(queryData);
       const resultAllUser = queryData.events_getOne.relations.nodes.reduce(
         (acc, curr) => {
           return [...acc, { id: curr.userId, name: curr.name } as User];
@@ -195,11 +191,6 @@ export default function DetailsPage({
         organizerClubs.map((c) => c.id),
       );
     }
-    /* if (event) {
-      navigate('/manage', { state: { event } });
-    } else {
-      navigate('/');
-    } */
   };
   const handleDelete = () => {
     getEventDeleteMutation(event.id);
@@ -317,39 +308,9 @@ export default function DetailsPage({
               onChange={(e) => setEventPlace(e.target.value)}
             />
             <Label>Fő szervezők</Label>
-            <Multiselect
-              name="chiefOrganizers"
-              options={allUsers}
-              selectedValues={chiefOrganizers}
-              displayValue="name"
-              onSelect={onChangeChiefOrganizers}
-              onRemove={onChangeChiefOrganizers}
-              avoidHighlightFirstOption
-              closeIcon="cancel"
-              style={{
-                chips: {
-                  background: '#6abd51',
-                },
-              }}
-              placeholder=""
-            />
+            <Box>asd</Box>
             <Label>Szervezők</Label>
-            <Multiselect
-              name="organizers"
-              options={allUsers}
-              selectedValues={organizers}
-              displayValue="name"
-              onSelect={onChangeOrganizers}
-              onRemove={onChangeOrganizers}
-              avoidHighlightFirstOption
-              closeIcon="cancel"
-              style={{
-                chips: {
-                  background: '#6abd51',
-                },
-              }}
-              placeholder=""
-            />
+            <Box>asd</Box>
             <Label>Esemény látogathatósága</Label>
             <Select
               name="eventClosed"
@@ -382,22 +343,7 @@ export default function DetailsPage({
               <option value="Nem">Nem</option>
             </Select>
             <Label>Szerező körök</Label>
-            <Multiselect
-              name="organizerClubs"
-              options={allClubs}
-              selectedValues={organizerClubs}
-              displayValue="name"
-              onSelect={onChangeClubs}
-              onRemove={onChangeClubs}
-              avoidHighlightFirstOption
-              closeIcon="cancel"
-              style={{
-                chips: {
-                  background: '#6abd51',
-                },
-              }}
-              placeholder=""
-            />
+            <Box>asd</Box>
           </Grid>
           {!event && (
             <Flex justifyContent="center" mt={4}>
@@ -422,7 +368,7 @@ export default function DetailsPage({
               <Button
                 width={['100%', null, '45%']}
                 text="Törlés"
-                backgroundColor="red"
+                backgroundColor="red.500"
                 mt={[4, null, 0]}
                 onClick={handleDelete}
               />

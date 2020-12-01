@@ -1,12 +1,13 @@
 import { gql, useApolloClient, useQuery } from '@apollo/client';
-import { Box } from '@chakra-ui/core';
-import { PageProps } from 'gatsby';
+import { Box, Flex } from '@chakra-ui/core';
+import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../components/Button';
 import EventSection from '../../components/EventSection';
 import HRTableComp from '../../components/HRTableComp';
 import { Layout } from '../../components/Layout';
+import LinkButton from '../../components/LinkButton';
 import { Event, EventOrganizer, HRTable } from '../../interfaces';
 import { useEventGetHRTableQuery } from '../../utils/api/hrtable/HRGetTableQuery';
 import {
@@ -22,11 +23,11 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function HRTablePage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
+export default function HRTablePage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
   const [getHRTable, _getHRTable] = useEventGetHRTableQuery((queryData) => {
     console.log('QUERYDATA', queryData);
     setOrganizer(queryData.events_getOne.selfRelation.organizer);
@@ -59,10 +60,15 @@ export default function HRTablePage({
       getHRTable({ variables: { id: event.id } });
     };
     fetchEventData();
-    console.log(event.id);
-  }, [event.id]);
+  }, [event?.id]);
 
-  if (!hrTable || !organizer) return <div>Loading</div>;
+  if (!organizer) return <div>Loading</div>;
+  if (!hrTable) {
+    if (typeof window !== 'undefined') {
+      navigate('/manage/hrtable/new', { state: { event } });
+    }
+    return <div>Loading</div>;
+  }
   console.log(hrTable);
   console.log(organizer);
 
@@ -95,11 +101,27 @@ export default function HRTablePage({
   return (
     <Layout>
       <HRTableComp
-        hrtable={hrTable}
+        hrtasks={hrTable.tasks}
         hrcb={{ signUps, signOffs, signUpCb, signOffCb }}
         ownSegmentIds={organizer?.hrSegmentIds ?? []}
       />
-      <Button text="Mentés" onClick={handleSubmit} />
+      <Flex
+        justifyContent={['center', null, 'space-between']}
+        flexDir={['column', null, 'row']}
+        mt={4}
+      >
+        <Button
+          width={['100%', null, '45%']}
+          text="Mentés"
+          onClick={handleSubmit}
+        />
+        <LinkButton
+          width={['100%', null, '45%']}
+          text="Szerkesztés"
+          to="/manage/hrtable/new"
+          state={{ event, hrTable }}
+        />
+      </Flex>
     </Layout>
   );
 }

@@ -1,25 +1,29 @@
-import { gql, useQuery } from '@apollo/client';
 import { navigate } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import Button from '../components/Button';
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import LinkButton from '../components/LinkButton';
-import SectionHeader from '../components/SectionHeader';
+import Loading from '../components/Loading';
 import { Event } from '../interfaces';
 import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 export default function ManagePage(): JSX.Element {
+  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
+
   const getEvents = useEventGetAllQuery((queryData) => {
     setOrganizedEvents(queryData.organizedEvents.nodes);
   });
 
-  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
+  if (getEvents.called && getEvents.loading) {
+    return <Loading />;
+  }
 
   if (getEvents.error) {
-    navigate('/login');
+    if (typeof window !== 'undefined') {
+      navigate('/login');
+    }
     return <div>Error</div>;
   }
 

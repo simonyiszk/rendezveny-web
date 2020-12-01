@@ -1,30 +1,19 @@
-import {
-  getApolloContext,
-  gql,
-  useApolloClient,
-  useLazyQuery,
-  useMutation,
-  useQuery,
-} from '@apollo/client';
-import { Box, Flex, Grid, Input, Select } from '@chakra-ui/core';
-import hu from 'date-fns/locale/hu';
+import { useApolloClient } from '@apollo/client';
+import { Box, Flex, Grid, Input, useToast } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../components/Button';
-import { Checkbox, CheckboxGroup } from '../components/CheckBoxGroup';
-import EventSection from '../components/EventSection';
+import { Checkbox, CheckboxGroup } from '../components/CheckboxGroup';
 import { Layout } from '../components/Layout';
-import LinkButton from '../components/LinkButton';
+import Loading from '../components/Loading';
 import { Radio, RadioGroup } from '../components/RadioGroup';
 import {
   Event,
-  EventRegistrationForm,
+  EventRegistrationFormAnswersInput,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
-  EventRegistrationFormTextQuestion,
-  User,
 } from '../interfaces';
 import { useEventGetCurrentQuery } from '../utils/api/registration/EventGetCurrentQuery';
 import { useEventGetRegistrationQuery } from '../utils/api/registration/EventGetRegistrationQuery';
@@ -34,7 +23,6 @@ import {
   useRegisterSelfMutation,
 } from '../utils/api/registration/RegistrationMutation';
 import { useEventTokenMutation } from '../utils/api/token/EventsGetTokenMutation';
-import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 interface PageState {
   event: Event;
@@ -47,37 +35,25 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function RegistrationPage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
-  const [
-    getEvent,
-    { called, loading, data, error },
-  ] = useEventGetRegistrationQuery((queryData) => {
-    getCurrent();
-  });
+export default function RegistrationPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
+  const [answers, setAnswers] = useState<AnswerState>({});
+  const [registered, setRegistered] = useState('');
+  const [questionCounter, setQuestionCounter] = useState(0);
 
-  const client = useApolloClient();
-  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
-    client,
-  );
   const [
-    getRegisterSelfMutation,
-    _getRegisterSelfMutation,
-  ] = useRegisterSelfMutation();
-  const [
-    getModifyFilledInForm,
-    _getModifyFilledInForm,
-  ] = useModifyFilledInForm();
-  const [
-    getRegisterDeleteMutation,
-    _getRegisterDeleteMutation,
-  ] = useRegisterDeleteMutation();
-  const [getCurrent, _getCurrent] = useEventGetCurrentQuery((queryData) => {
-    if (queryData.events_getCurrent.selfRelation.registration) {
-      const res = queryData.events_getCurrent.selfRelation.registration.formAnswer.answers.reduce(
+    getCurrent,
+    {
+      loading: getCurrentLoading,
+      called: getCurrentCalled,
+      error: getCurrentError,
+    },
+  ] = useEventGetCurrentQuery((queryData) => {
+    if (queryData.events_getOne.selfRelation.registration) {
+      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
           if (curr.answer.type === 'multiple_choice') {
             return {
@@ -97,31 +73,111 @@ export default function RegistrationPage({
         {},
       );
       setAnswers(res);
-      setRegistered(queryData.events_getCurrent.selfRelation.registration.id);
+      setRegistered(queryData.events_getOne.selfRelation.registration.id);
+    } else {
+      setAnswers({});
+      setRegistered('');
     }
   });
 
-  useEffect(() => {
-    const fetchEventData = async () => {
-      await getEventTokenMutation(event.id);
-      return getEvent();
-    };
-    fetchEventData();
-  }, [event.id]);
+  const [
+    getEvent,
+    {
+      called: getEventCalled,
+      loading: getEventLoading,
+      error: getEventError,
+      data: getEventData,
+    },
+  ] = useEventGetRegistrationQuery((queryData) => {
+    setQuestionCounter(
+      queryData.events_getOne.registrationForm.questions.length,
+    );
+    getCurrent({ variables: { id: event.id } });
+  });
 
-  const [answers, setAnswers] = useState<AnswerState>({});
-  const [registered, setRegistered] = useState('');
+  const client = useApolloClient();
+  const [
+    getEventTokenMutation,
+    { error: eventTokenMutationError },
+  ] = useEventTokenMutation(client, () => {
+    getEvent({ variables: { id: event.id } });
+  });
+
+  const toast = useToast();
+  const makeSuccessToast = (
+    title: string,
+    isError = false,
+    description = '',
+  ): void => {
+    toast({
+      title,
+      description,
+      status: isError ? 'error' : 'success',
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+  const [getRegisterSelfMutation] = useRegisterSelfMutation({
+    onCompleted: () => {
+      makeSuccessToast('Sikeres regisztráció');
+    },
+    onError: (error) => {
+      makeSuccessToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {
+      getCurrent({ variables: { id: event.id } });
+    },
+  });
+  const [getModifyFilledInForm] = useModifyFilledInForm({
+    onCompleted: () => {
+      makeSuccessToast('Sikeres módosítás');
+    },
+    onError: (error) => {
+      makeSuccessToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {
+      getCurrent({ variables: { id: event.id } });
+    },
+  });
+  const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
+    onCompleted: () => {
+      makeSuccessToast('Sikeres leiratkozás');
+    },
+    onError: (error) => {
+      makeSuccessToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {
+      getCurrent({ variables: { id: event.id } });
+    },
+  });
+
+  useEffect(() => {
+    if (event) getEventTokenMutation(event.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
+
+  if (
+    (getEventCalled && getEventLoading) ||
+    (getCurrentCalled && getCurrentLoading)
+  ) {
+    return <Loading />;
+  }
+
+  if (!event || eventTokenMutationError || getEventError || getCurrentError) {
+    if (typeof window !== 'undefined') {
+      navigate('/');
+    }
+    return <Box>Error</Box>;
+  }
 
   const getAnswer = (id: string): string | string[] => {
     return answers[id];
   };
   const setAnswer = (id: string, text: string | string[]): void => {
-    console.log('setanswer');
-    console.log(text);
     setAnswers({ ...answers, [id]: text });
   };
 
-  const generateAnswerDTO = () => {
+  const generateAnswerDTO = (): EventRegistrationFormAnswersInput => {
     return {
       answers: Object.entries(answers).map(([key, value]) => {
         return {
@@ -142,23 +198,15 @@ export default function RegistrationPage({
     };
   };
 
-  const handleRegistration = () => {
+  const handleRegistration = (): void => {
     getRegisterSelfMutation(event.id, generateAnswerDTO());
   };
-  const handleModify = () => {
+  const handleModify = (): void => {
     getModifyFilledInForm(registered, generateAnswerDTO());
   };
-  const handleDelete = () => {
+  const handleDelete = (): void => {
     getRegisterDeleteMutation(registered);
   };
-
-  if (called && loading) {
-    return <div>Loading</div>;
-  }
-
-  if (error) {
-    return <div>Error {error.message}</div>;
-  }
 
   return (
     <Layout>
@@ -168,15 +216,17 @@ export default function RegistrationPage({
             gridTemplateColumns={['1fr', null, '1fr 1fr']}
             rowGap={['0', null, '1rem']}
           >
-            {data &&
-              data.events_getCurrent.registrationForm.questions.map((q) => (
+            {getEventData &&
+              getEventData.events_getOne.registrationForm.questions.map((q) => (
                 <React.Fragment key={q.id}>
                   <Box>{q.question}</Box>
                   {q.metadata.type === 'text' && (
                     <Input
                       mb={['1rem', null, '0']}
                       value={getAnswer(q.id) || ''}
-                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                      onChange={(e: React.FormEvent): void => {
+                        setAnswer(q.id, (e.target as HTMLInputElement).value);
+                      }}
                     />
                   )}
                   {q.metadata.type === 'multiple_choice' &&
@@ -227,20 +277,26 @@ export default function RegistrationPage({
           )}
           {registered && (
             <Flex
-              justifyContent={['center', null, 'space-between']}
+              justifyContent={
+                questionCounter > 0
+                  ? ['center', null, 'space-between']
+                  : 'center'
+              }
               flexDir={['column', null, 'row']}
               mt={4}
             >
-              <Button
-                width={['100%', null, '45%']}
-                text="Módosítás"
-                onClick={handleModify}
-              />
+              {questionCounter > 0 && (
+                <Button
+                  width={['100%', null, '45%']}
+                  text="Módosítás"
+                  mb={[4, null, 0]}
+                  onClick={handleModify}
+                />
+              )}
               <Button
                 width={['100%', null, '45%']}
                 text="Regisztráció törlése"
-                backgroundColor="red"
-                mt={[4, null, 0]}
+                backgroundColor="red.500"
                 onClick={handleDelete}
               />
             </Flex>

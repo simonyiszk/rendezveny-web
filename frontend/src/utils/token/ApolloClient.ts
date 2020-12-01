@@ -6,10 +6,14 @@ import {
   InMemoryCache,
 } from '@apollo/client';
 import { setContext } from 'apollo-link-context';
+import fetch from 'isomorphic-fetch';
 
 import { getAuthToken, getEventToken } from './TokenContainer';
 
-const httpLink = new HttpLink({ uri: 'http://localhost:3000/api/v1' });
+const httpLink = new HttpLink({
+  fetch,
+  uri: process.env.GATSBY_SERVER_API_URL
+});
 
 export const resetContext = (client: ApolloClient<object>) => {
   client.setLink(

@@ -1,16 +1,15 @@
-import { Box, BoxProps, Flex, Grid } from '@chakra-ui/core';
+import { Box, BoxProps, Grid } from '@chakra-ui/core';
 import React from 'react';
 
 import { HRCallback, HRTask } from '../interfaces';
-import Button from './Button';
 import HRSegmentComp from './HRSegmentComp';
-import LinkButton from './LinkButton';
 
 interface Props extends BoxProps {
   hrtask: HRTask;
   calc: (start: Date, end: Date) => [number, number];
   nCols: number;
-  hrcb: HRCallback;
+  hrcb?: HRCallback;
+  hredit?: (task: HRTask) => void;
   ownSegmentIds: string[];
 }
 
@@ -19,6 +18,7 @@ export default function HRTaskComp({
   calc,
   nCols,
   hrcb,
+  hredit,
   ownSegmentIds,
 }: Props): JSX.Element {
   const sortSegments = () => {
@@ -32,29 +32,26 @@ export default function HRTaskComp({
   };
 
   return (
-    <Grid
-      templateColumns={`repeat(${nCols}, 1fr)`}
-      mt={4}
-      border="1px solid black"
-    >
-      <Box
-        borderRight="solid 1px black"
-        style={{
-          gridRow: `1 / ${hrtask.segments.length + 1}`,
+    <>
+      <Box>{hrtask.name}</Box>
+      <Grid
+        templateColumns={`repeat(${nCols}, 1fr)`}
+        border="1px solid black"
+        onClick={(e) => {
+          if (hredit) hredit(hrtask);
         }}
       >
-        {hrtask.name}
-      </Box>
-      {sortSegments().map((s, idx) => (
-        <HRSegmentComp
-          key={s.id}
-          hrsegment={s}
-          calc={calc}
-          row={idx}
-          hrcb={hrcb}
-          ownSegmentIds={ownSegmentIds}
-        />
-      ))}
-    </Grid>
+        {sortSegments().map((s, idx) => (
+          <HRSegmentComp
+            key={s.id}
+            hrsegment={s}
+            calc={calc}
+            row={idx}
+            hrcb={hrcb}
+            ownSegmentIds={ownSegmentIds}
+          />
+        ))}
+      </Grid>
+    </>
   );
 }

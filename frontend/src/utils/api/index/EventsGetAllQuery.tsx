@@ -1,10 +1,4 @@
-import {
-  gql,
-  OperationVariables,
-  QueryResult,
-  useLazyQuery,
-  useQuery,
-} from '@apollo/client';
+import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
 
 import { Event } from '../../../interfaces';
 
@@ -64,6 +58,7 @@ export const useEventGetAllQuery = (
 ): QueryResult<QueryResultL, OperationVariables> => {
   const getQuery = useQuery<QueryResultL>(eventGetAllQuery, {
     onCompleted: cb,
+    fetchPolicy: 'cache-and-network',
   });
   return getQuery;
 };

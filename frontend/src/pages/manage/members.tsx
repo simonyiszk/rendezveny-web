@@ -1,8 +1,6 @@
 import { gql, useApolloClient, useQuery } from '@apollo/client';
 import { Box, Flex, Input, Select } from '@chakra-ui/core';
-import { tr } from 'date-fns/locale';
 import { navigate, PageProps } from 'gatsby';
-import { Multiselect } from 'multiselect-react-dropdown';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../components/Button';
@@ -23,18 +21,22 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function MembersPage({
-  location: {
-    state: { event },
-  },
-}: Props): JSX.Element {
+export default function MembersPage({ location }: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state);
+  const { event } = state;
   const [registeredUsers, setRegisteredUsers] = useState<User[]>([]);
   const [currentEvent, setCurrentEvent] = useState<Event>();
 
   const client = useApolloClient();
   const [getEventTokenMutation, _] = useEventTokenMutation(client);
 
-  const [getSetAttendMutation, _getSetAttendMutation] = useSetAttendMutation();
+  const [getSetAttendMutation, _getSetAttendMutation] = useSetAttendMutation({
+    onCompleted: () => {},
+    onError: () => {},
+    refetchQueries: () => {},
+  });
 
   const [getEventData, { error }] = useEventGetMembersQuery((queryData) => {
     const resultRegisteredUsers = queryData.events_getOne.relations.nodes.reduce(
@@ -59,7 +61,7 @@ export default function MembersPage({
       getEventData({ variables: { id: event.id } });
     };
     fetchEventData();
-  }, [event.id]);
+  }, [event?.id]);
 
   const handleAttend = (user: User) => {
     getSetAttendMutation(user.registration.id, !user.registration.didAttend);
