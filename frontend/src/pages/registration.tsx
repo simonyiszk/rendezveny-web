@@ -4,7 +4,7 @@ import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../components/Button';
-import { Checkbox, CheckboxGroup } from '../components/CheckBoxGroup';
+import { Checkbox, CheckboxGroup } from '../components/CheckboxGroup';
 import { Layout } from '../components/Layout';
 import Loading from '../components/Loading';
 import { Radio, RadioGroup } from '../components/RadioGroup';
