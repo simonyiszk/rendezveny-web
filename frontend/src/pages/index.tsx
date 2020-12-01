@@ -1,26 +1,19 @@
 import { navigate } from 'gatsby';
-import React, { useState } from 'react';
+import React from 'react';
 
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import Loading from '../components/Loading';
-import { Event } from '../interfaces';
 import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 
 export default function IndexPage(): JSX.Element {
-  const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
-  const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
+  const { called, loading, error, data } = useEventGetAllQuery();
 
-  const getEvents = useEventGetAllQuery((queryData) => {
-    setRegisteredEvents(queryData.registeredEvents.nodes);
-    setAvailableEvents(queryData.availableEvents.nodes);
-  });
-
-  if (getEvents.called && getEvents.loading) {
+  if (called && loading) {
     return <Loading />;
   }
 
-  if (getEvents.error) {
+  if (error) {
     if (typeof window !== 'undefined') {
       navigate('/login');
     }
@@ -30,12 +23,12 @@ export default function IndexPage(): JSX.Element {
   return (
     <Layout>
       <EventSection
-        listOfEvents={registeredEvents}
+        listOfEvents={data?.registeredEvents.nodes ?? []}
         color="simonyi"
         linkTo="/registration"
       />
       <EventSection
-        listOfEvents={availableEvents}
+        listOfEvents={data?.availableEvents.nodes ?? []}
         color="grayE1"
         linkTo="/registration"
       />

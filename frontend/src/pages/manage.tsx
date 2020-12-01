@@ -1,26 +1,21 @@
 import { navigate } from 'gatsby';
-import React, { useState } from 'react';
+import React from 'react';
 
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import LinkButton from '../components/LinkButton';
 import Loading from '../components/Loading';
-import { Event } from '../interfaces';
 import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 export default function ManagePage(): JSX.Element {
-  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([]);
+  const { called, loading, error, data } = useEventGetAllQuery();
 
-  const getEvents = useEventGetAllQuery((queryData) => {
-    setOrganizedEvents(queryData.organizedEvents.nodes);
-  });
-
-  if (getEvents.called && getEvents.loading) {
+  if (called && loading) {
     return <Loading />;
   }
 
-  if (getEvents.error) {
+  if (error) {
     if (typeof window !== 'undefined') {
       navigate('/login');
     }
@@ -38,7 +33,7 @@ export default function ManagePage(): JSX.Element {
         />
       </ProtectedComponent>
       <EventSection
-        listOfEvents={organizedEvents}
+        listOfEvents={data?.organizedEvents.nodes ?? []}
         color="simonyi"
         linkTo="/manage/event"
       />

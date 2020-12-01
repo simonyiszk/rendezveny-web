@@ -1,10 +1,8 @@
-import { gql, useApolloClient, useQuery } from '@apollo/client';
+import { useApolloClient } from '@apollo/client';
 import { Flex, Heading } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
-import Button from '../../components/Button';
-import EventSection from '../../components/EventSection';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
 import { Event } from '../../interfaces';
@@ -24,14 +22,22 @@ export default function EventPage({ location }: Props): JSX.Element {
     location.state || (typeof history === 'object' && history.state);
   const { event } = state;
   const client = useApolloClient();
-  const [getEventTokenMutation, _] = useEventTokenMutation(client);
+  const [
+    getEventTokenMutation,
+    { error: eventTokenMutationError },
+  ] = useEventTokenMutation(client);
 
   useEffect(() => {
-    const fetchEventData = async () => {
-      await getEventTokenMutation(event.id);
-    };
-    fetchEventData();
+    if (event) getEventTokenMutation(event.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
+
+  if (!event || eventTokenMutationError) {
+    if (typeof window !== 'undefined') {
+      navigate('/manage');
+    }
+    return <div>Error</div>;
+  }
 
   return (
     <Layout>
@@ -66,16 +72,6 @@ export default function EventPage({ location }: Props): JSX.Element {
             mb="1rem"
             to="/manage/hrtable"
             state={{ event }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent access={['organizer']}>
-          <Button
-            text="Regisztrációs form"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            onClick={() => {
-              console.log('Clicked');
-            }}
           />
         </ProtectedComponent>
       </Flex>

@@ -54,7 +54,7 @@ interface QueryResultL {
   };
 }
 export const useEventGetAllQuery = (
-  cb: (data: QueryResultL) => void,
+  cb?: (data: QueryResultL) => void,
 ): QueryResult<QueryResultL, OperationVariables> => {
   const getQuery = useQuery<QueryResultL>(eventGetAllQuery, {
     onCompleted: cb,
