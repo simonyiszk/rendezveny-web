@@ -1,6 +1,5 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { gql, useApolloClient, useQuery } from '@apollo/client';
 import {
   Box,
   Flex,
@@ -15,34 +14,22 @@ import {
   ModalOverlay,
   Select,
   useDisclosure,
+  useToast,
 } from '@chakra-ui/core';
-import { getMonth, getYear } from 'date-fns';
+import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
-import { PageProps } from 'gatsby';
+import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 
 import Button from '../../../components/Button';
-import EventSection from '../../../components/EventSection';
 import HRTableComp from '../../../components/HRTableComp';
 import { Layout } from '../../../components/Layout';
-import {
-  Event,
-  EventOrganizer,
-  HRSegment,
-  HRTable,
-  HRTask,
-} from '../../../interfaces';
-import { useEventGetHRTableQuery } from '../../../utils/api/hrtable/HRGetTableQuery';
+import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
 import {
   useCreateHRTableMutation,
   useModifyHRTableMutation,
 } from '../../../utils/api/hrtable/HRModifyTableMutation';
-import {
-  usehrtableRegisterMutation,
-  usehrtableUnRegisterMutation,
-} from '../../../utils/api/hrtable/HRTableOrganizerSelfMutation';
-import { useEventTokenMutation } from '../../../utils/api/token/EventsGetTokenMutation';
 
 registerLocale('hu', hu);
 
@@ -59,26 +46,11 @@ export default function HRTablePage({ location }: Props): JSX.Element {
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
   const { event, hrTable } = state;
-  console.log(hrTable);
-  const datePickerCustomHeader = ({ date, decreaseMonth, increaseMonth }) => (
-    <Flex
-      fontSize="1rem"
-      fontWeight="bold"
-      justifyContent="space-between"
-      px={4}
-    >
-      <Box cursor="pointer" onClick={decreaseMonth}>
-        {'<'}
-      </Box>
-      <Flex>
-        <Box mr={1}>{getYear(date)}.</Box>
-        <Box>{date.toLocaleString('default', { month: 'long' })}</Box>
-      </Flex>
-      <Box cursor="pointer" onClick={increaseMonth}>
-        {'>'}
-      </Box>
-    </Flex>
-  );
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [newId, setNewId] = useState(0);
+  const [newTask, setNewTask] = useState<HRTask>();
 
   const [tasks, setTasks] = useState<HRTask[]>(
     (hrTable?.tasks ?? []).map((t) => {
@@ -90,29 +62,50 @@ export default function HRTablePage({ location }: Props): JSX.Element {
       };
     }),
   );
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const [newId, setNewId] = useState(0);
-  const [newTask, setNewTask] = useState<HRTask>();
-
-  const [
-    getCreateHRTableMutation,
-    _getCreateHRTableMutation,
-  ] = useCreateHRTableMutation();
-  const [
-    getModifyHRTableMutation,
-    _getModifyHRTableMutation,
-  ] = useModifyHRTableMutation();
+  const toast = useToast();
+  const makeToast = (
+    title: string,
+    isError = false,
+    description = '',
+  ): void => {
+    toast({
+      title,
+      description,
+      status: isError ? 'error' : 'success',
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+  const [getCreateHRTableMutation] = useCreateHRTableMutation({
+    onCompleted: () => {},
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {},
+  });
+  const [getModifyHRTableMutation] = useModifyHRTableMutation({
+    onCompleted: () => {
+      makeToast('Sikeres mentés');
+    },
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {},
+  });
 
   useEffect(() => {
-    const fetchEventData = async () => {
-      if (!hrTable) {
-        await getCreateHRTableMutation(event.id);
-        console.log('HR Table successfully created');
-      }
-    };
-    fetchEventData();
+    if (event && !hrTable) {
+      getCreateHRTableMutation(event.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
+
+  if (!event) {
+    if (typeof window !== 'undefined') {
+      navigate('/manage');
+    }
+    return <Box>Error</Box>;
+  }
 
   const openModalLoadTask = (task: HRTask): void => {
     setNewTask(task);
@@ -132,12 +125,11 @@ export default function HRTablePage({ location }: Props): JSX.Element {
   const setNewTaskName = (v: string): void => {
     setNewTask({ ...newTask, name: v } as HRTask);
   };
-  const handleAddNewSegment = () => {
-    console.log(newTask);
+  const handleAddNewSegment = (): void => {
     setNewTask({
       ...newTask,
       segments: [
-        ...newTask?.segments,
+        ...(newTask?.segments ?? []),
         {
           id: 'pseudo'.concat(newId.toString()),
           isRequired: true,
@@ -157,24 +149,27 @@ export default function HRTablePage({ location }: Props): JSX.Element {
       segments: newTask?.segments.filter((s) => s.id !== segmentId),
     } as HRTask);
   };
-  const getNewSegmentProp = (segmentId: string, prop: string): any => {
+  const getNewSegmentProp = <U extends keyof HRSegment>(
+    segmentId: string,
+    prop: U,
+  ): U => {
     return newTask?.segments.filter((s) => s.id === segmentId)[0][prop];
   };
   const setNewSegmentProp = (
     segmentId: string,
     prop: string,
-    value: any,
+    value: Date | boolean,
   ): void => {
     setNewTask({
       ...newTask,
-      segments: newTask?.segments.map((s) => {
+      segments: (newTask?.segments ?? []).map((s) => {
         if (s.id !== segmentId) return s;
         return { ...s, [prop]: value };
       }),
-    });
+    } as HRTask);
   };
 
-  const handleNewTask = () => {
+  const handleNewTask = (): void => {
     setTasks([
       ...tasks.filter((t) => t.id !== newTask?.id),
       {
@@ -187,12 +182,12 @@ export default function HRTablePage({ location }: Props): JSX.Element {
     onClose();
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = (taskId: string): void => {
     setTasks(tasks.filter((t) => t.id !== taskId));
     onClose();
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     getModifyHRTableMutation(event.id, {
       isLocked: hrTable.isLocked ?? false,
       tasks: tasks.map((t) => {
@@ -208,11 +203,43 @@ export default function HRTablePage({ location }: Props): JSX.Element {
               isRequired: s.isRequired,
               capacity: s.capacity,
               isLocked: s.isLocked,
-            } as HRSegment;
+            };
           }),
-        } as HRTask;
+        };
       }),
-    } as HRTable);
+    });
+  };
+
+  const datePickerCustomHeader = ({
+    date,
+    decreaseMonth,
+    increaseMonth,
+  }: {
+    date: Date;
+    decreaseMonth: () => void;
+    increaseMonth: () => void;
+  }): JSX.Element => (
+    <Flex
+      fontSize="1rem"
+      fontWeight="bold"
+      justifyContent="space-between"
+      px={4}
+    >
+      <Box cursor="pointer" onClick={decreaseMonth}>
+        {'<'}
+      </Box>
+      <Flex>
+        <Box mr={1}>{getYear(date)}.</Box>
+        <Box>{date.toLocaleString('default', { month: 'long' })}</Box>
+      </Flex>
+      <Box cursor="pointer" onClick={increaseMonth}>
+        {'>'}
+      </Box>
+    </Flex>
+  );
+
+  const Label = ({ children }: { children: string }): JSX.Element => {
+    return <Box mt={['1rem', null, 0]}>{children}</Box>;
   };
 
   return (
@@ -254,7 +281,9 @@ export default function HRTablePage({ location }: Props): JSX.Element {
                 <Input
                   mb={['1rem', null, '0']}
                   value={newTask?.name}
-                  onChange={(e) => setNewTaskName(e.target.value)}
+                  onChange={(e: React.FormEvent): void =>
+                    setNewTaskName((e.target as HTMLInputElement).value)
+                  }
                 />
                 <Box gridColumn="1 / -1">Idősávok</Box>
               </Grid>
@@ -271,7 +300,7 @@ export default function HRTablePage({ location }: Props): JSX.Element {
                     <DatePicker
                       name="segmentStart"
                       selected={getNewSegmentProp(s.id, 'start')}
-                      onChange={(date) =>
+                      onChange={(date: Date): void =>
                         setNewSegmentProp(s.id, 'start', date)
                       }
                       dateFormat="yyyy.MM.dd. HH:mm"
@@ -286,7 +315,9 @@ export default function HRTablePage({ location }: Props): JSX.Element {
                     <DatePicker
                       name="segmentEnd"
                       selected={getNewSegmentProp(s.id, 'end')}
-                      onChange={(date) => setNewSegmentProp(s.id, 'end', date)}
+                      onChange={(date: Date): void =>
+                        setNewSegmentProp(s.id, 'end', date)
+                      }
                       dateFormat="yyyy.MM.dd. HH:mm"
                       locale="hu"
                       showTimeSelect
@@ -300,11 +331,11 @@ export default function HRTablePage({ location }: Props): JSX.Element {
                     value={
                       getNewSegmentProp(s.id, 'isRequired') ? 'Igen' : 'Nem'
                     }
-                    onChange={(e) =>
+                    onChange={(e: React.FormEvent): void =>
                       setNewSegmentProp(
                         s.id,
                         'isRequired',
-                        e.target.value === 'Igen',
+                        (e.target as HTMLInputElement).value === 'Igen',
                       )
                     }
                   >
@@ -317,7 +348,7 @@ export default function HRTablePage({ location }: Props): JSX.Element {
                     width="30%"
                     justifySelf="end"
                     text="X"
-                    onClick={() => handleDeleteNewSegment(s.id)}
+                    onClick={(): void => handleDeleteNewSegment(s.id)}
                     backgroundColor="red.500"
                   />
                 </Grid>
@@ -349,7 +380,9 @@ export default function HRTablePage({ location }: Props): JSX.Element {
                   text="Törlés"
                   backgroundColor="red.500"
                   mt={[4, null, 0]}
-                  onClick={() => handleDeleteTask(newTask?.id)}
+                  onClick={(): void => {
+                    handleDeleteTask(newTask?.id);
+                  }}
                 />
               </Flex>
             </Flex>
@@ -359,6 +392,3 @@ export default function HRTablePage({ location }: Props): JSX.Element {
     </Layout>
   );
 }
-const Label = ({ children }): JSX.Element => {
-  return <Box mt={['1rem', null, 0]}>{children}</Box>;
-};

@@ -17,7 +17,7 @@ export default function HRTableComp({
   hredit,
   ownSegmentIds,
 }: Props): JSX.Element {
-  const getAllSegment = () => {
+  const getAllSegment = (): HRSegment[] => {
     return hrtasks.reduce((acc, curr) => {
       const res = curr.segments.reduce((acc2, curr2) => {
         return [...acc2, curr2];
@@ -26,10 +26,10 @@ export default function HRTableComp({
     }, [] as HRSegment[]);
   };
 
-  const getNumOfSegments = () => {
+  const getNumOfSegments = (): number => {
     return getAllSegment().length;
   };
-  const getColumns = () => {
+  const getColumns = (): [Date, Date] => {
     const allSegment = getAllSegment();
 
     const minStart = allSegment.reduce(
@@ -42,7 +42,7 @@ export default function HRTableComp({
     );
     return [minStart, maxEnd];
   };
-  const generateTimeSequence = () => {
+  const generateTimeSequence = (): string[][] => {
     if (getNumOfSegments() === 0) return [];
     const [minStart, maxEnd] = getColumns();
     minStart.setMinutes(Math.floor(minStart.getMinutes() / 15) * 15);
@@ -60,7 +60,7 @@ export default function HRTableComp({
     }
     return res;
   };
-  const getNumOfColumns = () => {
+  const getNumOfColumns = (): number => {
     if (getNumOfSegments() === 0) return 1;
     const [minStart, maxEnd] = getColumns();
     return Math.ceil(
@@ -68,7 +68,7 @@ export default function HRTableComp({
     );
   };
   const calcPosByTimes = (start: Date, end: Date): [number, number] => {
-    const [minStart, maxEnd] = getColumns();
+    const [minStart] = getColumns();
     const startDate = new Date(start);
     const endDate = new Date(end);
     startDate.setMinutes(Math.floor(startDate.getMinutes() / 15) * 15);
@@ -114,3 +114,8 @@ export default function HRTableComp({
     </Box>
   );
 }
+
+HRTableComp.defaultProps = {
+  hrcb: undefined,
+  hredit: undefined,
+};

@@ -19,8 +19,8 @@ export default function HRSegmentComp({
   ownSegmentIds,
 }: Props): JSX.Element {
   const [startPos, endPost] = calc(hrsegment.start, hrsegment.end);
-  const getBGColor = () => {
-    if (hrsegment.capacity - hrsegment.organizers.length === 0) {
+  const getBGColor = (): string => {
+    if (hrcb && hrsegment.capacity - hrsegment.organizers.length === 0) {
       return 'simonyi';
     }
     if (hrsegment.isRequired) {
@@ -28,19 +28,18 @@ export default function HRSegmentComp({
     }
     return 'yellow.300';
   };
-  const getBorder = () => {
-    if (!hrcb) return '';
-    if (hrcb.signUps.includes(hrsegment.id)) return 'solid 4px green';
-    if (hrcb.signOffs.includes(hrsegment.id)) return 'solid 4px red';
-    return '';
-  };
-  const getText = () => {
-    if (!hrcb) return '';
-    if (hrcb.signUps.includes(hrsegment.id)) return 'UP';
-    if (hrcb.signOffs.includes(hrsegment.id)) return 'DOWN';
+  const getNameOfOrganizers = (): string => {
     return hrsegment.organizers.map((o) => o.name).join(', ');
   };
-  const handleClick = () => {
+  const getText = (): string => {
+    if (!hrcb) return '';
+    if (hrcb.signUps.includes(hrsegment.id))
+      return '✓'.concat(getNameOfOrganizers());
+    if (hrcb.signOffs.includes(hrsegment.id))
+      return 'X'.concat(getNameOfOrganizers());
+    return getNameOfOrganizers();
+  };
+  const handleClick = (): void => {
     if (!hrcb) return;
     if (ownSegmentIds.includes(hrsegment.id)) hrcb.signOffCb(hrsegment.id);
     else hrcb.signUpCb(hrsegment.id);
@@ -52,7 +51,6 @@ export default function HRSegmentComp({
         gridRow: `${row + 1} / ${row + 2}`,
       }}
       backgroundColor={getBGColor()}
-      border={getBorder()}
       minHeight="1.5rem"
       onClick={handleClick}
     >
@@ -60,3 +58,7 @@ export default function HRSegmentComp({
     </Box>
   );
 }
+
+HRSegmentComp.defaultProps = {
+  hrcb: undefined,
+};

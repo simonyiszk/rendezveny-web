@@ -1,7 +1,7 @@
 import { Box, BoxProps, Grid } from '@chakra-ui/core';
 import React from 'react';
 
-import { HRCallback, HRTask } from '../interfaces';
+import { HRCallback, HRSegment, HRTask } from '../interfaces';
 import HRSegmentComp from './HRSegmentComp';
 
 interface Props extends BoxProps {
@@ -21,7 +21,7 @@ export default function HRTaskComp({
   hredit,
   ownSegmentIds,
 }: Props): JSX.Element {
-  const sortSegments = () => {
+  const sortSegments = (): HRSegment[] => {
     return [...hrtask.segments].sort((a, b) => {
       if (a.isRequired === b.isRequired) {
         return new Date(a.start).getTime() - new Date(b.start).getTime();
@@ -37,7 +37,7 @@ export default function HRTaskComp({
       <Grid
         templateColumns={`repeat(${nCols}, 1fr)`}
         border="1px solid black"
-        onClick={(e) => {
+        onClick={(): void => {
           if (hredit) hredit(hrtask);
         }}
       >
@@ -55,3 +55,8 @@ export default function HRTaskComp({
     </>
   );
 }
+
+HRTaskComp.defaultProps = {
+  hrcb: undefined,
+  hredit: undefined,
+};

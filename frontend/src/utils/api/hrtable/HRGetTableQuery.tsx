@@ -3,7 +3,6 @@ import {
   OperationVariables,
   QueryTuple,
   useLazyQuery,
-  useQuery,
 } from '@apollo/client';
 
 import { Event } from '../../../interfaces';
@@ -52,6 +51,7 @@ export const useEventGetHRTableQuery = (
 ): QueryTuple<QueryResultL, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResultL>(eventGetHRTableQuery, {
     onCompleted: cb,
+    fetchPolicy: 'cache-and-network',
   });
   return [getQuery, data];
 };

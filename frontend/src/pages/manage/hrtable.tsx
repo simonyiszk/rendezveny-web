@@ -1,18 +1,18 @@
-import { gql, useApolloClient, useQuery } from '@apollo/client';
-import { Box, Flex } from '@chakra-ui/core';
+import { useApolloClient } from '@apollo/client';
+import { Box, Flex, useToast } from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../components/Button';
-import EventSection from '../../components/EventSection';
 import HRTableComp from '../../components/HRTableComp';
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
+import Loading from '../../components/Loading';
 import { Event, EventOrganizer, HRTable } from '../../interfaces';
 import { useEventGetHRTableQuery } from '../../utils/api/hrtable/HRGetTableQuery';
 import {
-  usehrtableRegisterMutation,
-  usehrtableUnRegisterMutation,
+  useHRTableRegisterMutation,
+  useHRTableUnRegisterMutation,
 } from '../../utils/api/hrtable/HRTableOrganizerSelfMutation';
 import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 
@@ -28,8 +28,21 @@ export default function HRTablePage({ location }: Props): JSX.Element {
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
-  const [getHRTable, _getHRTable] = useEventGetHRTableQuery((queryData) => {
-    console.log('QUERYDATA', queryData);
+
+  const [hrTable, setHRTable] = useState<HRTable>();
+  const [organizer, setOrganizer] = useState<EventOrganizer>();
+  const [signUps, setSignUps] = useState<string[]>([]);
+  const [signOffs, setSignOffs] = useState<string[]>([]);
+
+  const [
+    getHRTable,
+    {
+      called: getHRTableCalled,
+      loading: getHRTableLoading,
+      error: getHRTableError,
+      data: getHRTableData,
+    },
+  ] = useEventGetHRTableQuery((queryData) => {
     setOrganizer(queryData.events_getOne.selfRelation.organizer);
     setHRTable(queryData.events_getOne.hrTable);
     setSignUps([]);
@@ -37,45 +50,63 @@ export default function HRTablePage({ location }: Props): JSX.Element {
   });
 
   const client = useApolloClient();
-  const [getEventTokenMutation, _getEventTokenMutation] = useEventTokenMutation(
-    client,
-  );
   const [
-    getRegisterMutation,
-    _getRegisterMutation,
-  ] = usehrtableRegisterMutation();
-  const [
-    getUnRegisterMutation,
-    _getUnRegisterMutation,
-  ] = usehrtableUnRegisterMutation();
+    getEventTokenMutation,
+    { error: eventTokenMutationError },
+  ] = useEventTokenMutation(client, () => {
+    getHRTable({ variables: { id: event.id } });
+  });
 
-  const [hrTable, setHRTable] = useState<HRTable>();
-  const [organizer, setOrganizer] = useState<EventOrganizer>();
-  const [signUps, setSignUps] = useState<string[]>([]);
-  const [signOffs, setSignOffs] = useState<string[]>([]);
+  const toast = useToast();
+  const makeToast = (
+    title: string,
+    isError = false,
+    description = '',
+  ): void => {
+    toast({
+      title,
+      description,
+      status: isError ? 'error' : 'success',
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+  const [getRegisterMutation] = useHRTableRegisterMutation({
+    onCompleted: () => {},
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {},
+  });
+  const [getUnRegisterMutation] = useHRTableUnRegisterMutation({
+    onCompleted: () => {},
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {},
+  });
 
   useEffect(() => {
-    const fetchEventData = async () => {
-      await getEventTokenMutation(event.id);
-      getHRTable({ variables: { id: event.id } });
-    };
-    fetchEventData();
+    if (event) getEventTokenMutation(event.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
 
-  if (!organizer) return <div>Loading</div>;
-  if (!hrTable) {
+  if (getHRTableCalled && getHRTableLoading) {
+    return <Loading />;
+  }
+
+  if (!event || eventTokenMutationError || getHRTableError) {
+    if (typeof window !== 'undefined') {
+      navigate('/manage');
+    }
+    return <Box>Error</Box>;
+  }
+
+  if (getHRTableCalled && !getHRTableData?.events_getOne.hrTable) {
     if (typeof window !== 'undefined') {
       navigate('/manage/hrtable/new', { state: { event } });
     }
-    return <div>Loading</div>;
-  }
-  console.log(hrTable);
-  console.log(organizer);
-
-  if (_getHRTable.error) {
-    // navigate('/');
-    console.log(_getHRTable.error);
-    return <div>Error</div>;
+    return <div>Loading.</div>;
   }
 
   const signUpCb = (segmentId: string): void => {
@@ -88,20 +119,23 @@ export default function HRTablePage({ location }: Props): JSX.Element {
       setSignOffs(signOffs.filter((s) => s !== segmentId));
     else setSignOffs([...signOffs, segmentId]);
   };
-  const handleSubmit = async () => {
-    await Promise.all(
-      signOffs.map((s) => getUnRegisterMutation(s, organizer.id)),
-    );
-    await Promise.all(signUps.map((s) => getRegisterMutation(s, organizer.id)));
-    setSignUps([]);
-    setSignOffs([]);
-    console.log('DONE');
+  const handleSubmit = async (): Promise<void> => {
+    if (organizer) {
+      await Promise.all(
+        signOffs.map((s) => getUnRegisterMutation(s, organizer.id)),
+      );
+      await Promise.all(
+        signUps.map((s) => getRegisterMutation(s, organizer.id)),
+      );
+      getHRTable({ variables: { id: event.id } });
+      makeToast('Sikeres mentés');
+    }
   };
 
   return (
     <Layout>
       <HRTableComp
-        hrtasks={hrTable.tasks}
+        hrtasks={hrTable?.tasks ?? []}
         hrcb={{ signUps, signOffs, signUpCb, signOffCb }}
         ownSegmentIds={organizer?.hrSegmentIds ?? []}
       />

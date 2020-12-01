@@ -1,4 +1,6 @@
-import { gql, useMutation } from '@apollo/client';
+import { FetchResult, gql, MutationResult, useMutation } from '@apollo/client';
+
+import { MutationProps } from '../../../interfaces';
 
 export const hrtableRegisterMutation = gql`
   mutation e_hrtableRegisterMutation($hrSegmentId: String!, $id: String!) {
@@ -6,10 +8,24 @@ export const hrtableRegisterMutation = gql`
   }
 `;
 
-export const usehrtableRegisterMutation = () => {
-  const [mutation, mutationResults] = useMutation(hrtableRegisterMutation);
+export const useHRTableRegisterMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [
+  (hrSegmentId: string, id: string) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(hrtableRegisterMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
-  const getMutation = (hrSegmentId: string, id: string) => {
+  const getMutation = (
+    hrSegmentId: string,
+    id: string,
+  ): Promise<FetchResult> => {
     return mutation({
       variables: {
         hrSegmentId,
@@ -26,10 +42,24 @@ export const hrtableUnRegisterMutation = gql`
   }
 `;
 
-export const usehrtableUnRegisterMutation = () => {
-  const [mutation, mutationResults] = useMutation(hrtableUnRegisterMutation);
+export const useHRTableUnRegisterMutation = ({
+  onCompleted,
+  onError,
+  refetchQueries,
+}: MutationProps): [
+  (hrSegmentId: string, id: string) => Promise<FetchResult>,
+  MutationResult,
+] => {
+  const [mutation, mutationResults] = useMutation(hrtableUnRegisterMutation, {
+    onCompleted,
+    onError,
+    refetchQueries,
+  });
 
-  const getMutation = (hrSegmentId: string, id: string) => {
+  const getMutation = (
+    hrSegmentId: string,
+    id: string,
+  ): Promise<FetchResult> => {
     return mutation({
       variables: {
         hrSegmentId,
