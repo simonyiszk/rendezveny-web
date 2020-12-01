@@ -4,6 +4,8 @@ const siteMetadata = {
     'Demo for a Gatsby starter with strict linting and auto-formatting rules.',
 };
 
+require('dotenv').config();
+
 module.exports = {
   siteMetadata,
   plugins: [
