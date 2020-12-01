@@ -424,7 +424,7 @@ export default function DetailsPage({
               <Button
                 width={['100%', null, '45%']}
                 text="Törlés"
-                backgroundColor="red"
+                backgroundColor="red.500"
                 mt={[4, null, 0]}
                 onClick={handleDelete}
               />

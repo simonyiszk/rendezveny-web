@@ -24,9 +24,9 @@ export default function HRSegmentComp({
       return 'simonyi';
     }
     if (hrsegment.isRequired) {
-      return 'red';
+      return 'red.500';
     }
-    return 'yellow';
+    return 'yellow.300';
   };
   const getBorder = () => {
     if (!hrcb) return '';

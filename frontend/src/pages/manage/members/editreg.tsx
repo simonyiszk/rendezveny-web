@@ -196,7 +196,7 @@ export default function EditMemberRegPage({
             <Button
               width={['100%', null, '45%']}
               text="Regisztráció törlése"
-              backgroundColor="red"
+              backgroundColor="red.500"
               mt={[4, null, 0]}
               onClick={handleDelete}
             />

@@ -55,3 +55,7 @@ export default function EventBox({ event, color, linkTo }: Props): JSX.Element {
     </Flex>
   );
 }
+
+EventBox.defaultProps = {
+  linkTo: '',
+};

@@ -61,7 +61,7 @@ export default function MemberBox({
           height="100%"
           py={1}
           px={2}
-          backgroundColor={user.registration.didAttend ? 'simonyi' : 'red'}
+          backgroundColor={user.registration.didAttend ? 'simonyi' : 'red.500'}
           flexDir="column"
           alignItems="center"
           justifyContent="center"

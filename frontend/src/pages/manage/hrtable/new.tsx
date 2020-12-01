@@ -318,7 +318,7 @@ export default function HRTablePage({
                     justifySelf="end"
                     text="X"
                     onClick={() => handleDeleteNewSegment(s.id)}
-                    backgroundColor="red"
+                    backgroundColor="red.500"
                   />
                 </Grid>
               ))}
@@ -347,7 +347,7 @@ export default function HRTablePage({
                 <Button
                   width={['100%', null, '45%']}
                   text="Törlés"
-                  backgroundColor="red"
+                  backgroundColor="red.500"
                   mt={[4, null, 0]}
                   onClick={() => handleDeleteTask(newTask?.id)}
                 />
