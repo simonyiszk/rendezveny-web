@@ -8,8 +8,8 @@ import {
 import { Event } from '../../../interfaces';
 
 export const eventGetRegistrationQuery = gql`
-  query e_eventGetRegistration {
-    events_getCurrent {
+  query e_eventGetRegistration($id: String!) {
+    events_getOne(id: $id) {
       id
       name
       registrationForm {
@@ -37,7 +37,7 @@ export const eventGetRegistrationQuery = gql`
   }
 `;
 interface QueryResult {
-  events_getCurrent: Event;
+  events_getOne: Event;
 }
 export const useEventGetRegistrationQuery = (
   cb: (data: QueryResult) => void,

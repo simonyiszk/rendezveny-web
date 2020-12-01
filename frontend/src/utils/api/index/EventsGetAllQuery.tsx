@@ -64,6 +64,7 @@ export const useEventGetAllQuery = (
 ): QueryResult<QueryResultL, OperationVariables> => {
   const getQuery = useQuery<QueryResultL>(eventGetAllQuery, {
     onCompleted: cb,
+    fetchPolicy: 'cache-and-network',
   });
   return getQuery;
 };

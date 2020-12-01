@@ -12,6 +12,7 @@ export default function IndexPage(): JSX.Element {
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
 
   const getEvents = useEventGetAllQuery((queryData) => {
+    console.log('INDEX', queryData);
     setRegisteredEvents(queryData.registeredEvents.nodes);
     setAvailableEvents(queryData.availableEvents.nodes);
   });

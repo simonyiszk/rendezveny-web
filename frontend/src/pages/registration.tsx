@@ -52,8 +52,9 @@ export default function RegistrationPage({
       error: getCurrentError,
     },
   ] = useEventGetCurrentQuery((queryData) => {
-    if (queryData.events_getCurrent.selfRelation.registration) {
-      const res = queryData.events_getCurrent.selfRelation.registration.formAnswer.answers.reduce(
+    console.log('CURRENT', queryData);
+    if (queryData.events_getOne.selfRelation.registration) {
+      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
           if (curr.answer.type === 'multiple_choice') {
             return {
@@ -73,7 +74,7 @@ export default function RegistrationPage({
         {},
       );
       setAnswers(res);
-      setRegistered(queryData.events_getCurrent.selfRelation.registration.id);
+      setRegistered(queryData.events_getOne.selfRelation.registration.id);
     } else {
       setAnswers({});
       setRegistered('');
@@ -89,10 +90,11 @@ export default function RegistrationPage({
       data: getEventData,
     },
   ] = useEventGetRegistrationQuery((queryData) => {
+    console.log('GETEVENT', queryData);
     setQuestionCounter(
-      queryData.events_getCurrent.registrationForm.questions.length,
+      queryData.events_getOne.registrationForm.questions.length,
     );
-    getCurrent();
+    getCurrent({ variables: { id: event.id } });
   });
 
   const client = useApolloClient();
@@ -100,7 +102,7 @@ export default function RegistrationPage({
     getEventTokenMutation,
     { error: eventTokenMutationError },
   ] = useEventTokenMutation(client, () => {
-    getEvent();
+    getEvent({ variables: { id: event.id } });
   });
 
   const toast = useToast();
@@ -121,28 +123,34 @@ export default function RegistrationPage({
     onCompleted: () => {
       makeSuccessToast('Sikeres regisztráció');
     },
-    onError: () => {
-      makeSuccessToast('Hiba', true);
+    onError: (error) => {
+      makeSuccessToast('Hiba', true, error.message);
     },
-    refetchQueries: getCurrent,
+    refetchQueries: () => {
+      getCurrent({ variables: { id: event.id } });
+    },
   });
   const [getModifyFilledInForm] = useModifyFilledInForm({
     onCompleted: () => {
       makeSuccessToast('Sikeres módosítás');
     },
-    onError: () => {
-      makeSuccessToast('Hiba', true);
+    onError: (error) => {
+      makeSuccessToast('Hiba', true, error.message);
     },
-    refetchQueries: getCurrent,
+    refetchQueries: () => {
+      getCurrent({ variables: { id: event.id } });
+    },
   });
   const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
     onCompleted: () => {
       makeSuccessToast('Sikeres leiratkozás');
     },
-    onError: () => {
-      makeSuccessToast('Hiba', true);
+    onError: (error) => {
+      makeSuccessToast('Hiba', true, error.message);
     },
-    refetchQueries: getCurrent,
+    refetchQueries: () => {
+      getCurrent({ variables: { id: event.id } });
+    },
   });
 
   useEffect(() => {
@@ -209,60 +217,54 @@ export default function RegistrationPage({
             rowGap={['0', null, '1rem']}
           >
             {getEventData &&
-              getEventData.events_getCurrent.registrationForm.questions.map(
-                (q) => (
-                  <React.Fragment key={q.id}>
-                    <Box>{q.question}</Box>
-                    {q.metadata.type === 'text' && (
-                      <Input
-                        mb={['1rem', null, '0']}
-                        value={getAnswer(q.id) || ''}
-                        onChange={(e: React.FormEvent): void => {
-                          setAnswer(q.id, (e.target as HTMLInputElement).value);
-                        }}
-                      />
+              getEventData.events_getOne.registrationForm.questions.map((q) => (
+                <React.Fragment key={q.id}>
+                  <Box>{q.question}</Box>
+                  {q.metadata.type === 'text' && (
+                    <Input
+                      mb={['1rem', null, '0']}
+                      value={getAnswer(q.id) || ''}
+                      onChange={(e: React.FormEvent): void => {
+                        setAnswer(q.id, (e.target as HTMLInputElement).value);
+                      }}
+                    />
+                  )}
+                  {q.metadata.type === 'multiple_choice' &&
+                    (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                      .multipleAnswers && (
+                      <CheckboxGroup
+                        flexDir="column"
+                        value={getAnswer(q.id) || []}
+                        onChangeCb={(e: string[]): void => setAnswer(q.id, e)}
+                      >
+                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                          (option) => (
+                            <Checkbox key={option.id} value={option.id} mb={2}>
+                              {option.text}
+                            </Checkbox>
+                          ),
+                        )}
+                      </CheckboxGroup>
                     )}
-                    {q.metadata.type === 'multiple_choice' &&
-                      (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                        .multipleAnswers && (
-                        <CheckboxGroup
-                          flexDir="column"
-                          value={getAnswer(q.id) || []}
-                          onChangeCb={(e: string[]): void => setAnswer(q.id, e)}
-                        >
-                          {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                            (option) => (
-                              <Checkbox
-                                key={option.id}
-                                value={option.id}
-                                mb={2}
-                              >
-                                {option.text}
-                              </Checkbox>
-                            ),
-                          )}
-                        </CheckboxGroup>
-                      )}
-                    {q.metadata.type === 'multiple_choice' &&
-                      !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                        .multipleAnswers && (
-                        <RadioGroup
-                          flexDir="column"
-                          value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                          onChangeCb={(e: string): void => setAnswer(q.id, [e])}
-                        >
-                          {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                            (option) => (
-                              <Radio key={option.id} value={option.id} mb={2}>
-                                {option.text}
-                              </Radio>
-                            ),
-                          )}
-                        </RadioGroup>
-                      )}
-                  </React.Fragment>
-                ),
-              )}
+                  {q.metadata.type === 'multiple_choice' &&
+                    !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                      .multipleAnswers && (
+                      <RadioGroup
+                        flexDir="column"
+                        value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
+                        onChangeCb={(e: string): void => setAnswer(q.id, [e])}
+                      >
+                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                          (option) => (
+                            <Radio key={option.id} value={option.id} mb={2}>
+                              {option.text}
+                            </Radio>
+                          ),
+                        )}
+                      </RadioGroup>
+                    )}
+                </React.Fragment>
+              ))}
           </Grid>
           {!registered && (
             <Flex justifyContent="center" mt={4}>
