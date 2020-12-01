@@ -12,7 +12,7 @@ import { getAuthToken, getEventToken } from './TokenContainer';
 
 const httpLink = new HttpLink({
   fetch,
-  uri: 'http://localhost:3000/api/v1'
+  uri: process.env.GATSBY_SERVER_API_URL
 });
 
 export const resetContext = (client: ApolloClient<object>) => {
