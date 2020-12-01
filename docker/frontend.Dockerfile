@@ -1,4 +1,4 @@
-FROM node:12.13-alpine As development
+FROM node:12.13-alpine
 
 WORKDIR /usr/src/app
 COPY frontend/package*.json ./
@@ -9,17 +9,5 @@ ENV GATSBY_SERVER_API_URL=${GATSBY_SERVER_API_URL}
 
 COPY ./frontend .
 RUN npm run build
-
-FROM node:12.13-alpine as production
-
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
-WORKDIR /usr/src/app
-COPY frontend/package*.json ./
-RUN npm install --only=production
-
-COPY ./frontend .
-COPY --from=development /usr/src/app/public ./public
 
 CMD ["sh", "-c", "npm run serve"]

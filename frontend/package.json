@@ -7,7 +7,7 @@
     "develop": "gatsby develop",
     "format": "prettier --ignore-path .gitignore --write .",
     "lint": "eslint --ignore-path .gitignore \"**/*.{ts,tsx,js}\"",
-    "serve": "gatsby serve",
+    "serve": "gatsby serve -H 0.0.0.0",
     "test": "jest",
     "type-check": "tsc"
   },

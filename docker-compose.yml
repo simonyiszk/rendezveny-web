@@ -37,6 +37,22 @@ services:
     depends_on:
       - rendezveny-db
 
+  rendezveny-client:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        GATSBY_SERVER_API_URL: http://localhost:3000/api/v1
+    container_name: rendezveny-client
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - GATSBY_SERVER_API_URL=http://localhost:3000/api/v1
+    ports:
+      - 9000:9000
+    depends_on:
+      - rendezveny-server
 
 networks:
   rendezveny-db-network:
