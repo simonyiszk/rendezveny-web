@@ -35,7 +35,7 @@ interface AnswerState {
 export default function EditMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state);
+    location.state || (typeof history === 'object' && history.state) || {};
   const { event, user, answers } = state;
 
   const [newAnswers, setNewAnswers] = useState<AnswerState>({});

@@ -33,7 +33,7 @@ interface Props {
 export default function DetailsPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state);
+    location.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
   const [organizers, setOrganizers] = useState<User[]>([]);
   const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);

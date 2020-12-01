@@ -57,7 +57,7 @@ interface Props {
 export default function HRTablePage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state);
+    location.state || (typeof history === 'object' && history.state) || {};
   const { event, hrTable } = state;
   console.log(hrTable);
   const datePickerCustomHeader = ({ date, decreaseMonth, increaseMonth }) => (
