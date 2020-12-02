@@ -1,6 +1,6 @@
 import { ClubRole, UserRole } from '../../interfaces';
 
-const btoa = (str: string) => Buffer.from(str).toString('base64');
+const btoa = (str: string): string => Buffer.from(str).toString('base64');
 
 const authToken = btoa('SIMONYI_RENDEZVENY_AUTH_TOKEN');
 const eventToken = btoa('SIMONYI_RENDEZVENY_EVENT_TOKEN');
@@ -18,33 +18,33 @@ const eventTexts = {
 };
 
 export function getAuthToken(): string | null {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     return localStorage.getItem(authToken);
   }
   return null;
 }
 
 export function setAuthToken(_token: string): void {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     localStorage.setItem(authToken, _token);
   }
 }
 
 export function getEventToken(): string | null {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     return localStorage.getItem(eventToken);
   }
   return null;
 }
 
 export function setEventToken(_token: string): void {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     localStorage.setItem(eventToken, _token);
   }
 }
 
 export function resetTokens(): void {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     localStorage.removeItem(authToken);
     localStorage.removeItem(eventToken);
     localStorage.removeItem(roleItem);
@@ -53,7 +53,7 @@ export function resetTokens(): void {
 }
 
 export function setRoleAndClubs(_role: string, roles: string[]): void {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     if (_role === UserRole[UserRole.ADMIN]) {
       localStorage.setItem(roleItem, roleTexts.admin);
     } else if (roles.includes(ClubRole[ClubRole.CLUB_MANAGER])) {
@@ -64,7 +64,7 @@ export function setRoleAndClubs(_role: string, roles: string[]): void {
   }
 }
 export function setEventRole(isChief: boolean, isOrg: boolean): void {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     if (isChief) {
       localStorage.setItem(eventRole, eventTexts.forendezo);
     } else if (isOrg) {
@@ -75,25 +75,31 @@ export function setEventRole(isChief: boolean, isOrg: boolean): void {
   }
 }
 export function isAdmin(): boolean {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     return localStorage.getItem(roleItem) === roleTexts.admin;
   }
   return false;
 }
 export function isClubManager(): boolean {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     return localStorage.getItem(roleItem) === roleTexts.korvezeto;
   }
   return false;
 }
+export function isLoggedin(): boolean {
+  if (typeof window !== 'undefined') {
+    return !!localStorage.getItem(roleItem);
+  }
+  return false;
+}
 export function isChiefOrganizer(): boolean {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     return localStorage.getItem(eventRole) === eventTexts.forendezo;
   }
   return false;
 }
 export function isOrganizer(): boolean {
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     return (
       localStorage.getItem(eventRole) === eventTexts.rendezo ||
       localStorage.getItem(eventRole) === eventTexts.forendezo

@@ -18,12 +18,13 @@ import logoSmall from '../assets/images/simonyi_white_small.svg';
 import logo from '../assets/images/simonyi_white_white.svg';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 import useLogoutService from '../utils/services/LogoutService';
+import { isLoggedin } from '../utils/token/TokenContainer';
 
 export default function Header(): JSX.Element {
   const client = useApolloClient();
   const getLogoutService = useLogoutService(client);
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     getLogoutService();
     if (typeof window !== 'undefined') {
       window.location.href = '/login';
@@ -54,14 +55,29 @@ export default function Header(): JSX.Element {
           <Menu>
             <MenuButton fontWeight="bold">Rendezvények</MenuButton>
             <MenuList>
-              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/">
+              <MenuItem
+                isDisabled={!isLoggedin()}
+                _hover={{ bg: 'simonyi' }}
+                as={Link}
+                to="/"
+              >
                 Regisztráció
               </MenuItem>
-              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/history">
+              <MenuItem
+                isDisabled={!isLoggedin()}
+                _hover={{ bg: 'simonyi' }}
+                as={Link}
+                to="/history"
+              >
                 Történet
               </MenuItem>
               <MenuDivider />
-              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/manage">
+              <MenuItem
+                isDisabled={!isLoggedin()}
+                _hover={{ bg: 'simonyi' }}
+                as={Link}
+                to="/manage"
+              >
                 Kezelés
               </MenuItem>
             </MenuList>
@@ -71,16 +87,30 @@ export default function Header(): JSX.Element {
           <Menu>
             <MenuButton fontWeight="bold">Profil</MenuButton>
             <MenuList>
-              <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/profile">
+              <MenuItem
+                isDisabled={!isLoggedin()}
+                _hover={{ bg: 'simonyi' }}
+                as={Link}
+                to="/profile"
+              >
                 Profil
               </MenuItem>
               <ProtectedComponent access={['admin']}>
-                <MenuItem _hover={{ bg: 'simonyi' }} as={Link} to="/logs">
+                <MenuItem
+                  isDisabled={!isLoggedin()}
+                  _hover={{ bg: 'simonyi' }}
+                  as={Link}
+                  to="/logs"
+                >
                   Logok
                 </MenuItem>
               </ProtectedComponent>
               <MenuDivider />
-              <MenuItem _hover={{ bg: 'simonyi' }} onClick={handleLogout}>
+              <MenuItem
+                isDisabled={!isLoggedin()}
+                _hover={{ bg: 'simonyi' }}
+                onClick={handleLogout}
+              >
                 Kilépés
               </MenuItem>
             </MenuList>
