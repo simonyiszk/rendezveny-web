@@ -27,6 +27,7 @@ export const useClubsGetAllQuery = (
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(clubsGetAllQuery, {
     onCompleted: cb,
+    fetchPolicy: 'network-only',
   });
   return [getQuery, data];
 };

@@ -1,117 +1,48 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, Input, Select, useToast } from '@chakra-ui/core';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
-import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import { navigate } from 'gatsby';
+import React, { useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import Multiselect, { ActionMeta, ValueType } from 'react-select';
 
 import Button from '../../components/Button';
 import { Layout } from '../../components/Layout';
 import Loading from '../../components/Loading';
-import { Event } from '../../interfaces';
 import { useClubsGetAllQuery } from '../../utils/api/details/ClubsGetAllQuery';
-import { useEventGetInformationQuery } from '../../utils/api/details/EventGetInformationQuery';
-import {
-  useEventDeleteMutation,
-  useEventInformationMutation,
-} from '../../utils/api/details/EventInformationMutation';
-import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
+import { useClubsGetOtherMembersQuery } from '../../utils/api/details/ClubsGetOtherMembersQuery';
+import { useEventCreateMutation } from '../../utils/api/details/EventInformationMutation';
 
 registerLocale('hu', hu);
 
-interface PageState {
-  event: Event;
-}
-interface Props {
-  location: PageProps<null, null, PageState>['location'];
-}
 interface MultiselectOptions {
   label: string;
   value: string;
 }
 
-export default function DetailsPage({ location }: Props): JSX.Element {
-  const state =
-    // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
-  const { event } = state;
-
+export default function CreatePage(): JSX.Element {
   const [organizers, setOrganizers] = useState<MultiselectOptions[]>([]);
   const [chiefOrganizers, setChiefOrganizers] = useState<MultiselectOptions[]>(
     [],
   );
   const [allUsers, setAllUsers] = useState<MultiselectOptions[]>([]);
 
-  const [eventName, setEventName] = useState(event?.name || '');
-  const [eventStart, setEventStart] = useState(
-    event?.start ? new Date(event?.start) : new Date(),
-  );
-  const [eventEnd, setEventEnd] = useState(
-    event?.end ? new Date(event?.end) : new Date(),
-  );
-  const [eventRegStart, setEventRegStart] = useState(
-    event?.registrationStart ? new Date(event?.registrationStart) : new Date(),
-  );
-  const [eventRegEnd, setEventRegEnd] = useState(
-    event?.registrationEnd ? new Date(event?.registrationEnd) : new Date(),
-  );
-  const [eventPlace, setEventPlace] = useState(event?.place || '');
-  const [eventClosed, setEventClosed] = useState(event?.isClosedEvent || false);
-  const [eventCapacity, setEventCapacity] = useState(event?.capacity || 0);
-  const [regLink, setRegLink] = useState(event?.uniqueName || '');
-  const [application, setApplication] = useState(
-    event?.registrationAllowed || true,
-  );
+  const [eventName, setEventName] = useState('');
+  const [eventStart, setEventStart] = useState(new Date());
+  const [eventEnd, setEventEnd] = useState(new Date());
+  const [eventRegStart, setEventRegStart] = useState(new Date());
+  const [eventRegEnd, setEventRegEnd] = useState(new Date());
+  const [eventPlace, setEventPlace] = useState('');
+  const [eventClosed, setEventClosed] = useState(false);
+  const [eventCapacity, setEventCapacity] = useState(0);
+  const [regLink, setRegLink] = useState('');
+  const [application, setApplication] = useState(true);
   const [organizerClubs, setOrganizerClubs] = useState<MultiselectOptions[]>(
     [],
   );
   const [allClubs, setAllClubs] = useState<MultiselectOptions[]>([]);
-
-  const [
-    getOrganizers,
-    {
-      called: getOrganizersCalled,
-      loading: getOrganizersLoading,
-      error: getOrganizersError,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    const resultAllUser = queryData.events_getOne.relations.nodes.map((u) => {
-      return { value: u.userId, label: u.name } as MultiselectOptions;
-    });
-    const resultOrganizers = queryData.events_getOne.organizers.nodes.map(
-      (u) => {
-        return { value: u.userId, label: u.name } as MultiselectOptions;
-      },
-    );
-    const resultChiefOrganizers = queryData.events_getOne.chiefOrganizers.nodes.map(
-      (u) => {
-        return { value: u.userId, label: u.name } as MultiselectOptions;
-      },
-    );
-    const resultOrganizerClubs = queryData.events_getOne.hostingClubs.map(
-      (c) => {
-        return { value: c.id, label: c.name } as MultiselectOptions;
-      },
-    );
-    setEventName(queryData.events_getOne.name);
-    setEventStart(new Date(queryData.events_getOne.start));
-    setEventEnd(new Date(queryData.events_getOne.end));
-    setEventRegStart(new Date(queryData.events_getOne.registrationStart));
-    setEventRegEnd(new Date(queryData.events_getOne.registrationEnd));
-    setEventPlace(queryData.events_getOne.place || '');
-    setEventClosed(queryData.events_getOne.isClosedEvent || true);
-    setEventCapacity(queryData.events_getOne.capacity || 0);
-    setRegLink(queryData.events_getOne.uniqueName || '');
-    setApplication(queryData.events_getOne.registrationAllowed || true);
-    setAllUsers(resultAllUser);
-    setOrganizers(resultOrganizers);
-    setChiefOrganizers(resultChiefOrganizers);
-    setOrganizerClubs(resultOrganizerClubs);
-  });
 
   const [
     getClubs,
@@ -124,12 +55,26 @@ export default function DetailsPage({ location }: Props): JSX.Element {
     );
   });
 
-  const client = useApolloClient();
-  const [
-    getEventTokenMutation,
-    { error: eventTokenMutationError },
-  ] = useEventTokenMutation(client, () => {
-    getOrganizers({ variables: { id: event.id } });
+  const {
+    called: getOtherMembersCalled,
+    loading: getOtherMembersLoading,
+    error: getOtherMembersError,
+  } = useClubsGetOtherMembersQuery((queryData) => {
+    const resultAllUser = queryData.users_getSelf.clubMemberships.nodes
+      .reduce((acc, curr) => {
+        const resultClubMembers = curr.club.clubMemberships.nodes.map((m) => {
+          return {
+            value: m.user.id,
+            label: m.user.name,
+          } as MultiselectOptions;
+        });
+        return [...acc, ...resultClubMembers];
+      }, [] as MultiselectOptions[])
+      .filter(
+        (user, index, self) =>
+          self.findIndex((t) => t.value === user.value) === index,
+      );
+    setAllUsers(resultAllUser);
     getClubs();
   });
 
@@ -147,18 +92,9 @@ export default function DetailsPage({ location }: Props): JSX.Element {
       isClosable: true,
     });
   };
-  const [getEventInformationMutation] = useEventInformationMutation({
+  const [getEventCreateMutation] = useEventCreateMutation({
     onCompleted: () => {
-      makeToast('Sikeres szerkesztés');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
-  const [getEventDeleteMutation] = useEventDeleteMutation({
-    onCompleted: () => {
-      makeToast('Sikeres törlés');
+      makeToast('Új esemény létrehozva');
       navigate('/manage');
     },
     onError: (error) => {
@@ -167,41 +103,28 @@ export default function DetailsPage({ location }: Props): JSX.Element {
     refetchQueries: () => {},
   });
 
-  useEffect(() => {
-    if (event) getEventTokenMutation(event.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
-
   if (
-    (getOrganizersCalled && getOrganizersLoading) ||
+    (getOtherMembersCalled && getOtherMembersLoading) ||
     (getClubsCalled && getClubsLoading)
   ) {
     return <Loading />;
   }
 
-  if (!event || eventTokenMutationError || getOrganizersError) {
+  if (getOtherMembersError || getClubsError) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
-    }
-    return <div>Error</div>;
-  }
-  if (getClubsError) {
-    if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }
 
   const handleSubmit = (): void => {
-    getEventInformationMutation(
-      event.id,
+    getEventCreateMutation(
       eventName,
       eventStart.toISOString(),
       eventEnd.toISOString(),
       eventRegStart.toISOString(),
       eventRegEnd.toISOString(),
       eventPlace,
-      organizers.concat(chiefOrganizers).map((o) => o.value),
       chiefOrganizers.map((o) => o.value),
       eventClosed,
       eventCapacity,
@@ -209,9 +132,6 @@ export default function DetailsPage({ location }: Props): JSX.Element {
       application,
       organizerClubs.map((c) => c.value),
     );
-  };
-  const handleDelete = (): void => {
-    getEventDeleteMutation(event.id);
   };
 
   const onChangeOrganizers = (
@@ -439,22 +359,11 @@ export default function DetailsPage({ location }: Props): JSX.Element {
               />
             </Box>
           </Grid>
-          <Flex
-            justifyContent={['center', null, 'space-between']}
-            flexDir={['column', null, 'row']}
-            mt={4}
-          >
+          <Flex justifyContent="center" mt={4}>
             <Button
               width={['100%', null, '45%']}
-              text="Módosítás"
+              text="Létrehozás"
               onClick={handleSubmit}
-            />
-            <Button
-              width={['100%', null, '45%']}
-              text="Törlés"
-              backgroundColor="red.500"
-              mt={[4, null, 0]}
-              onClick={handleDelete}
             />
           </Flex>
         </Box>

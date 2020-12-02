@@ -1,9 +1,4 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
+import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
 
 import { Membership } from '../../../interfaces';
 
@@ -29,7 +24,7 @@ export const clubsGetOtherMembersQuery = gql`
     }
   }
 `;
-interface QueryResult {
+interface QueryResultL {
   users_getSelf: {
     clubMemberships: {
       nodes: Membership[];
@@ -37,13 +32,10 @@ interface QueryResult {
   };
 }
 export const useClubsGetOtherMembersQuery = (
-  cb: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(
-    clubsGetOtherMembersQuery,
-    {
-      onCompleted: cb,
-    },
-  );
-  return [getQuery, data];
+  cb: (data: QueryResultL) => void,
+): QueryResult<QueryResultL, OperationVariables> => {
+  const getQuery = useQuery<QueryResultL>(clubsGetOtherMembersQuery, {
+    onCompleted: cb,
+  });
+  return getQuery;
 };

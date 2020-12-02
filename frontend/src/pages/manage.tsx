@@ -28,7 +28,7 @@ export default function ManagePage(): JSX.Element {
         <LinkButton
           text="Rendezvény létrehozása"
           width={['100%', null, '15rem']}
-          to="/manage/details"
+          to="/manage/create"
           state={{ event: null }}
         />
       </ProtectedComponent>
