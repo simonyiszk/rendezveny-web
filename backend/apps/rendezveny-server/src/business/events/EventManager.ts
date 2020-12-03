@@ -195,7 +195,9 @@ export class EventManager extends BaseManager {
 	public async getEventByUniqueName(
 		uniqueName: string
 	): Promise<Event> {
-		const event = await this.eventRepository.findOne({ uniqueName }, {});
+		const event = await this.eventRepository.findOne({ uniqueName }, {
+			relations: [nameof<Event>('hostingClubs')]
+		});
 
 		if(!event) {
 			return this.getEventFail(uniqueName);
