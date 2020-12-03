@@ -1,5 +1,6 @@
 import { useApolloClient } from '@apollo/client';
 import { Box, Flex, useToast } from '@chakra-ui/core';
+import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -14,16 +15,24 @@ import {
   useHRTableRegisterMutation,
   useHRTableUnRegisterMutation,
 } from '../../utils/api/hrtable/HRTableOrganizerSelfMutation';
-import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
+import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
+import {
+  useEventTokenMutationID,
+  useEventTokenMutationUN,
+} from '../../utils/api/token/EventsGetTokenMutation';
 
 interface PageState {
   event: Event;
 }
-interface Props {
+interface Props extends RouteComponentProps {
   location: PageProps<null, null, PageState>['location'];
+  uniqueName: string;
 }
 
-export default function HRTablePage({ location }: Props): JSX.Element {
+export default function HRTablePage({
+  location,
+  uniqueName,
+}: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
@@ -49,12 +58,30 @@ export default function HRTablePage({ location }: Props): JSX.Element {
     setSignOffs([]);
   });
 
+  const [
+    getCurrentEvent,
+    {
+      called: getCurrentEventCalled,
+      loading: getCurrentEventLoading,
+      error: getCurrentEventError,
+      data: getCurrentEventData,
+    },
+  ] = useEventGetInformationQuery((queryData) => {
+    getHRTable({ variables: { id: queryData.events_getOne.id } });
+  });
+
   const client = useApolloClient();
   const [
-    getEventTokenMutation,
-    { error: eventTokenMutationError },
-  ] = useEventTokenMutation(client, () => {
+    getEventTokenMutationID,
+    { error: eventTokenMutationErrorID },
+  ] = useEventTokenMutationID(client, () => {
     getHRTable({ variables: { id: event.id } });
+  });
+  const [
+    getEventTokenMutationUN,
+    { error: eventTokenMutationErrorUN },
+  ] = useEventTokenMutationUN(client, () => {
+    getCurrentEvent({ variables: { uniqueName } });
   });
 
   const toast = useToast();
@@ -87,15 +114,25 @@ export default function HRTablePage({ location }: Props): JSX.Element {
   });
 
   useEffect(() => {
-    if (event) getEventTokenMutation(event.id);
+    if (event) getEventTokenMutationID(event.id);
+    else if (uniqueName) getEventTokenMutationUN(uniqueName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+  }, [uniqueName, event?.id]);
 
-  if (getHRTableCalled && getHRTableLoading) {
+  if (
+    (getCurrentEventCalled && getCurrentEventLoading) ||
+    (getHRTableCalled && getHRTableLoading)
+  ) {
     return <Loading />;
   }
 
-  if (!event || eventTokenMutationError || getHRTableError) {
+  if (
+    !uniqueName ||
+    eventTokenMutationErrorID ||
+    eventTokenMutationErrorUN ||
+    getCurrentEventError ||
+    getHRTableError
+  ) {
     if (typeof window !== 'undefined') {
       navigate('/manage');
     }
@@ -104,7 +141,14 @@ export default function HRTablePage({ location }: Props): JSX.Element {
 
   if (getHRTableCalled && !getHRTableData?.events_getOne.hrTable) {
     if (typeof window !== 'undefined') {
-      navigate('/manage/hrtable/new', { state: { event } });
+      navigate(
+        `/manage/${
+          event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+        }/hrtable/new`,
+        {
+          state: { event: event ?? getCurrentEventData?.events_getOne },
+        },
+      );
     }
     return <div>Loading.</div>;
   }
@@ -127,7 +171,9 @@ export default function HRTablePage({ location }: Props): JSX.Element {
       await Promise.all(
         signUps.map((s) => getRegisterMutation(s, organizer.id)),
       );
-      getHRTable({ variables: { id: event.id } });
+      getHRTable({
+        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
+      });
       makeToast('Sikeres mentés');
     }
   };
@@ -152,8 +198,13 @@ export default function HRTablePage({ location }: Props): JSX.Element {
         <LinkButton
           width={['100%', null, '45%']}
           text="Szerkesztés"
-          to="/manage/hrtable/new"
-          state={{ event, hrTable }}
+          to={`/manage/${
+            event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+          }/hrtable/new`}
+          state={{
+            event: event ?? getCurrentEventData?.events_getOne,
+            hrTable,
+          }}
         />
       </Flex>
     </Layout>

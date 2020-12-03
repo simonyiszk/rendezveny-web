@@ -1,4 +1,4 @@
-import { Router } from '@reach/router';
+import { RouteComponentProps, Router } from '@reach/router';
 import { navigate } from 'gatsby';
 import React from 'react';
 
@@ -12,12 +12,12 @@ export default function EventsPage(): JSX.Element {
   return (
     <Router basepath="/events">
       <RegistrationPage path="/:uniqueName/registration" />
-      <EventsPageBrowse default />
+      <EventsBrowsePage default />
     </Router>
   );
 }
 
-function EventsPageBrowse(): JSX.Element {
+function EventsBrowsePage(_props: RouteComponentProps): JSX.Element {
   const { called, loading, error, data } = useEventGetAllQuery();
 
   if (called && loading) {
@@ -36,12 +36,12 @@ function EventsPageBrowse(): JSX.Element {
       <EventSection
         listOfEvents={data?.registeredEvents.nodes ?? []}
         color="simonyi"
-        linkTo="/registration"
+        linkTo="/events/{uniqueName}/registration"
       />
       <EventSection
         listOfEvents={data?.availableEvents.nodes ?? []}
         color="grayE1"
-        linkTo="/registration"
+        linkTo="/events/{uniqueName}/registration"
       />
     </Layout>
   );

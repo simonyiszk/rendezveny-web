@@ -1,7 +1,7 @@
 import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, Input, useToast } from '@chakra-ui/core';
 import { RouteComponentProps } from '@reach/router';
-import { navigate } from 'gatsby';
+import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../components/Button';
@@ -10,11 +10,13 @@ import { Layout } from '../../components/Layout';
 import Loading from '../../components/Loading';
 import { Radio, RadioGroup } from '../../components/RadioGroup';
 import {
+  Event,
   EventRegistrationFormAnswersInput,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
 } from '../../interfaces';
+import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
 import { useEventGetCurrentQuery } from '../../utils/api/registration/EventGetCurrentQuery';
 import { useEventGetRegistrationQuery } from '../../utils/api/registration/EventGetRegistrationQuery';
 import {
@@ -22,9 +24,16 @@ import {
   useRegisterDeleteMutation,
   useRegisterSelfMutation,
 } from '../../utils/api/registration/RegistrationMutation';
-import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
+import {
+  useEventTokenMutationID,
+  useEventTokenMutationUN,
+} from '../../utils/api/token/EventsGetTokenMutation';
 
+interface PageState {
+  event: Event;
+}
 interface Props extends RouteComponentProps {
+  location: PageProps<null, null, PageState>['location'];
   uniqueName: string;
 }
 
@@ -32,7 +41,15 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
+export default function RegistrationPage({
+  location,
+  uniqueName,
+}: Props): JSX.Element {
+  const state =
+    // eslint-disable-next-line no-restricted-globals
+    location.state || (typeof history === 'object' && history.state) || {};
+  const { event } = state;
+
   const [answers, setAnswers] = useState<AnswerState>({});
   const [registered, setRegistered] = useState('');
   const [questionCounter, setQuestionCounter] = useState(0);
@@ -85,17 +102,38 @@ export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
     setQuestionCounter(
       queryData.events_getOne.registrationForm.questions.length,
     );
+  });
+
+  const [
+    getCurrentEvent,
+    {
+      called: getCurrentEventCalled,
+      loading: getCurrentEventLoading,
+      error: getCurrentEventError,
+      data: getCurrentEventData,
+    },
+  ] = useEventGetInformationQuery((queryData) => {
+    getEvent({ variables: { id: queryData.events_getOne.id } });
     getCurrent({
-      variables: { id: eventTokenMutationData.events_getToken.id },
+      variables: { id: queryData.events_getOne.id },
     });
   });
 
   const client = useApolloClient();
   const [
-    getEventTokenMutation,
-    { error: eventTokenMutationError, data: eventTokenMutationData },
-  ] = useEventTokenMutation(client, (data) => {
-    getEvent({ variables: { id: data.events_getToken.id } });
+    getEventTokenMutationID,
+    { error: eventTokenMutationErrorID },
+  ] = useEventTokenMutationID(client, () => {
+    getEvent({ variables: { id: event.id } });
+    getCurrent({
+      variables: { id: event.id },
+    });
+  });
+  const [
+    getEventTokenMutationUN,
+    { error: eventTokenMutationErrorUN },
+  ] = useEventTokenMutationUN(client, () => {
+    getCurrentEvent({ variables: { uniqueName } });
   });
 
   const toast = useToast();
@@ -121,7 +159,7 @@ export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
     },
     refetchQueries: () => {
       getCurrent({
-        variables: { id: eventTokenMutationData.events_getToken.id },
+        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
       });
     },
   });
@@ -134,7 +172,7 @@ export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
     },
     refetchQueries: () => {
       getCurrent({
-        variables: { id: eventTokenMutationData.events_getToken.id },
+        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
       });
     },
   });
@@ -147,17 +185,19 @@ export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
     },
     refetchQueries: () => {
       getCurrent({
-        variables: { id: eventTokenMutationData.events_getToken.id },
+        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
       });
     },
   });
 
   useEffect(() => {
-    if (uniqueName) getEventTokenMutation(uniqueName);
+    if (event) getEventTokenMutationID(event.id);
+    else if (uniqueName) getEventTokenMutationUN(uniqueName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uniqueName]);
+  }, [uniqueName, event?.id]);
 
   if (
+    (getCurrentEventCalled && getCurrentEventLoading) ||
     (getEventCalled && getEventLoading) ||
     (getCurrentCalled && getCurrentLoading)
   ) {
@@ -166,16 +206,12 @@ export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
 
   if (
     !uniqueName ||
-    eventTokenMutationError ||
+    eventTokenMutationErrorID ||
+    eventTokenMutationErrorUN ||
+    getCurrentEventError ||
     getEventError ||
     getCurrentError
   ) {
-    console.log(
-      !uniqueName,
-      eventTokenMutationError,
-      getEventError,
-      getCurrentError,
-    );
     if (typeof window !== 'undefined') {
       navigate('/');
     }
@@ -212,7 +248,7 @@ export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
 
   const handleRegistration = (): void => {
     getRegisterSelfMutation(
-      eventTokenMutationData.events_getToken.id,
+      event?.id ?? getCurrentEventData?.events_getOne.id,
       generateAnswerDTO(),
     );
   };

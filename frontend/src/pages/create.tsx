@@ -8,12 +8,12 @@ import React, { useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import Multiselect, { ActionMeta, ValueType } from 'react-select';
 
-import Button from '../../components/Button';
-import { Layout } from '../../components/Layout';
-import Loading from '../../components/Loading';
-import { useClubsGetAllQuery } from '../../utils/api/details/ClubsGetAllQuery';
-import { useClubsGetOtherMembersQuery } from '../../utils/api/details/ClubsGetOtherMembersQuery';
-import { useEventCreateMutation } from '../../utils/api/details/EventInformationMutation';
+import Button from '../components/Button';
+import { Layout } from '../components/Layout';
+import Loading from '../components/Loading';
+import { useClubsGetAllQuery } from '../utils/api/details/ClubsGetAllQuery';
+import { useClubsGetOtherMembersQuery } from '../utils/api/details/ClubsGetOtherMembersQuery';
+import { useEventCreateMutation } from '../utils/api/details/EventInformationMutation';
 
 registerLocale('hu', hu);
 

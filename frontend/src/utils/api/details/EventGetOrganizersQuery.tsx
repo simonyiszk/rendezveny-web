@@ -7,8 +7,8 @@ import {
 
 import { Event } from '../../../interfaces';
 
-export const eventGetInformationQuery = gql`
-  query e_eventGetInformation($id: String!) {
+export const eventGetOrganizersQuery = gql`
+  query e_eventGetOrganizers($id: String!) {
     events_getOne(id: $id) {
       id
       name
@@ -49,10 +49,10 @@ export const eventGetInformationQuery = gql`
 interface QueryResult {
   events_getOne: Event;
 }
-export const useEventGetInformationQuery = (
+export const useEventGetOrganizersQuery = (
   cb: (data: QueryResult) => void,
 ): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetInformationQuery, {
+  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetOrganizersQuery, {
     onCompleted: cb,
   });
   return [getQuery, data];

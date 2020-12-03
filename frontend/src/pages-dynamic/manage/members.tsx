@@ -1,5 +1,6 @@
 import { useApolloClient } from '@apollo/client';
 import { useToast } from '@chakra-ui/core';
+import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -7,18 +8,26 @@ import { Layout } from '../../components/Layout';
 import Loading from '../../components/Loading';
 import MemberSection from '../../components/MemberSection';
 import { Event, EventRelation } from '../../interfaces';
+import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
 import { useEventGetMembersQuery } from '../../utils/api/registration/EventMembersQuery';
 import { useSetAttendMutation } from '../../utils/api/registration/RegistrationMutation';
-import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
+import {
+  useEventTokenMutationID,
+  useEventTokenMutationUN,
+} from '../../utils/api/token/EventsGetTokenMutation';
 
 interface PageState {
   event: Event;
 }
-interface Props {
+interface Props extends RouteComponentProps {
   location: PageProps<null, null, PageState>['location'];
+  uniqueName: string;
 }
 
-export default function MembersPage({ location }: Props): JSX.Element {
+export default function MembersPage({
+  location,
+  uniqueName,
+}: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
@@ -38,12 +47,30 @@ export default function MembersPage({ location }: Props): JSX.Element {
     setRegisteredUsers(queryData.events_getOne.relations.nodes);
   });
 
+  const [
+    getCurrentEvent,
+    {
+      called: getCurrentEventCalled,
+      loading: getCurrentEventLoading,
+      error: getCurrentEventError,
+      data: getCurrentEventData,
+    },
+  ] = useEventGetInformationQuery((queryData) => {
+    getEventRegs({ variables: { id: queryData.events_getOne.id } });
+  });
+
   const client = useApolloClient();
   const [
-    getEventTokenMutation,
-    { error: eventTokenMutationError },
-  ] = useEventTokenMutation(client, () => {
+    getEventTokenMutationID,
+    { error: eventTokenMutationErrorID },
+  ] = useEventTokenMutationID(client, () => {
     getEventRegs({ variables: { id: event.id } });
+  });
+  const [
+    getEventTokenMutationUN,
+    { error: eventTokenMutationErrorUN },
+  ] = useEventTokenMutationUN(client, () => {
+    getCurrentEvent({ variables: { uniqueName } });
   });
 
   const toast = useToast();
@@ -72,15 +99,25 @@ export default function MembersPage({ location }: Props): JSX.Element {
   });
 
   useEffect(() => {
-    if (event) getEventTokenMutation(event.id);
+    if (event) getEventTokenMutationID(event.id);
+    else if (uniqueName) getEventTokenMutationUN(uniqueName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+  }, [uniqueName, event?.id]);
 
-  if (getEventCalled && getEventLoading) {
+  if (
+    (getCurrentEventCalled && getCurrentEventLoading) ||
+    (getEventCalled && getEventLoading)
+  ) {
     return <Loading />;
   }
 
-  if (!event || eventTokenMutationError || getEventError) {
+  if (
+    !uniqueName ||
+    eventTokenMutationErrorID ||
+    eventTokenMutationErrorUN ||
+    getCurrentEventError ||
+    getEventError
+  ) {
     if (typeof window !== 'undefined') {
       navigate('/manage');
     }
@@ -111,7 +148,7 @@ export default function MembersPage({ location }: Props): JSX.Element {
         listOfMembers={registeredUsers}
         eventL={
           {
-            ...event,
+            ...(event ?? getCurrentEventData?.events_getOne),
             registrationForm: getEventData?.events_getOne.registrationForm,
           } as Event
         }

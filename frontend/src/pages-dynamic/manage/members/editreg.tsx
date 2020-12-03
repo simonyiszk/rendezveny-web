@@ -69,7 +69,7 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
   const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
     onCompleted: () => {
       makeToast('Sikeres leiratkozás');
-      navigate('/manage/members', { state: { event } });
+      navigate(`/manage/${event?.uniqueName}/members`, { state: { event } });
     },
     onError: (error) => {
       makeToast('Hiba', true, error.message);
@@ -84,7 +84,9 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
 
   if (!answers) {
     if (typeof window !== 'undefined') {
-      navigate('/manage/members/showreg', { state: { event, user } });
+      navigate(`/manage/${event?.uniqueName}/members/showreg`, {
+        state: { event, user },
+      });
     }
     return <Box>Error</Box>;
   }

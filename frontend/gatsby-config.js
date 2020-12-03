@@ -27,7 +27,7 @@ module.exports = {
     'gatsby-plugin-typescript',
     {
       resolve: `gatsby-plugin-create-client-paths`,
-      options: { prefixes: [`/events/*`] },
+      options: { prefixes: [`/events/*`, `/manage/*`] },
     },
   ],
 };

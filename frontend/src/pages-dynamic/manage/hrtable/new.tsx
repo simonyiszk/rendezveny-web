@@ -41,7 +41,7 @@ interface Props {
   location: PageProps<null, null, PageState>['location'];
 }
 
-export default function HRTablePage({ location }: Props): JSX.Element {
+export default function HRTableNewPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
@@ -189,7 +189,7 @@ export default function HRTablePage({ location }: Props): JSX.Element {
 
   const handleSubmit = async (): Promise<void> => {
     getModifyHRTableMutation(event.id, {
-      isLocked: hrTable.isLocked ?? false,
+      isLocked: hrTable?.isLocked ?? false,
       tasks: tasks.map((t) => {
         return {
           id: t.id.startsWith('pseudo') ? null : t.id,

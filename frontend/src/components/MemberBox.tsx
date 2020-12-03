@@ -2,7 +2,7 @@ import { Box, BoxProps, Flex } from '@chakra-ui/core';
 import { Link } from 'gatsby';
 import React from 'react';
 
-import { EventRelation } from '../interfaces';
+import { Event, EventRelation } from '../interfaces';
 import Button from './Button';
 
 interface Props extends BoxProps {
@@ -28,7 +28,7 @@ export default function MemberBox({
     <Flex my={4}>
       <Box flexGrow={1} mr={4}>
         <Link
-          to="/manage/members/showreg"
+          to={`/manage/${eventL.uniqueName}/members/showreg`}
           state={{ user, event: eventL }}
           style={{ width: '100%' }}
         >

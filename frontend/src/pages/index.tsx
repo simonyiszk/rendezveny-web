@@ -25,12 +25,12 @@ export default function IndexPage(): JSX.Element {
       <EventSection
         listOfEvents={data?.registeredEvents.nodes ?? []}
         color="simonyi"
-        linkTo="/registration"
+        linkTo="/events/{uniqueName}/registration"
       />
       <EventSection
         listOfEvents={data?.availableEvents.nodes ?? []}
         color="grayE1"
-        linkTo="/registration"
+        linkTo="/events/{uniqueName}/registration"
       />
     </Layout>
   );

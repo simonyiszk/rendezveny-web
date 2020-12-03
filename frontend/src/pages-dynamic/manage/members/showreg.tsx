@@ -28,7 +28,7 @@ interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function MembersPage({ location }: Props): JSX.Element {
+export default function ShowMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
@@ -148,7 +148,7 @@ export default function MembersPage({ location }: Props): JSX.Element {
             <LinkButton
               width={['100%', null, '45%']}
               text="Szerkesztés"
-              to="/manage/members/editreg"
+              to={`/manage/${event?.uniqueName}/members/editreg`}
               state={{
                 event,
                 user,

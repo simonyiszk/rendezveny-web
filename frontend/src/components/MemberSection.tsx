@@ -1,7 +1,7 @@
 import { Box, BoxProps } from '@chakra-ui/core';
 import React from 'react';
 
-import { EventRelation } from '../interfaces';
+import { Event, EventRelation } from '../interfaces';
 import MemberBox from './MemberBox';
 import SectionHeader from './SectionHeader';
 

@@ -22,7 +22,11 @@ export default function EventBox({ event, color, linkTo }: Props): JSX.Element {
   const wrapElement = (element: JSX.Element): JSX.Element => {
     if (!linkTo) return element;
     return (
-      <Link to={linkTo} state={{ event }} style={{ width: '100%' }}>
+      <Link
+        to={linkTo.replace('{uniqueName}', event.uniqueName)}
+        state={{ event }}
+        style={{ width: '100%' }}
+      >
         {element}
       </Link>
     );

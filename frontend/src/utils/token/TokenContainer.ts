@@ -2,19 +2,19 @@ import { ClubRole, UserRole } from '../../interfaces';
 
 const btoa = (str: string): string => Buffer.from(str).toString('base64');
 
-const authToken = btoa('SIMONYI_RENDEZVENY_AUTH_TOKEN');
-const eventToken = btoa('SIMONYI_RENDEZVENY_EVENT_TOKEN');
-const roleItem = btoa('SIMONYI_RENDEZVENY_ROLE');
-const eventRole = btoa('SIMONYI_RENDEZVENY_EVENTROLE');
+const authToken = 'SIMONYI_RENDEZVENY_AUTH_TOKEN';
+const eventToken = 'SIMONYI_RENDEZVENY_EVENT_TOKEN';
+const roleItem = 'SIMONYI_RENDEZVENY_ROLE';
+const eventRole = 'SIMONYI_RENDEZVENY_EVENTROLE';
 const roleTexts = {
-  admin: btoa('RENDSZER_ADMIN'),
-  korvezeto: btoa('RENDSZER_KORVEZETO'),
-  tag: btoa('RENDSZER_TAG'),
+  admin: 'RENDSZER_ADMIN',
+  korvezeto: 'RENDSZER_KORVEZETO',
+  tag: 'RENDSZER_TAG',
 };
 const eventTexts = {
-  forendezo: btoa('ESEMENY_FORENDEZO'),
-  rendezo: btoa('ESEMENY_RENDEZO'),
-  felhasznalo: btoa('ESEMENY_FELHASZNALO'),
+  forendezo: 'ESEMENY_FORENDEZO',
+  rendezo: 'ESEMENY_RENDEZO',
+  felhasznalo: 'ESEMENY_FELHASZNALO',
 };
 
 export function getAuthToken(): string | null {

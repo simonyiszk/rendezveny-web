@@ -14,6 +14,7 @@ export const eventGetAllQuery = gql`
         end
         registrationStart
         registrationEnd
+        uniqueName
       }
     }
     registeredEvents: events_getAll(isRegisteredUpcoming: true) {
@@ -26,6 +27,7 @@ export const eventGetAllQuery = gql`
         end
         registrationStart
         registrationEnd
+        uniqueName
       }
     }
     availableEvents: events_getAll(canRegisterToUpcoming: true) {
@@ -38,6 +40,7 @@ export const eventGetAllQuery = gql`
         end
         registrationStart
         registrationEnd
+        uniqueName
       }
     }
   }

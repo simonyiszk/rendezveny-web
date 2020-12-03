@@ -2,6 +2,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, Input, Select, useToast } from '@chakra-ui/core';
+import { RouteComponentProps } from '@reach/router';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
@@ -14,31 +15,41 @@ import { Layout } from '../../components/Layout';
 import Loading from '../../components/Loading';
 import { Event } from '../../interfaces';
 import { useClubsGetAllQuery } from '../../utils/api/details/ClubsGetAllQuery';
-import { useEventGetInformationQuery } from '../../utils/api/details/EventGetInformationQuery';
+import { useEventGetOrganizersQuery } from '../../utils/api/details/EventGetOrganizersQuery';
 import {
   useEventDeleteMutation,
   useEventInformationMutation,
 } from '../../utils/api/details/EventInformationMutation';
-import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
+import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
+import {
+  useEventTokenMutationID,
+  useEventTokenMutationUN,
+} from '../../utils/api/token/EventsGetTokenMutation';
 
 registerLocale('hu', hu);
 
 interface PageState {
   event: Event;
 }
-interface Props {
+interface Props extends RouteComponentProps {
   location: PageProps<null, null, PageState>['location'];
+  uniqueName: string;
 }
 interface MultiselectOptions {
   label: string;
   value: string;
 }
 
-export default function DetailsPage({ location }: Props): JSX.Element {
+export default function DetailsPage({
+  location,
+  uniqueName,
+}: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
+
+  console.log(event, uniqueName);
 
   const [organizers, setOrganizers] = useState<MultiselectOptions[]>([]);
   const [chiefOrganizers, setChiefOrganizers] = useState<MultiselectOptions[]>(
@@ -78,7 +89,7 @@ export default function DetailsPage({ location }: Props): JSX.Element {
       loading: getOrganizersLoading,
       error: getOrganizersError,
     },
-  ] = useEventGetInformationQuery((queryData) => {
+  ] = useEventGetOrganizersQuery((queryData) => {
     const resultAllUser = queryData.events_getOne.relations.nodes.map((u) => {
       return { value: u.userId, label: u.name } as MultiselectOptions;
     });
@@ -124,13 +135,32 @@ export default function DetailsPage({ location }: Props): JSX.Element {
     );
   });
 
+  const [
+    getCurrentEvent,
+    {
+      called: getCurrentEventCalled,
+      loading: getCurrentEventLoading,
+      error: getCurrentEventError,
+      data: getCurrentEventData,
+    },
+  ] = useEventGetInformationQuery((queryData) => {
+    getOrganizers({ variables: { id: queryData.events_getOne.id } });
+    getClubs();
+  });
+
   const client = useApolloClient();
   const [
-    getEventTokenMutation,
-    { error: eventTokenMutationError },
-  ] = useEventTokenMutation(client, () => {
+    getEventTokenMutationID,
+    { error: eventTokenMutationErrorID },
+  ] = useEventTokenMutationID(client, () => {
     getOrganizers({ variables: { id: event.id } });
     getClubs();
+  });
+  const [
+    getEventTokenMutationUN,
+    { error: eventTokenMutationErrorUN },
+  ] = useEventTokenMutationUN(client, () => {
+    getCurrentEvent({ variables: { uniqueName } });
   });
 
   const toast = useToast();
@@ -168,24 +198,27 @@ export default function DetailsPage({ location }: Props): JSX.Element {
   });
 
   useEffect(() => {
-    if (event) getEventTokenMutation(event.id);
+    if (event) getEventTokenMutationID(event.id);
+    else if (uniqueName) getEventTokenMutationUN(uniqueName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+  }, [uniqueName, event?.id]);
 
   if (
     (getOrganizersCalled && getOrganizersLoading) ||
-    (getClubsCalled && getClubsLoading)
+    (getClubsCalled && getClubsLoading) ||
+    (getCurrentEventCalled && getCurrentEventLoading)
   ) {
     return <Loading />;
   }
 
-  if (!event || eventTokenMutationError || getOrganizersError) {
-    if (typeof window !== 'undefined') {
-      navigate('/manage');
-    }
-    return <div>Error</div>;
-  }
-  if (getClubsError) {
+  if (
+    !uniqueName ||
+    eventTokenMutationErrorID ||
+    eventTokenMutationErrorUN ||
+    getOrganizersError ||
+    getCurrentEventError ||
+    getClubsError
+  ) {
     if (typeof window !== 'undefined') {
       navigate('/manage');
     }
@@ -194,7 +227,7 @@ export default function DetailsPage({ location }: Props): JSX.Element {
 
   const handleSubmit = (): void => {
     getEventInformationMutation(
-      event.id,
+      event?.id ?? getCurrentEventData?.events_getOne.id,
       eventName,
       eventStart.toISOString(),
       eventEnd.toISOString(),
@@ -211,7 +244,7 @@ export default function DetailsPage({ location }: Props): JSX.Element {
     );
   };
   const handleDelete = (): void => {
-    getEventDeleteMutation(event.id);
+    getEventDeleteMutation(event?.id ?? getCurrentEventData?.events_getOne.id);
   };
 
   const onChangeOrganizers = (
