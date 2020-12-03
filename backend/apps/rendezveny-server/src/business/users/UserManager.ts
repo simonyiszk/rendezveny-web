@@ -34,6 +34,7 @@ import {
 } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { nameof } from '../../utils/nameof';
+import { ClubRole } from '../../data/models/ClubRole';
 /* eslint-enable max-len */
 
 @Manager()
@@ -217,18 +218,22 @@ export class UserManager extends BaseManager {
 		@AuthContext() _accessContext: AccessContext,
 		@AuthUser() user: User,
 		pageSize: number,
-		offset: number
+		offset: number,
+		settings?: {
+			isManaged?: boolean
+		}
 	): Promise<{ memberships: ClubMembership[], count: number}> {
 		checkPagination(pageSize, offset);
 
-		const [memberships, count] = await this.membershipRepository.findAndCount({
-			where: { user },
-			take: pageSize,
-			skip: offset * pageSize
-		});
+		let memberships = await this.membershipRepository.find({ user });
+
+		if(settings?.isManaged === true) {
+			memberships = memberships
+				.filter(e => e.clubRole === ClubRole.CLUB_MANAGER);
+		}
 		return {
-			memberships,
-			count
+			memberships: memberships.slice(offset * pageSize, (offset * pageSize) + pageSize),
+			count: memberships.length
 		};
 	}
 
