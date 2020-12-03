@@ -10,7 +10,7 @@ import {
 
 export interface Props {
   children: React.ReactNode;
-  access: string[];
+  access: boolean;
 }
 
 const validValues = [
@@ -26,13 +26,6 @@ export default function ProtectedComponent({
   children,
   access,
 }: Props): JSX.Element {
-  if (
-    (access.includes('admin') && isAdmin()) ||
-    (access.includes('club_manager') && isClubManager()) ||
-    (access.includes('chieforganizer') && isChiefOrganizer()) ||
-    (access.includes('organizer') && isOrganizer()) ||
-    (access.includes('loggedin') && isLoggedin())
-  )
-    return <>{children}</>;
+  if (access) return <>{children}</>;
   return <></>;
 }
