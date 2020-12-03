@@ -1,45 +1,38 @@
 import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, Input, useToast } from '@chakra-ui/core';
-import { navigate, PageProps } from 'gatsby';
+import { RouteComponentProps } from '@reach/router';
+import { navigate } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../components/Button';
-import { Checkbox, CheckboxGroup } from '../components/CheckboxGroup';
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
-import { Radio, RadioGroup } from '../components/RadioGroup';
+import Button from '../../components/Button';
+import { Checkbox, CheckboxGroup } from '../../components/CheckboxGroup';
+import { Layout } from '../../components/Layout';
+import Loading from '../../components/Loading';
+import { Radio, RadioGroup } from '../../components/RadioGroup';
 import {
-  Event,
   EventRegistrationFormAnswersInput,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
-} from '../interfaces';
-import { useEventGetCurrentQuery } from '../utils/api/registration/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../utils/api/registration/EventGetRegistrationQuery';
+} from '../../interfaces';
+import { useEventGetCurrentQuery } from '../../utils/api/registration/EventGetCurrentQuery';
+import { useEventGetRegistrationQuery } from '../../utils/api/registration/EventGetRegistrationQuery';
 import {
   useModifyFilledInForm,
   useRegisterDeleteMutation,
   useRegisterSelfMutation,
-} from '../utils/api/registration/RegistrationMutation';
-import { useEventTokenMutation } from '../utils/api/token/EventsGetTokenMutation';
+} from '../../utils/api/registration/RegistrationMutation';
+import { useEventTokenMutation } from '../../utils/api/token/EventsGetTokenMutation';
 
-interface PageState {
-  event: Event;
-}
-interface Props {
-  location: PageProps<null, null, PageState>['location'];
+interface Props extends RouteComponentProps {
+  uniqueName: string;
 }
 
 interface AnswerState {
   [key: string]: string | string[];
 }
 
-export default function RegistrationPage({ location }: Props): JSX.Element {
-  const state =
-    // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
-  const { event } = state;
+export default function RegistrationPage({ uniqueName }: Props): JSX.Element {
   const [answers, setAnswers] = useState<AnswerState>({});
   const [registered, setRegistered] = useState('');
   const [questionCounter, setQuestionCounter] = useState(0);
@@ -92,15 +85,17 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
     setQuestionCounter(
       queryData.events_getOne.registrationForm.questions.length,
     );
-    getCurrent({ variables: { id: event.id } });
+    getCurrent({
+      variables: { id: eventTokenMutationData.events_getToken.id },
+    });
   });
 
   const client = useApolloClient();
   const [
     getEventTokenMutation,
-    { error: eventTokenMutationError },
-  ] = useEventTokenMutation(client, () => {
-    getEvent({ variables: { id: event.id } });
+    { error: eventTokenMutationError, data: eventTokenMutationData },
+  ] = useEventTokenMutation(client, (data) => {
+    getEvent({ variables: { id: data.events_getToken.id } });
   });
 
   const toast = useToast();
@@ -125,7 +120,9 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
       makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
-      getCurrent({ variables: { id: event.id } });
+      getCurrent({
+        variables: { id: eventTokenMutationData.events_getToken.id },
+      });
     },
   });
   const [getModifyFilledInForm] = useModifyFilledInForm({
@@ -136,7 +133,9 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
       makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
-      getCurrent({ variables: { id: event.id } });
+      getCurrent({
+        variables: { id: eventTokenMutationData.events_getToken.id },
+      });
     },
   });
   const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
@@ -147,14 +146,16 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
       makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
-      getCurrent({ variables: { id: event.id } });
+      getCurrent({
+        variables: { id: eventTokenMutationData.events_getToken.id },
+      });
     },
   });
 
   useEffect(() => {
-    if (event) getEventTokenMutation(event.id);
+    if (uniqueName) getEventTokenMutation(uniqueName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+  }, [uniqueName]);
 
   if (
     (getEventCalled && getEventLoading) ||
@@ -163,7 +164,18 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
     return <Loading />;
   }
 
-  if (!event || eventTokenMutationError || getEventError || getCurrentError) {
+  if (
+    !uniqueName ||
+    eventTokenMutationError ||
+    getEventError ||
+    getCurrentError
+  ) {
+    console.log(
+      !uniqueName,
+      eventTokenMutationError,
+      getEventError,
+      getCurrentError,
+    );
     if (typeof window !== 'undefined') {
       navigate('/');
     }
@@ -199,7 +211,10 @@ export default function RegistrationPage({ location }: Props): JSX.Element {
   };
 
   const handleRegistration = (): void => {
-    getRegisterSelfMutation(event.id, generateAnswerDTO());
+    getRegisterSelfMutation(
+      eventTokenMutationData.events_getToken.id,
+      generateAnswerDTO(),
+    );
   };
   const handleModify = (): void => {
     getModifyFilledInForm(registered, generateAnswerDTO());

@@ -6,13 +6,15 @@ import {
   useMutation,
 } from '@apollo/client';
 
+import { EventRelation } from '../../../interfaces';
 import { resetContext } from '../../token/ApolloClient';
 import { setEventRole, setEventToken } from '../../token/TokenContainer';
 
 export const eventsGetTokenMutation = gql`
-  mutation getEventToken($id: String!) {
-    events_getToken(id: $id) {
+  mutation getEventToken($uniqueName: String) {
+    events_getToken(uniqueName: $uniqueName) {
       eventToken
+      id
       relation {
         isChiefOrganizer
         isOrganizer
@@ -21,10 +23,17 @@ export const eventsGetTokenMutation = gql`
   }
 `;
 
+interface QueryResult {
+  events_getToken: {
+    eventToken: string;
+    id: string;
+    relation: EventRelation;
+  };
+}
 export const useEventTokenMutation = (
   client: ApolloClient<object>,
-  cb?: () => void,
-): [(eventId: string) => Promise<FetchResult>, MutationResult] => {
+  cb?: (data: QueryResult) => void,
+): [(uniqueName: string) => Promise<FetchResult>, MutationResult] => {
   const [mutation, mutationResults] = useMutation(eventsGetTokenMutation, {
     onCompleted: (data) => {
       setEventToken(data.events_getToken.eventToken);
@@ -34,13 +43,13 @@ export const useEventTokenMutation = (
       );
       resetContext(client);
       if (cb) {
-        cb();
+        cb(data);
       }
     },
   });
 
-  const getEventToken = (eventId: string): Promise<FetchResult> => {
-    return mutation({ variables: { id: eventId } });
+  const getEventToken = (uniqueName: string): Promise<FetchResult> => {
+    return mutation({ variables: { uniqueName } });
   };
   return [getEventToken, mutationResults];
 };
