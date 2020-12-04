@@ -11,6 +11,7 @@ interface Props<T> extends BoxProps {
     newValue: T | undefined,
     removedValue: T | undefined,
   ) => void;
+  isInvalid?: boolean;
 }
 
 export default function Multiselect<T>({
@@ -19,6 +20,7 @@ export default function Multiselect<T>({
   labelProp,
   valueProp,
   onChangeCb,
+  isInvalid,
   ...props
 }: Props<T>): JSX.Element {
   const [isOpen, setOpen] = useState(false);
@@ -54,8 +56,9 @@ export default function Multiselect<T>({
       px={3}
       py={1}
       borderRadius="0.25rem"
-      border="1px solid"
-      borderColor="inherit"
+      borderStyle="solid"
+      borderWidth={isInvalid ? '2px' : '1px'}
+      borderColor={isInvalid ? 'red.500' : 'inherit'}
       backgroundColor="#fff"
       minHeight="3.125rem"
       onClick={(): void => {
@@ -69,6 +72,7 @@ export default function Multiselect<T>({
       <Flex flexWrap="wrap" flexGrow={1} pr={1}>
         {value.map((o) => (
           <SelectedOption
+            key={o[valueProp]}
             text={o[labelProp]}
             value={o[valueProp]}
             onClickCb={handleSelectedClick}
@@ -105,6 +109,7 @@ export default function Multiselect<T>({
       >
         {unselectedValues.map((o) => (
           <UnselectedOption
+            key={o[valueProp]}
             text={o[labelProp]}
             value={o[valueProp]}
             onClickCb={handleUnSelectedClick}
@@ -114,6 +119,9 @@ export default function Multiselect<T>({
     </Flex>
   );
 }
+Multiselect.defaultProps = {
+  isInvalid: false,
+};
 
 interface SelectedProps extends BoxProps {
   text: string;
