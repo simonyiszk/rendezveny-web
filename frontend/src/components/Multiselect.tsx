@@ -57,6 +57,7 @@ export default function Multiselect<T>({
       border="1px solid"
       borderColor="inherit"
       backgroundColor="#fff"
+      minHeight="3.125rem"
       onClick={(): void => {
         setOpen(!isOpen);
       }}
