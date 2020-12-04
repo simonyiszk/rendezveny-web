@@ -6,28 +6,22 @@ import hu from 'date-fns/locale/hu';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
-import Multiselect, { ActionMeta, ValueType } from 'react-select';
 
 import Button from '../components/Button';
 import { Layout } from '../components/Layout';
 import Loading from '../components/Loading';
+import Multiselect from '../components/Multiselect';
+import { Club, User } from '../interfaces';
 import { useClubsGetAllQuery } from '../utils/api/details/ClubsGetAllQuery';
 import { useClubsGetOtherMembersQuery } from '../utils/api/details/ClubsGetOtherMembersQuery';
 import { useEventCreateMutation } from '../utils/api/details/EventInformationMutation';
 
 registerLocale('hu', hu);
 
-interface MultiselectOptions {
-  label: string;
-  value: string;
-}
-
 export default function CreatePage(): JSX.Element {
-  const [organizers, setOrganizers] = useState<MultiselectOptions[]>([]);
-  const [chiefOrganizers, setChiefOrganizers] = useState<MultiselectOptions[]>(
-    [],
-  );
-  const [allUsers, setAllUsers] = useState<MultiselectOptions[]>([]);
+  const [organizers, setOrganizers] = useState<User[]>([]);
+  const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   const [eventName, setEventName] = useState('');
   const [eventStart, setEventStart] = useState(new Date());
@@ -39,10 +33,8 @@ export default function CreatePage(): JSX.Element {
   const [eventCapacity, setEventCapacity] = useState(0);
   const [regLink, setRegLink] = useState('');
   const [application, setApplication] = useState(true);
-  const [organizerClubs, setOrganizerClubs] = useState<MultiselectOptions[]>(
-    [],
-  );
-  const [allClubs, setAllClubs] = useState<MultiselectOptions[]>([]);
+  const [organizerClubs, setOrganizerClubs] = useState<Club[]>([]);
+  const [allClubs, setAllClubs] = useState<Club[]>([]);
 
   const [
     getClubs,
@@ -50,7 +42,7 @@ export default function CreatePage(): JSX.Element {
   ] = useClubsGetAllQuery((queryData) => {
     setAllClubs(
       queryData.clubs_getAll.nodes.map((c) => {
-        return { value: c.id, label: c.name } as MultiselectOptions;
+        return { id: c.id, name: c.name } as Club;
       }),
     );
   });
@@ -64,15 +56,15 @@ export default function CreatePage(): JSX.Element {
       .reduce((acc, curr) => {
         const resultClubMembers = curr.club.clubMemberships.nodes.map((m) => {
           return {
-            value: m.user.id,
-            label: m.user.name,
-          } as MultiselectOptions;
+            id: m.user.id,
+            name: m.user.name,
+          } as User;
         });
         return [...acc, ...resultClubMembers];
-      }, [] as MultiselectOptions[])
+      }, [] as User[])
       .filter(
         (user, index, self) =>
-          self.findIndex((t) => t.value === user.value) === index,
+          self.findIndex((t) => t.id === user.id) === index,
       );
     setAllUsers(resultAllUser);
     getClubs();
@@ -125,37 +117,29 @@ export default function CreatePage(): JSX.Element {
       eventRegStart.toISOString(),
       eventRegEnd.toISOString(),
       eventPlace,
-      chiefOrganizers.map((o) => o.value),
+      chiefOrganizers.map((o) => o.id),
       eventClosed,
       eventCapacity,
       regLink,
       application,
-      organizerClubs.map((c) => c.value),
+      organizerClubs.map((c) => c.id),
     );
   };
 
-  const onChangeOrganizers = (
-    selectedList: MultiselectOptions[],
-    actionMeta: ActionMeta<MultiselectOptions>,
-  ): void => {
-    if (actionMeta && actionMeta.action === 'select-option')
-      setChiefOrganizers(
-        chiefOrganizers.filter((o) => o.value !== actionMeta.option?.value),
-      );
+  const onChangeOrganizers = (selectedList: User[], newValue?: User): void => {
+    if (newValue)
+      setChiefOrganizers(chiefOrganizers.filter((o) => o.id !== newValue.id));
     setOrganizers(selectedList);
   };
   const onChangeChiefOrganizers = (
-    selectedList: MultiselectOptions[],
-    actionMeta: ActionMeta<MultiselectOptions>,
+    selectedList: User[],
+    newValue?: User,
   ): void => {
-    if (actionMeta.action === 'select-option')
-      setOrganizers(
-        organizers.filter((o) => o.value !== actionMeta.option?.value),
-      );
+    if (newValue) setOrganizers(organizers.filter((o) => o.id !== newValue.id));
     setChiefOrganizers(selectedList);
   };
 
-  const onChangeClubs = (selectedList: MultiselectOptions[]): void => {
+  const onChangeClubs = (selectedList: Club[]): void => {
     setOrganizerClubs(selectedList);
   };
 
@@ -279,33 +263,25 @@ export default function CreatePage(): JSX.Element {
               }
             />
             <Label>Fő szervezők</Label>
-            <Box maxWidth="20rem">
-              <Multiselect
-                options={allUsers}
-                value={chiefOrganizers}
-                isMulti
-                onChange={(
-                  value: ValueType<MultiselectOptions>,
-                  type: ActionMeta<MultiselectOptions>,
-                ): void => {
-                  onChangeChiefOrganizers(value as MultiselectOptions[], type);
-                }}
-              />
-            </Box>
+            <Multiselect
+              options={allUsers}
+              value={chiefOrganizers}
+              onChangeCb={(values: User[], newValue?: User): void => {
+                onChangeChiefOrganizers(values, newValue);
+              }}
+              valueProp="id"
+              labelProp="name"
+            />
             <Label>Szervezők</Label>
-            <Box maxWidth="20rem">
-              <Multiselect
-                options={allUsers}
-                value={organizers}
-                isMulti
-                onChange={(
-                  value: ValueType<MultiselectOptions>,
-                  type: ActionMeta<MultiselectOptions>,
-                ): void => {
-                  onChangeOrganizers(value as MultiselectOptions[], type);
-                }}
-              />
-            </Box>
+            <Multiselect
+              options={allUsers}
+              value={organizers}
+              onChangeCb={(values: User[], newValue?: User): void => {
+                onChangeOrganizers(values, newValue);
+              }}
+              valueProp="id"
+              labelProp="name"
+            />
             <Label>Esemény látogathatósága</Label>
             <Select
               name="eventClosed"
@@ -348,16 +324,15 @@ export default function CreatePage(): JSX.Element {
               <option value="Nem">Nem</option>
             </Select>
             <Label>Szerező körök</Label>
-            <Box maxWidth="20rem">
-              <Multiselect
-                options={allClubs}
-                value={organizerClubs}
-                isMulti
-                onChange={(value: ValueType<MultiselectOptions>): void => {
-                  onChangeClubs(value as MultiselectOptions[]);
-                }}
-              />
-            </Box>
+            <Multiselect
+              options={allClubs}
+              value={organizerClubs}
+              onChangeCb={(values: Club[]): void => {
+                onChangeClubs(values);
+              }}
+              valueProp="id"
+              labelProp="name"
+            />
           </Grid>
           <Flex justifyContent="center" mt={4}>
             <Button

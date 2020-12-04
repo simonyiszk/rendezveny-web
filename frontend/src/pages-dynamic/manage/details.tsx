@@ -8,12 +8,12 @@ import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
-import Multiselect, { ActionMeta, ValueType } from 'react-select';
 
 import Button from '../../components/Button';
 import { Layout } from '../../components/Layout';
 import Loading from '../../components/Loading';
-import { Event } from '../../interfaces';
+import Multiselect from '../../components/Multiselect';
+import { Club, Event, User } from '../../interfaces';
 import { useClubsGetAllQuery } from '../../utils/api/details/ClubsGetAllQuery';
 import { useEventGetOrganizersQuery } from '../../utils/api/details/EventGetOrganizersQuery';
 import {
@@ -35,10 +35,6 @@ interface Props extends RouteComponentProps {
   location: PageProps<null, null, PageState>['location'];
   uniqueName: string;
 }
-interface MultiselectOptions {
-  label: string;
-  value: string;
-}
 
 export default function DetailsPage({
   location,
@@ -49,13 +45,9 @@ export default function DetailsPage({
     location.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
-  console.log(event, uniqueName);
-
-  const [organizers, setOrganizers] = useState<MultiselectOptions[]>([]);
-  const [chiefOrganizers, setChiefOrganizers] = useState<MultiselectOptions[]>(
-    [],
-  );
-  const [allUsers, setAllUsers] = useState<MultiselectOptions[]>([]);
+  const [organizers, setOrganizers] = useState<User[]>([]);
+  const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   const [eventName, setEventName] = useState(event?.name || '');
   const [eventStart, setEventStart] = useState(
@@ -77,10 +69,8 @@ export default function DetailsPage({
   const [application, setApplication] = useState(
     event?.registrationAllowed || true,
   );
-  const [organizerClubs, setOrganizerClubs] = useState<MultiselectOptions[]>(
-    [],
-  );
-  const [allClubs, setAllClubs] = useState<MultiselectOptions[]>([]);
+  const [organizerClubs, setOrganizerClubs] = useState<Club[]>([]);
+  const [allClubs, setAllClubs] = useState<Club[]>([]);
 
   const [
     getOrganizers,
@@ -91,21 +81,30 @@ export default function DetailsPage({
     },
   ] = useEventGetOrganizersQuery((queryData) => {
     const resultAllUser = queryData.events_getOne.relations.nodes.map((u) => {
-      return { value: u.userId, label: u.name } as MultiselectOptions;
+      return {
+        id: u.userId,
+        name: u.name,
+      } as User;
     });
     const resultOrganizers = queryData.events_getOne.organizers.nodes.map(
       (u) => {
-        return { value: u.userId, label: u.name } as MultiselectOptions;
+        return {
+          id: u.userId,
+          name: u.name,
+        } as User;
       },
     );
     const resultChiefOrganizers = queryData.events_getOne.chiefOrganizers.nodes.map(
       (u) => {
-        return { value: u.userId, label: u.name } as MultiselectOptions;
+        return {
+          id: u.userId,
+          name: u.name,
+        } as User;
       },
     );
     const resultOrganizerClubs = queryData.events_getOne.hostingClubs.map(
       (c) => {
-        return { value: c.id, label: c.name } as MultiselectOptions;
+        return { id: c.id, name: c.name } as Club;
       },
     );
     setEventName(queryData.events_getOne.name);
@@ -130,7 +129,7 @@ export default function DetailsPage({
   ] = useClubsGetAllQuery((queryData) => {
     setAllClubs(
       queryData.clubs_getAll.nodes.map((c) => {
-        return { value: c.id, label: c.name } as MultiselectOptions;
+        return { id: c.id, name: c.name } as Club;
       }),
     );
   });
@@ -234,41 +233,33 @@ export default function DetailsPage({
       eventRegStart.toISOString(),
       eventRegEnd.toISOString(),
       eventPlace,
-      organizers.concat(chiefOrganizers).map((o) => o.value),
-      chiefOrganizers.map((o) => o.value),
+      organizers.concat(chiefOrganizers).map((o) => o.id),
+      chiefOrganizers.map((o) => o.id),
       eventClosed,
       eventCapacity,
       regLink,
       application,
-      organizerClubs.map((c) => c.value),
+      organizerClubs.map((c) => c.id),
     );
   };
   const handleDelete = (): void => {
     getEventDeleteMutation(event?.id ?? getCurrentEventData?.events_getOne.id);
   };
 
-  const onChangeOrganizers = (
-    selectedList: MultiselectOptions[],
-    actionMeta: ActionMeta<MultiselectOptions>,
-  ): void => {
-    if (actionMeta && actionMeta.action === 'select-option')
-      setChiefOrganizers(
-        chiefOrganizers.filter((o) => o.value !== actionMeta.option?.value),
-      );
+  const onChangeOrganizers = (selectedList: User[], newValue?: User): void => {
+    if (newValue)
+      setChiefOrganizers(chiefOrganizers.filter((o) => o.id !== newValue.id));
     setOrganizers(selectedList);
   };
   const onChangeChiefOrganizers = (
-    selectedList: MultiselectOptions[],
-    actionMeta: ActionMeta<MultiselectOptions>,
+    selectedList: User[],
+    newValue?: User,
   ): void => {
-    if (actionMeta.action === 'select-option')
-      setOrganizers(
-        organizers.filter((o) => o.value !== actionMeta.option?.value),
-      );
+    if (newValue) setOrganizers(organizers.filter((o) => o.id !== newValue.id));
     setChiefOrganizers(selectedList);
   };
 
-  const onChangeClubs = (selectedList: MultiselectOptions[]): void => {
+  const onChangeClubs = (selectedList: Club[]): void => {
     setOrganizerClubs(selectedList);
   };
 
@@ -310,7 +301,7 @@ export default function DetailsPage({
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <Box as="form" minWidth="50%">
+        <Box as="form" width="80%">
           <Grid
             gridTemplateColumns={['1fr', null, '1fr 1fr']}
             rowGap={['0', null, '1rem']}
@@ -392,33 +383,25 @@ export default function DetailsPage({
               }
             />
             <Label>Fő szervezők</Label>
-            <Box maxWidth="20rem">
-              <Multiselect
-                options={allUsers}
-                value={chiefOrganizers}
-                isMulti
-                onChange={(
-                  value: ValueType<MultiselectOptions>,
-                  type: ActionMeta<MultiselectOptions>,
-                ): void => {
-                  onChangeChiefOrganizers(value as MultiselectOptions[], type);
-                }}
-              />
-            </Box>
+            <Multiselect
+              options={allUsers}
+              value={chiefOrganizers}
+              onChangeCb={(values: User[], newValue?: User): void => {
+                onChangeChiefOrganizers(values, newValue);
+              }}
+              valueProp="id"
+              labelProp="name"
+            />
             <Label>Szervezők</Label>
-            <Box maxWidth="20rem">
-              <Multiselect
-                options={allUsers}
-                value={organizers}
-                isMulti
-                onChange={(
-                  value: ValueType<MultiselectOptions>,
-                  type: ActionMeta<MultiselectOptions>,
-                ): void => {
-                  onChangeOrganizers(value as MultiselectOptions[], type);
-                }}
-              />
-            </Box>
+            <Multiselect
+              options={allUsers}
+              value={organizers}
+              onChangeCb={(values: User[], newValue?: User): void => {
+                onChangeOrganizers(values, newValue);
+              }}
+              valueProp="id"
+              labelProp="name"
+            />
             <Label>Esemény látogathatósága</Label>
             <Select
               name="eventClosed"
@@ -461,16 +444,15 @@ export default function DetailsPage({
               <option value="Nem">Nem</option>
             </Select>
             <Label>Szerező körök</Label>
-            <Box maxWidth="20rem">
-              <Multiselect
-                options={allClubs}
-                value={organizerClubs}
-                isMulti
-                onChange={(value: ValueType<MultiselectOptions>): void => {
-                  onChangeClubs(value as MultiselectOptions[]);
-                }}
-              />
-            </Box>
+            <Multiselect
+              options={allClubs}
+              value={organizerClubs}
+              onChangeCb={(values: Club[]): void => {
+                onChangeClubs(values);
+              }}
+              valueProp="id"
+              labelProp="name"
+            />
           </Grid>
           <Flex
             justifyContent={['center', null, 'space-between']}
