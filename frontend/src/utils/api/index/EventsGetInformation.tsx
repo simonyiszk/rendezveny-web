@@ -19,6 +19,7 @@ export const eventGetInformationQuery = gql`
       registrationStart
       registrationEnd
       uniqueName
+      capacity
     }
   }
 `;

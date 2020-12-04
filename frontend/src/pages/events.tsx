@@ -5,6 +5,7 @@ import React from 'react';
 import EventSection from '../components/EventSection';
 import { Layout } from '../components/Layout';
 import Loading from '../components/Loading';
+import EventShowPage from '../pages-dynamic/events/events';
 import RegistrationPage from '../pages-dynamic/events/registration';
 import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 
@@ -12,6 +13,7 @@ export default function EventsPage(): JSX.Element {
   return (
     <Router basepath="/events">
       <RegistrationPage path="/:uniqueName/registration" />
+      <EventShowPage path="/:uniqueName" />
       <EventsBrowsePage default />
     </Router>
   );
@@ -36,12 +38,12 @@ function EventsBrowsePage(_props: RouteComponentProps): JSX.Element {
       <EventSection
         listOfEvents={data?.registeredEvents.nodes ?? []}
         color="simonyi"
-        linkTo="/events/{uniqueName}/registration"
+        linkTo="/events/{uniqueName}"
       />
       <EventSection
         listOfEvents={data?.availableEvents.nodes ?? []}
         color="grayE1"
-        linkTo="/events/{uniqueName}/registration"
+        linkTo="/events/{uniqueName}"
       />
     </Layout>
   );

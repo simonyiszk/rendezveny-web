@@ -14,6 +14,7 @@ export default function IndexPage(): JSX.Element {
   }
 
   if (error) {
+    console.log(error.message);
     if (typeof window !== 'undefined') {
       navigate('/login');
     }
@@ -25,12 +26,12 @@ export default function IndexPage(): JSX.Element {
       <EventSection
         listOfEvents={data?.registeredEvents.nodes ?? []}
         color="simonyi"
-        linkTo="/events/{uniqueName}/registration"
+        linkTo="/events/{uniqueName}"
       />
       <EventSection
         listOfEvents={data?.availableEvents.nodes ?? []}
         color="grayE1"
-        linkTo="/events/{uniqueName}/registration"
+        linkTo="/events/{uniqueName}"
       />
     </Layout>
   );
