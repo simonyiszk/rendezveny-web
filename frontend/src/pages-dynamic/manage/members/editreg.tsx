@@ -1,4 +1,17 @@
-import { Box, Flex, Grid, Input, useToast } from '@chakra-ui/core';
+import {
+  Box,
+  Flex,
+  Grid,
+  Input,
+  Modal,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useDisclosure,
+  useToast,
+} from '@chakra-ui/core';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -35,6 +48,8 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
   const { event, user, answers } = state;
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [newAnswers, setNewAnswers] = useState<AnswerState>({});
 
@@ -131,6 +146,7 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
   };
   const handleDelete = (): void => {
     getRegisterDeleteMutation(user.registration.id);
+    onClose();
   };
 
   return (
@@ -206,11 +222,43 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
               text="Regisztráció törlése"
               backgroundColor="red.500"
               mt={[4, null, 0]}
-              onClick={handleDelete}
+              onClick={onOpen}
             />
           </Flex>
         </Box>
       </Flex>
+
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            Biztosan leiratkoztatod {user.name}t az eseményről?
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalFooter>
+            <Flex width="100%" flexDirection="column">
+              <Flex
+                justifyContent={['center', null, 'space-between']}
+                flexDir={['column', null, 'row']}
+                width="100%"
+              >
+                <Button
+                  width={['100%', null, '45%']}
+                  text="Igen"
+                  onClick={handleDelete}
+                />
+                <Button
+                  width={['100%', null, '45%']}
+                  text="Nem"
+                  backgroundColor="red.500"
+                  mt={[4, null, 0]}
+                  onClick={onClose}
+                />
+              </Flex>
+            </Flex>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Layout>
   );
 }
