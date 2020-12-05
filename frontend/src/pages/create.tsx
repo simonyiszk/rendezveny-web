@@ -29,6 +29,19 @@ import { useClubsGetAllQuery } from '../utils/api/details/ClubsGetAllQuery';
 import { useClubsGetOtherMembersQuery } from '../utils/api/details/ClubsGetOtherMembersQuery';
 import { useEventCreateMutation } from '../utils/api/details/EventInformationMutation';
 import { useEventGetUniquenamesQuery } from '../utils/api/index/EventsGetUniquenamesQuery';
+import {
+  getCapacityValid,
+  getChiefOrganizersValid,
+  getDescriptionValid,
+  getEndValid,
+  getNameValid,
+  getOrganizerClubsValid,
+  getPlaceValid,
+  getRegEndValid,
+  getReglinkValid,
+  getRegStartValid,
+  getStartValid,
+} from '../utils/services/EventFormValidation';
 
 registerLocale('hu', hu);
 
@@ -152,7 +165,34 @@ export default function CreatePage(): JSX.Element {
     return <div>Error</div>;
   }
 
+  const validTab = (index: number): void => {
+    switch (index) {
+      case 0:
+        setNameValid(getNameValid(eventName));
+        setReglinkValid(getReglinkValid(regLink, uniqueNames));
+        break;
+      case 1:
+        setStartValid(getStartValid(eventStart));
+        setEndValid(getEndValid(eventEnd, eventStart));
+        setRegStartValid(getRegStartValid(eventRegStart, eventStart));
+        setRegEndValid(getRegEndValid(eventRegEnd, eventRegStart));
+        setPlaceValid(getPlaceValid(eventPlace));
+        setCapacityValid(getCapacityValid(eventCapacity));
+        break;
+      case 2:
+        setChiefOrganizersValid(getChiefOrganizersValid(chiefOrganizers));
+        break;
+      case 3:
+        setOrganizerClubsValid(getOrganizerClubsValid(organizerClubs));
+        break;
+      default:
+    }
+  };
+
   const handleSubmit = (): void => {
+    for (let i = 0; i < 4; i += 1) {
+      validTab(i);
+    }
     if (
       isNameValid.length === 0 &&
       isReglinkValid.length === 0 &&
@@ -199,61 +239,6 @@ export default function CreatePage(): JSX.Element {
 
   const onChangeClubs = (selectedList: Club[]): void => {
     setOrganizerClubs(selectedList);
-  };
-
-  const validTab = (index: number): void => {
-    switch (index) {
-      case 0:
-        setNameValid(eventName.length > 0 ? [] : ['Kötelező mező']);
-        setReglinkValid([
-          ...(regLink.length > 0 ? [] : ['Kötelező mező']),
-          ...(!uniqueNames.includes(regLink) ? [] : [`${regLink} már foglalt`]),
-        ]);
-        setNameValid(eventName.length > 0 ? [] : ['Kötelező mező']);
-        break;
-      case 1:
-        setStartValid(eventStart ? [] : ['Kötelező mező']);
-        setEndValid([
-          ...(eventEnd ? [] : ['Kötelező mező']),
-          ...(eventEnd > eventStart
-            ? []
-            : ['Az esemény vége későbbinek kell lennie, mint a kezdetének']),
-        ]);
-        setRegStartValid([
-          ...(eventRegStart ? [] : ['Kötelező mező']),
-          ...(eventRegStart <= eventStart
-            ? []
-            : [
-                'A regisztráció a kezdetének korábbinak kell lennie, mint az esemény kezdetének',
-              ]),
-        ]);
-        setRegEndValid([
-          ...(eventRegEnd ? [] : ['Kötelező mező']),
-          ...(eventRegEnd > eventRegStart
-            ? []
-            : [
-                'A regisztráció a végének későbbinek kell lennie, mint a kezdetének',
-              ]),
-        ]);
-        setPlaceValid(eventPlace.length > 0 ? [] : ['Kötelező mező']);
-        setCapacityValid(
-          eventCapacity > 0
-            ? []
-            : ['A létszám korlátnak legalább 1-nek kell lennie'],
-        );
-        break;
-      case 2:
-        setChiefOrganizersValid(
-          chiefOrganizers.length > 0 ? [] : ['Legalább egy főszervező kell'],
-        );
-        break;
-      case 3:
-        setOrganizerClubsValid(
-          organizerClubs.length > 0 ? [] : ['Legalább egy szervező kör kell'],
-        );
-        break;
-      default:
-    }
   };
 
   const datePickerCustomHeader = ({
@@ -346,7 +331,7 @@ export default function CreatePage(): JSX.Element {
                       onChange={(e: React.FormEvent): void => {
                         const v = (e.target as HTMLInputElement).value;
                         setEventName(v);
-                        setNameValid(v.length > 0 ? [] : ['Kötelező mező']);
+                        setNameValid(getNameValid(v));
                       }}
                     />
                     <Box>
@@ -366,12 +351,7 @@ export default function CreatePage(): JSX.Element {
                       onChange={(e: React.FormEvent): void => {
                         const v = (e.target as HTMLInputElement).value;
                         setRegLink(v);
-                        setReglinkValid([
-                          ...(v.length > 0 ? [] : ['Kötelező mező']),
-                          ...(!uniqueNames.includes(v)
-                            ? []
-                            : [`${v} már foglalt`]),
-                        ]);
+                        setReglinkValid(getReglinkValid(v, uniqueNames));
                       }}
                     />
                     <Box>
@@ -391,7 +371,7 @@ export default function CreatePage(): JSX.Element {
                       onChange={(e: React.FormEvent): void => {
                         const v = (e.target as HTMLInputElement).value;
                         setEventName(v);
-                        setNameValid(v.length > 0 ? [] : ['Kötelező mező']);
+                        setNameValid(getNameValid(v));
                       }}
                     />
                     <Box>
@@ -437,7 +417,7 @@ export default function CreatePage(): JSX.Element {
                         selected={eventStart}
                         onChange={(date: Date): void => {
                           setEventStart(date);
-                          setStartValid(date ? [] : ['Kötelező mező']);
+                          setStartValid(getStartValid(date));
                         }}
                         dateFormat="yyyy.MM.dd. HH:mm"
                         locale="hu"
@@ -468,14 +448,7 @@ export default function CreatePage(): JSX.Element {
                         selected={eventEnd}
                         onChange={(date: Date): void => {
                           setEventEnd(date);
-                          setEndValid([
-                            ...(date ? [] : ['Kötelező mező']),
-                            ...(date > eventStart
-                              ? []
-                              : [
-                                  'Az esemény vége későbbinek kell lennie, mint a kezdetének',
-                                ]),
-                          ]);
+                          setEndValid(getEndValid(date, eventStart));
                         }}
                         dateFormat="yyyy.MM.dd. HH:mm"
                         locale="hu"
@@ -506,14 +479,7 @@ export default function CreatePage(): JSX.Element {
                         selected={eventRegStart}
                         onChange={(date: Date): void => {
                           setEventRegStart(date);
-                          setRegStartValid([
-                            ...(date ? [] : ['Kötelező mező']),
-                            ...(date <= eventStart
-                              ? []
-                              : [
-                                  'A regisztráció a kezdetének korábbinak kell lennie, mint az esemény kezdetének',
-                                ]),
-                          ]);
+                          setRegStartValid(getRegStartValid(date, eventStart));
                         }}
                         dateFormat="yyyy.MM.dd. HH:mm"
                         locale="hu"
@@ -544,14 +510,7 @@ export default function CreatePage(): JSX.Element {
                         selected={eventRegEnd}
                         onChange={(date: Date): void => {
                           setEventRegEnd(date);
-                          setRegEndValid([
-                            ...(date ? [] : ['Kötelező mező']),
-                            ...(date > eventRegStart
-                              ? []
-                              : [
-                                  'A regisztráció a végének későbbinek kell lennie, mint a kezdetének',
-                                ]),
-                          ]);
+                          setRegEndValid(getRegEndValid(date, eventRegStart));
                         }}
                         dateFormat="yyyy.MM.dd. HH:mm"
                         locale="hu"
@@ -577,7 +536,7 @@ export default function CreatePage(): JSX.Element {
                       onChange={(e: React.FormEvent): void => {
                         const v = (e.target as HTMLInputElement).value;
                         setEventPlace(v);
-                        setPlaceValid(v.length > 0 ? [] : ['Kötelező mező']);
+                        setPlaceValid(getPlaceValid(v));
                       }}
                     />
                     <Box>
@@ -600,13 +559,7 @@ export default function CreatePage(): JSX.Element {
                           parseInt((e.target as HTMLInputElement).value, 10) ||
                           0;
                         setEventCapacity(v);
-                        setCapacityValid(
-                          v > 0
-                            ? []
-                            : [
-                                'A létszám korlátnak legalább 1-nek kell lennie',
-                              ],
-                        );
+                        setCapacityValid(getCapacityValid(v));
                       }}
                     />
                     <Box>
@@ -660,9 +613,7 @@ export default function CreatePage(): JSX.Element {
                       onChangeCb={(values: User[], newValue?: User): void => {
                         onChangeChiefOrganizers(values, newValue);
                         setChiefOrganizersValid(
-                          values.length > 0
-                            ? []
-                            : ['Legalább egy főszervező kell'],
+                          getChiefOrganizersValid(values),
                         );
                       }}
                       valueProp="id"
@@ -728,11 +679,7 @@ export default function CreatePage(): JSX.Element {
                       isInvalid={isOrganizerClubsValid.length > 0}
                       onChangeCb={(values: Club[]): void => {
                         onChangeClubs(values);
-                        setOrganizerClubsValid(
-                          values.length > 0
-                            ? []
-                            : ['Legalább egy szervező kör kell'],
-                        );
+                        setOrganizerClubsValid(getOrganizerClubsValid(values));
                       }}
                       valueProp="id"
                       labelProp="name"
