@@ -315,13 +315,24 @@ export class EventResolver {
 	@UseGuards(AuthAccessGuard)
 	public async getEventToken(
 		@AccessCtx() accessContext: AccessContext,
-		@Args('id', { description: 'The id of the event' }) id: string
-	): Promise<EventLoginDTO> {
-		const event = await this.eventManager.getEventById(id);
+		@Args('id', { description: 'The id of the event', nullable: true }) id?: string,
+		@Args('uniqueName', { description: 'The unique name of the event', nullable: true }) uniqueName?: string
+	): Promise<EventLoginDTO | null> {
+		let event = null;
+		if(typeof id !== 'undefined') {
+			event = await this.eventManager.getEventById(id)
+		}
+		if(typeof uniqueName !== 'undefined') {
+			event = await this.eventManager.getEventByUniqueName(uniqueName) 
+		}
+		if(!event) {
+			return null;
+		}
 		const { token, relation } = await this.eventManager.getEventToken(accessContext, event);
 
 		return {
 			eventToken: token,
+			id: event.id,
 			relation: this.returnEventRelationDTO(relation)
 		};
 	}
