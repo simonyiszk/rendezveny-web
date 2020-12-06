@@ -1,8 +1,12 @@
+import 'react-quill/dist/quill.bubble.css';
+import '../../components/reactquillcustom.css';
+
 import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Heading } from '@chakra-ui/core';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect } from 'react';
+import ReactQuill from 'react-quill';
 
 import { Layout } from '../../components/Layout';
 import LinkButton from '../../components/LinkButton';
@@ -115,16 +119,13 @@ export default function EventShowPage({
         </Box>
         <Box>{(event ?? getCurrentEventData?.events_getOne)?.place}</Box>
       </Flex>
-      <Box mt={2}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ultrices
-        mi arcu, sit amet vulputate est porta ac. Vestibulum vel viverra nibh.
-        Pellentesque sed interdum enim. Duis vestibulum ac libero vitae dapibus.
-        Sed scelerisque semper laoreet. Duis nec luctus neque. Suspendisse
-        elementum maximus convallis. Nunc pharetra mi at nulla aliquet laoreet.
-        Suspendisse egestas luctus ultricies. Fusce fermentum lacus massa, quis
-        facilisis lorem pharetra at. Mauris et sem nec diam euismod porta. In
-        hac habitasse platea dictumst. Vivamus mollis ligula eu posuere
-        tristique.
+      <Box mt={2} className="quill-container-custom">
+        <ReactQuill
+          value={(event ?? getCurrentEventData?.events_getOne)?.description}
+          style={{ fontFamily: 'Montserrat' }}
+          readOnly
+          theme="bubble"
+        />
       </Box>
       <Flex mt={2}>
         <Box fontWeight="bold" mr={1}>

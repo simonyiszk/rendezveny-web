@@ -1,0 +1,8 @@
+.ql-container {
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.quill-container-custom .ql-editor {
+  padding: 0;
+}

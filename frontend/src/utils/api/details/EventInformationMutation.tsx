@@ -6,6 +6,7 @@ export const eventInformationMutation = gql`
   mutation e_eventInformationMutation(
     $id: String!
     $name: String!
+    $description: String!
     $start: DateTime!
     $end: DateTime!
     $registrationStart: DateTime!
@@ -22,6 +23,7 @@ export const eventInformationMutation = gql`
     events_modifyEvent(
       id: $id
       name: $name
+      description: $description
       start: $start
       end: $end
       registrationStart: $registrationStart
@@ -37,6 +39,7 @@ export const eventInformationMutation = gql`
     ) {
       id
       name
+      description
       start
       end
       registrationStart
@@ -61,6 +64,7 @@ export const useEventInformationMutation = ({
   (
     id: string,
     name: string,
+    description: string,
     start: string,
     end: string,
     registrationStart: string,
@@ -85,6 +89,7 @@ export const useEventInformationMutation = ({
   const getMutation = (
     id: string,
     name: string,
+    description: string,
     start: string,
     end: string,
     registrationStart: string,
@@ -102,6 +107,7 @@ export const useEventInformationMutation = ({
       variables: {
         id,
         name,
+        description,
         start,
         end,
         registrationStart,
@@ -123,6 +129,7 @@ export const useEventInformationMutation = ({
 export const eventCreateMutation = gql`
   mutation eventCreateMutation(
     $name: String!
+    $description: String!
     $start: DateTime!
     $end: DateTime!
     $registrationStart: DateTime!
@@ -137,7 +144,7 @@ export const eventCreateMutation = gql`
   ) {
     events_addEvent(
       name: $name
-      description: $name
+      description: $description
       start: $start
       end: $end
       registrationStart: $registrationStart
@@ -152,6 +159,7 @@ export const eventCreateMutation = gql`
     ) {
       id
       name
+      description
       start
       end
       registrationStart
@@ -171,6 +179,7 @@ export const useEventCreateMutation = ({
 }: MutationProps): [
   (
     name: string,
+    description: string,
     start: string,
     end: string,
     registrationStart: string,
@@ -193,6 +202,7 @@ export const useEventCreateMutation = ({
 
   const getMutation = (
     name: string,
+    description: string,
     start: string,
     end: string,
     registrationStart: string,
@@ -208,6 +218,7 @@ export const useEventCreateMutation = ({
     return mutation({
       variables: {
         name,
+        description,
         start,
         end,
         registrationStart,

@@ -12,6 +12,7 @@ export const eventGetOrganizersQuery = gql`
     events_getOne(id: $id) {
       id
       name
+      description
       uniqueName
       start
       end

@@ -1,4 +1,5 @@
 import 'react-datepicker/dist/react-datepicker.css';
+import 'react-quill/dist/quill.snow.css';
 
 import {
   Box,
@@ -19,6 +20,7 @@ import hu from 'date-fns/locale/hu';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
+import ReactQuill from 'react-quill';
 
 import Button from '../components/Button';
 import { Layout } from '../components/Layout';
@@ -32,7 +34,6 @@ import { useEventGetUniquenamesQuery } from '../utils/api/index/EventsGetUniquen
 import {
   getCapacityValid,
   getChiefOrganizersValid,
-  getDescriptionValid,
   getEndValid,
   getNameValid,
   getOrganizerClubsValid,
@@ -55,6 +56,7 @@ export default function CreatePage(): JSX.Element {
 
   const [eventName, setEventName] = useState('');
   const [isNameValid, setNameValid] = useState<string[]>([]);
+  const [eventDesc, setEventDesc] = useState('');
   const [eventStart, setEventStart] = useState(new Date());
   const [isStartValid, setStartValid] = useState<string[]>([]);
   const [eventEnd, setEventEnd] = useState(new Date());
@@ -207,6 +209,7 @@ export default function CreatePage(): JSX.Element {
     ) {
       getEventCreateMutation(
         eventName,
+        eventDesc,
         eventStart.toISOString(),
         eventEnd.toISOString(),
         eventRegStart.toISOString(),
@@ -363,25 +366,19 @@ export default function CreatePage(): JSX.Element {
                     </Box>
                   </Box>
                   <Label>Esemény leírása</Label>
-                  <Box>
-                    <Input
-                      name="eventName"
-                      value={eventName}
-                      isInvalid={isNameValid.length > 0}
-                      onChange={(e: React.FormEvent): void => {
-                        const v = (e.target as HTMLInputElement).value;
-                        setEventName(v);
-                        setNameValid(getNameValid(v));
+                  <Flex gridColumn="1/-1" minHeight="15rem" flexDir="column">
+                    <ReactQuill
+                      value={eventDesc}
+                      onChange={setEventDesc}
+                      style={{
+                        height: '100%',
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
                       }}
                     />
-                    <Box>
-                      {isNameValid.map((t) => (
-                        <Text key={t} color="red.500">
-                          {t}
-                        </Text>
-                      ))}
-                    </Box>
-                  </Box>
+                  </Flex>
                 </Grid>
                 <Flex justifyContent="flex-end" mt={4}>
                   <Button

@@ -1,4 +1,5 @@
 import 'react-datepicker/dist/react-datepicker.css';
+import 'react-quill/dist/quill.snow.css';
 
 import { useApolloClient } from '@apollo/client';
 import {
@@ -21,6 +22,7 @@ import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
+import ReactQuill from 'react-quill';
 
 import Button from '../../components/Button';
 import { Layout } from '../../components/Layout';
@@ -39,7 +41,6 @@ import {
 import {
   getCapacityValid,
   getChiefOrganizersValid,
-  getDescriptionValid,
   getEndValid,
   getNameValid,
   getOrganizerClubsValid,
@@ -78,6 +79,7 @@ export default function DetailsPage({
 
   const [eventName, setEventName] = useState(event?.name || '');
   const [isNameValid, setNameValid] = useState<string[]>([]);
+  const [eventDesc, setEventDesc] = useState('');
   const [eventStart, setEventStart] = useState(
     event?.start ? new Date(event?.start) : new Date(),
   );
@@ -148,6 +150,7 @@ export default function DetailsPage({
       },
     );
     setEventName(queryData.events_getOne.name);
+    setEventDesc(queryData.events_getOne.description);
     setEventStart(new Date(queryData.events_getOne.start));
     setEventEnd(new Date(queryData.events_getOne.end));
     setEventRegStart(new Date(queryData.events_getOne.registrationStart));
@@ -311,6 +314,7 @@ export default function DetailsPage({
       getEventInformationMutation(
         event?.id ?? getCurrentEventData?.events_getOne.id,
         eventName,
+        eventDesc,
         eventStart.toISOString(),
         eventEnd.toISOString(),
         eventRegStart.toISOString(),
@@ -468,25 +472,22 @@ export default function DetailsPage({
                     </Box>
                   </Box>
                   <Label>Esemény leírása</Label>
-                  <Box>
-                    <Input
-                      name="eventName"
-                      value={eventName}
-                      isInvalid={isNameValid.length > 0}
-                      onChange={(e: React.FormEvent): void => {
-                        const v = (e.target as HTMLInputElement).value;
-                        setEventName(v);
-                        setNameValid(getNameValid(v));
+                  <Flex gridColumn="1/-1" minHeight="15rem" flexDir="column">
+                    <ReactQuill
+                      value={eventDesc || ''}
+                      onChange={(v): void => {
+                        console.log(v);
+                        setEventDesc(v);
+                      }}
+                      style={{
+                        height: '100%',
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
                       }}
                     />
-                    <Box>
-                      {isNameValid.map((t) => (
-                        <Text key={t} color="red.500">
-                          {t}
-                        </Text>
-                      ))}
-                    </Box>
-                  </Box>
+                  </Flex>
                 </Grid>
                 <Flex justifyContent="flex-end" mt={4}>
                   <Button
