@@ -100,6 +100,12 @@ export interface EventRegistrationFormQuestionInput {
   metadata: string;
   question: string;
 }
+export enum EventQuestionType {
+  INVALID = -1,
+  TEXT,
+  RADIOBUTTON,
+  CHECKBOX,
+}
 
 // ANSWERS
 export interface EventRegistrationFormAnswers {

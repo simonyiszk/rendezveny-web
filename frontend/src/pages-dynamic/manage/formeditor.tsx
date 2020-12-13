@@ -16,6 +16,7 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  Textarea,
   useDisclosure,
   useToast,
 } from '@chakra-ui/core';
@@ -30,8 +31,7 @@ import Loading from '../../components/Loading';
 import { Radio, RadioGroup } from '../../components/RadioGroup';
 import {
   Event,
-  EventRegistration,
-  EventRegistrationFormAnswer,
+  EventQuestionType,
   EventRegistrationFormMultipleChoiceOption,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormQuestion,
@@ -75,10 +75,10 @@ export default function FormeditorPage({
   const [newQuestion, setNewQuestion] = useState<
     EventRegistrationFormQuestion
   >();
-  const [newQuestionOptions, setNewQuestionOptions] = useState<
-    EventRegistrationFormMultipleChoiceOption[]
-  >([]);
-  const [newQuestionType, setNewQuestionType] = useState(-1);
+  const [newQuestionOptions, setNewQuestionOptions] = useState('');
+  const [newQuestionType, setNewQuestionType] = useState(
+    EventQuestionType.INVALID,
+  );
 
   const [questions, setQuestions] = useState<EventRegistrationFormQuestion[]>(
     [],
@@ -204,8 +204,43 @@ export default function FormeditorPage({
     setQuestions(questions.filter((q) => q.id !== id));
   };
 
+  const openModalLoadQuestion = (
+    question: EventRegistrationFormQuestion,
+    withIndex: boolean,
+  ): void => {
+    setNewQuestion({
+      ...question,
+      ...(!withIndex && { id: 'pseudo'.concat(newId.toString()) }),
+    });
+    if (!withIndex) setNewId(newId + 1);
+    if (question.metadata.type === 'text') {
+      setNewQuestionType(EventQuestionType.TEXT);
+    } else if (
+      question.metadata.type === 'multiple_choice' &&
+      !(question.metadata as EventRegistrationFormMultipleChoiceQuestion)
+        .multipleAnswers
+    ) {
+      setNewQuestionType(EventQuestionType.RADIOBUTTON);
+      setNewQuestionOptions(
+        (question.metadata as EventRegistrationFormMultipleChoiceQuestion).options
+          .map((o) => o.text)
+          .join('\n'),
+      );
+    } else if (
+      question.metadata.type === 'multiple_choice' &&
+      (question.metadata as EventRegistrationFormMultipleChoiceQuestion)
+        .multipleAnswers
+    ) {
+      setNewQuestionType(EventQuestionType.CHECKBOX);
+      setNewQuestionOptions(
+        (question.metadata as EventRegistrationFormMultipleChoiceQuestion).options
+          .map((o) => o.text)
+          .join('\n'),
+      );
+    }
+  };
   const openModalNewQuestion = (): void => {
-    setNewQuestionType(-1);
+    setNewQuestionType(EventQuestionType.INVALID);
     onOpen();
   };
 
@@ -230,47 +265,50 @@ export default function FormeditorPage({
       },
     } as EventRegistrationFormQuestion);
   };
-  const setNewQuestionOptionText = (id: string, v: string): void => {
-    const newOptions = newQuestionOptions.map((q) => {
-      if (q.id !== id) return q;
-      return {
-        id: q.id,
-        text: v,
-      };
-    });
-    const emptyCount = newOptions.reduce((acc, curr) => {
-      return acc + (curr.text.length === 0 ? 1 : 0);
-    }, 0);
-    if (emptyCount === 0) {
-      newOptions.push({ id: newId.toString(), text: '' });
-      setNewId(newId + 1);
-    }
-    setNewQuestionOptions(newOptions);
+
+  const transformTextToId = (text: string): string => {
+    const ret = text.toLowerCase().trim().replace(/ /g, '-');
+    return ret;
   };
-  const handleDeleteOption = (id: string): void => {
-    if (newQuestionOptions.length === 1) {
-      setNewQuestionOptions([{ id: newQuestionOptions[0].id, text: '' }]);
-    } else {
-      setNewQuestionOptions(newQuestionOptions.filter((q) => q.id !== id));
-    }
-  };
+
   const handleNewQuestion = (): void => {
-    setQuestions([
-      ...questions.filter((t) => t.id !== newQuestion?.id),
-      {
+    const newQuestionOptionsArray = newQuestionOptions.split('\n');
+    const duplicates = newQuestionOptionsArray.filter(
+      (item, index) => newQuestionOptionsArray.indexOf(item) !== index,
+    );
+    if (duplicates.length === 0) {
+      const modifiedQuestion = {
         ...newQuestion,
         metadata: {
           ...newQuestion?.metadata,
           ...(newQuestion?.metadata.type === 'multiple_choice' && {
-            options: newQuestionOptions.filter((q) => q.text.length > 0),
+            options: newQuestionOptions.split('\n').map((o) => {
+              return {
+                id: transformTextToId(o),
+                text: o,
+              };
+            }),
           }),
         },
-      } as EventRegistrationFormQuestion,
-    ]);
-    onClose();
+      } as EventRegistrationFormQuestion;
+      const index = questions.findIndex((t) => t.id === newQuestion?.id);
+      if (index === -1) {
+        setQuestions([...questions, modifiedQuestion]);
+      } else {
+        setQuestions(
+          questions.map((t) => {
+            if (t.id !== newQuestion?.id) return t;
+            return modifiedQuestion;
+          }),
+        );
+      }
+      onClose();
+    } else {
+      makeToast('Hiba', true, `Azonos nevű opciók: ${duplicates.join(', ')}`);
+    }
   };
 
-  const handleSubmit = async (): Promise<void> => {
+  const handleSubmit = (): void => {
     getModifyFormMutation(event?.id ?? getCurrentEventData?.events_getOne.id, {
       questions: questions.map((q) => {
         return {
@@ -286,14 +324,22 @@ export default function FormeditorPage({
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <Box as="form" minWidth="50%">
+        <Box as="form" width="80%">
           <Grid
-            gridTemplateColumns={['1fr', null, '4fr 4fr 1fr']}
+            gridTemplateColumns={['1fr', null, '4fr 4fr 7rem']}
             rowGap={['0', null, '1rem']}
           >
             {questions.map((q, idx) => (
               <React.Fragment key={q.id}>
-                <Box>{q.question}</Box>
+                <Box
+                  mt={[4, null, 0]}
+                  fontWeight="bold"
+                  mb={[2, null, 0]}
+                  fontSize={['1.25rem', null, '1rem']}
+                  textAlign={['center', null, 'left']}
+                >
+                  {q.question}
+                </Box>
                 {q.metadata.type === 'text' && (
                   <Input
                     mb={['0.5rem', null, '0']}
@@ -341,14 +387,16 @@ export default function FormeditorPage({
                       )}
                     </RadioGroup>
                   )}
-                <Flex
+                <Grid
                   ml={[0, null, 4]}
-                  flexDir={['row', null, 'column']}
-                  justifyContent={['space-between', null, 'center']}
+                  mt={[1, null, 0]}
+                  gridTemplateColumns={['repeat(4, 1fr)', null, '1fr 1fr']}
+                  columnGap={['1rem', null, 0]}
                 >
                   <Button
-                    width={['25%', null, '1rem']}
-                    mb={2}
+                    width={[null, null, '2rem']}
+                    px="0.5rem"
+                    mb={[null, null, 2]}
                     text="U"
                     onClick={(): void => {
                       if (idx !== 0) {
@@ -356,10 +404,12 @@ export default function FormeditorPage({
                       }
                     }}
                     backgroundColor={idx === 0 ? 'gray.300' : 'white'}
+                    cursor={idx === 0 ? 'default' : 'pointer'}
                   />
                   <Button
-                    width={['25%', null, '1rem']}
-                    mb={2}
+                    width={[null, null, '2rem']}
+                    px="0.5rem"
+                    mb={[null, null, 2]}
                     text="D"
                     onClick={(): void => {
                       if (idx !== questions.length - 1) {
@@ -369,15 +419,30 @@ export default function FormeditorPage({
                     backgroundColor={
                       idx === questions.length - 1 ? 'gray.300' : 'white'
                     }
+                    cursor={
+                      idx === questions.length - 1 ? 'default' : 'pointer'
+                    }
                   />
                   <Button
-                    width={['25%', null, '1rem']}
-                    mb={2}
+                    width={[null, null, '2rem']}
+                    px="0.5rem"
+                    mb={[null, null, 2]}
+                    text="E"
+                    onClick={(): void => {
+                      openModalLoadQuestion(q, true);
+                      onOpen();
+                    }}
+                    gridArea={[null, null, '1 / 2 / 1 / 2']}
+                  />
+                  <Button
+                    width={[null, null, '2rem']}
+                    px="0.5rem"
+                    mb={[null, null, 2]}
                     text="X"
                     onClick={(): void => handleDeleteQuestion(q.id)}
                     backgroundColor="red.500"
                   />
-                </Flex>
+                </Grid>
               </React.Fragment>
             ))}
           </Grid>
@@ -421,14 +486,14 @@ export default function FormeditorPage({
               <TabPanels>
                 <TabPanel>
                   <Flex flexDir="column" alignItems="center">
-                    {newQuestionType === -1 && (
+                    {newQuestionType === EventQuestionType.INVALID && (
                       <>
                         <Button
                           width="45%"
                           text="Szöveges válasz"
                           mb={4}
                           onClick={(): void => {
-                            setNewQuestionType(0);
+                            setNewQuestionType(EventQuestionType.TEXT);
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
                               isRequired: false,
@@ -446,7 +511,7 @@ export default function FormeditorPage({
                           text="Radio buttons"
                           mb={4}
                           onClick={(): void => {
-                            setNewQuestionType(1);
+                            setNewQuestionType(EventQuestionType.RADIOBUTTON);
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
                               isRequired: false,
@@ -457,10 +522,8 @@ export default function FormeditorPage({
                                 type: 'multiple_choice',
                               } as EventRegistrationFormMultipleChoiceQuestion,
                             } as EventRegistrationFormQuestion);
-                            setNewQuestionOptions([
-                              { id: (newId + 1).toString(), text: '' },
-                            ]);
-                            setNewId(newId + 2);
+                            setNewQuestionOptions('');
+                            setNewId(newId + 1);
                           }}
                         />
                         <Button
@@ -468,7 +531,7 @@ export default function FormeditorPage({
                           text="Checkbox"
                           mb={4}
                           onClick={(): void => {
-                            setNewQuestionType(2);
+                            setNewQuestionType(EventQuestionType.CHECKBOX);
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
                               isRequired: false,
@@ -479,15 +542,13 @@ export default function FormeditorPage({
                                 type: 'multiple_choice',
                               } as EventRegistrationFormMultipleChoiceQuestion,
                             } as EventRegistrationFormQuestion);
-                            setNewQuestionOptions([
-                              { id: (newId + 1).toString(), text: '' },
-                            ]);
-                            setNewId(newId + 2);
+                            setNewQuestionOptions('');
+                            setNewId(newId + 1);
                           }}
                         />
                       </>
                     )}
-                    {newQuestionType !== -1 && (
+                    {newQuestionType !== EventQuestionType.INVALID && (
                       <Box width="100%">
                         <Box>Kérdés</Box>
                         <Input
@@ -499,7 +560,7 @@ export default function FormeditorPage({
                             )
                           }
                         />
-                        {newQuestionType === 0 && (
+                        {newQuestionType === EventQuestionType.TEXT && (
                           <Box>
                             <Box>Max hossz</Box>
                             <Input
@@ -519,62 +580,30 @@ export default function FormeditorPage({
                             />
                           </Box>
                         )}
-                        {newQuestionType === 1 && (
+                        {newQuestionType === EventQuestionType.RADIOBUTTON && (
                           <Box>
                             <Box>Lehetőségek</Box>
-                            <Box>
-                              {newQuestionOptions.map((o) => (
-                                <Flex key={o.id} mb={2}>
-                                  <Input
-                                    value={o.text}
-                                    onChange={(e: React.FormEvent): void =>
-                                      setNewQuestionOptionText(
-                                        o.id,
-                                        (e.target as HTMLInputElement).value,
-                                      )
-                                    }
-                                  />
-                                  <Button
-                                    width={['25%', null, '1rem']}
-                                    ml={4}
-                                    text="X"
-                                    onClick={(): void =>
-                                      handleDeleteOption(o.id)
-                                    }
-                                    backgroundColor="red.500"
-                                  />
-                                </Flex>
-                              ))}
-                            </Box>
+                            <Textarea
+                              value={newQuestionOptions}
+                              onChange={(e: React.FormEvent): void => {
+                                setNewQuestionOptions(
+                                  (e.target as HTMLInputElement).value,
+                                );
+                              }}
+                            />
                           </Box>
                         )}
-                        {newQuestionType === 2 && (
+                        {newQuestionType === EventQuestionType.CHECKBOX && (
                           <Box>
                             <Box>Lehetőségek</Box>
-                            <Box>
-                              {newQuestionOptions.map((o) => (
-                                <Flex key={o.id} mb={2}>
-                                  <Input
-                                    value={o.text}
-                                    onChange={(e: React.FormEvent): void =>
-                                      setNewQuestionOptionText(
-                                        o.id,
-                                        (e.target as HTMLInputElement).value,
-                                      )
-                                    }
-                                  />
-                                  <Button
-                                    width={['25%', null, '1rem']}
-                                    ml={4}
-                                    text="X"
-                                    onClick={(): void =>
-                                      handleDeleteOption(o.id)
-                                    }
-                                    backgroundColor="red.500"
-                                  />
-                                </Flex>
-                              ))}
-                            </Box>
+                            <Textarea
+                              value={newQuestionOptions}
+                              onChange={(e: React.FormEvent): void => {
+                                setNewQuestionOptions(
+                                  (e.target as HTMLInputElement).value,
+                                );
+                              }}
+                            />
                           </Box>
                         )}
                         <Box>Kötelező</Box>
@@ -597,7 +626,37 @@ export default function FormeditorPage({
                   </Flex>
                 </TabPanel>
                 <TabPanel>
-                  <Box>b</Box>
+                  <Box>
+                    {getTemplatesData?.events_getRegistrationFormTemplates.nodes.map(
+                      (t) => (
+                        <Box
+                          key={t.id}
+                          boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
+                          borderRadius="5px"
+                          width="100%"
+                          py={1}
+                          px={2}
+                          mb={4}
+                          cursor="pointer"
+                          onClick={(): void => {
+                            openModalLoadQuestion(t, false);
+                            setTabIndex(0);
+                          }}
+                        >
+                          <Box>{t.question}</Box>
+                          {t.metadata.type === 'multiple_choice' && (
+                            <Box ml={2}>
+                              {(t.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
+                                (o) => (
+                                  <Box key={o.id}>{o.text}</Box>
+                                ),
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                      ),
+                    )}
+                  </Box>
                 </TabPanel>
               </TabPanels>
             </Tabs>
@@ -612,7 +671,7 @@ export default function FormeditorPage({
                 width={['100%', null, '45%']}
                 text="Vissza"
                 onClick={(): void => {
-                  setNewQuestionType(-1);
+                  setNewQuestionType(EventQuestionType.INVALID);
                 }}
               />
               <Button
