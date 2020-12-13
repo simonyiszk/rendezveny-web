@@ -91,6 +91,15 @@ export interface EventRegistrationFormMultipleChoiceOption {
   id: string;
   text: string;
 }
+export interface EventRegistrationFormInput {
+  questions: EventRegistrationFormQuestionInput[];
+}
+export interface EventRegistrationFormQuestionInput {
+  id: string;
+  isRequired: boolean;
+  metadata: string;
+  question: string;
+}
 
 // ANSWERS
 export interface EventRegistrationFormAnswers {

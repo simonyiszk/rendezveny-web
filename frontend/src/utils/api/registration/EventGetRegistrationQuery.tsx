@@ -40,12 +40,13 @@ interface QueryResult {
   events_getOne: Event;
 }
 export const useEventGetRegistrationQuery = (
-  cb: (data: QueryResult) => void,
+  cb?: (data: QueryResult) => void,
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(
     eventGetRegistrationQuery,
     {
       onCompleted: cb,
+      fetchPolicy: 'cache-and-network',
     },
   );
   return [getQuery, data];

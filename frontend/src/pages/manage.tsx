@@ -7,6 +7,7 @@ import { Layout } from '../components/Layout';
 import LinkButton from '../components/LinkButton';
 import Loading from '../components/Loading';
 import DetailsPage from '../pages-dynamic/manage/details';
+import FormeditorPage from '../pages-dynamic/manage/formeditor';
 import HRTablePage from '../pages-dynamic/manage/hrtable';
 import HRTableNewPage from '../pages-dynamic/manage/hrtable/new';
 import EventManagePage from '../pages-dynamic/manage/manage';
@@ -26,6 +27,7 @@ export default function ManagePage(): JSX.Element {
       <DetailsPage path="/:uniqueName/details" />
       <HRTableNewPage path="/:uniqueName/hrtable/new" />
       <HRTablePage path="/:uniqueName/hrtable" />
+      <FormeditorPage path="/:uniqueName/formeditor" />
       <EventManagePage path="/:uniqueName" />
       <ManageBrowsePage default />
     </Router>

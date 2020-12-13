@@ -174,6 +174,17 @@ export default function EventPage({
             state={{ event: event ?? getCurrentEventData?.events_getOne }}
           />
         </ProtectedComponent>
+        <ProtectedComponent access={accessOrg}>
+          <LinkButton
+            text="Regisztrációs form"
+            width={['100%', null, '30rem']}
+            mb="1rem"
+            to={`/manage/${
+              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+            }/formeditor`}
+            state={{ event: event ?? getCurrentEventData?.events_getOne }}
+          />
+        </ProtectedComponent>
         <ProtectedComponent access={accessChiefCMAdmin}>
           <Button
             text="Esemény törlése"
