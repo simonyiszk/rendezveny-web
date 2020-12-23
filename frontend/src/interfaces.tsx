@@ -27,6 +27,7 @@ export interface Event {
   };
   selfRelation: EventRelation;
   selfRelation2: EventRelation;
+  alreadyRegistered: number;
 }
 export interface HistoryYears {
   [year: string]: Event[];

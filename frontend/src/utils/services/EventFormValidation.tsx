@@ -54,8 +54,11 @@ export function getRegEndValid(
 export function getPlaceValid(eventPlace: string): string[] {
   return eventPlace.length > 0 ? [] : ['Kötelező mező'];
 }
-export function getCapacityValid(eventCapacity: number): string[] {
-  return eventCapacity > 0
+export function getCapacityValid(eventCapacity: string): string[] {
+  return (!!eventCapacity &&
+    !Number.isNaN(parseInt(eventCapacity, 10)) &&
+    +eventCapacity > 0) ||
+    !eventCapacity
     ? []
     : ['A létszám korlátnak legalább 1-nek kell lennie'];
 }

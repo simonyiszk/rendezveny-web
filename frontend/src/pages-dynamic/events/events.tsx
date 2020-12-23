@@ -147,9 +147,14 @@ export default function EventShowPage({
         <Box fontWeight="bold" mr={1}>
           Résztvevők száma:
         </Box>
-        <Box>{`${(event ?? getCurrentEventData?.events_getOne)?.capacity} / ${
-          (event ?? getCurrentEventData?.events_getOne)?.capacity
+        <Box mr={1}>{`${
+          (event ?? getCurrentEventData?.events_getOne)?.alreadyRegistered || 0
         }`}</Box>
+        {(event ?? getCurrentEventData?.events_getOne)?.capacity > 0 && (
+          <Box>{`/ ${
+            (event ?? getCurrentEventData?.events_getOne)?.capacity
+          }`}</Box>
+        )}
       </Flex>
       <Box
         mt={4}

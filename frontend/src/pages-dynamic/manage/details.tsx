@@ -99,7 +99,9 @@ export default function DetailsPage({
   const [eventPlace, setEventPlace] = useState(event?.place || '');
   const [isPlaceValid, setPlaceValid] = useState<string[]>([]);
   const [eventClosed, setEventClosed] = useState(event?.isClosedEvent || false);
-  const [eventCapacity, setEventCapacity] = useState(event?.capacity || 0);
+  const [eventCapacity, setEventCapacity] = useState(
+    `${event?.capacity || ''}`,
+  );
   const [isCapacityValid, setCapacityValid] = useState<string[]>([]);
   const [regLink, setRegLink] = useState(event?.uniqueName || '');
   const [isReglinkValid, setReglinkValid] = useState<string[]>([]);
@@ -157,7 +159,7 @@ export default function DetailsPage({
     setEventRegEnd(new Date(queryData.events_getOne.registrationEnd));
     setEventPlace(queryData.events_getOne.place || '');
     setEventClosed(queryData.events_getOne.isClosedEvent || true);
-    setEventCapacity(queryData.events_getOne.capacity || 0);
+    setEventCapacity(`${queryData.events_getOne.capacity || ''}`);
     setRegLink(queryData.events_getOne.uniqueName || '');
     setApplication(queryData.events_getOne.registrationAllowed || true);
     setAllUsers(resultAllUser);
@@ -283,7 +285,7 @@ export default function DetailsPage({
         setRegStartValid(getRegStartValid(eventRegStart, eventStart));
         setRegEndValid(getRegEndValid(eventRegEnd, eventRegStart));
         setPlaceValid(getPlaceValid(eventPlace));
-        setCapacityValid(getCapacityValid(eventCapacity));
+        setCapacityValid(getCapacityValid(`${eventCapacity}`));
         break;
       case 2:
         setChiefOrganizersValid(getChiefOrganizersValid(chiefOrganizers));
@@ -323,7 +325,7 @@ export default function DetailsPage({
         organizers.concat(chiefOrganizers).map((o) => o.id),
         chiefOrganizers.map((o) => o.id),
         eventClosed,
-        eventCapacity,
+        parseInt(eventCapacity, 10) || 0,
         regLink,
         application,
         organizerClubs.map((c) => c.id),
@@ -476,7 +478,6 @@ export default function DetailsPage({
                     <ReactQuill
                       value={eventDesc || ''}
                       onChange={(v): void => {
-                        console.log(v);
                         setEventDesc(v);
                       }}
                       style={{
@@ -658,14 +659,16 @@ export default function DetailsPage({
                     <Input
                       name="capacity"
                       type="number"
+                      placeholder="Korlátlan"
                       value={eventCapacity}
                       isInvalid={isCapacityValid.length > 0}
                       onChange={(e: React.FormEvent): void => {
-                        const v =
-                          parseInt((e.target as HTMLInputElement).value, 10) ||
-                          0;
-                        setEventCapacity(v);
-                        setCapacityValid(getCapacityValid(v));
+                        setEventCapacity((e.target as HTMLInputElement).value);
+                        setCapacityValid(
+                          getCapacityValid(
+                            (e.target as HTMLInputElement).value,
+                          ),
+                        );
                       }}
                     />
                     <Box>

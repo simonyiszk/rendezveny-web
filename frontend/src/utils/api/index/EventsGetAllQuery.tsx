@@ -16,6 +16,7 @@ export const eventGetAllQuery = gql`
         registrationEnd
         uniqueName
         capacity
+        alreadyRegistered
       }
     }
     registeredEvents: events_getAll(isRegisteredUpcoming: true) {
@@ -30,6 +31,7 @@ export const eventGetAllQuery = gql`
         registrationEnd
         uniqueName
         capacity
+        alreadyRegistered
       }
     }
     availableEvents: events_getAll(canRegisterToUpcoming: true) {
@@ -44,6 +46,7 @@ export const eventGetAllQuery = gql`
         registrationEnd
         uniqueName
         capacity
+        alreadyRegistered
       }
     }
   }
