@@ -476,10 +476,8 @@ export default function DetailsPage({
                   <Label>Esemény leírása</Label>
                   <Flex gridColumn="1/-1" minHeight="15rem" flexDir="column">
                     <ReactQuill
-                      value={eventDesc || ''}
-                      onChange={(v): void => {
-                        setEventDesc(v);
-                      }}
+                      value={eventDesc}
+                      onChange={setEventDesc}
                       style={{
                         height: '100%',
                         flexGrow: 1,
@@ -679,6 +677,19 @@ export default function DetailsPage({
                       ))}
                     </Box>
                   </Box>
+                  <Label>Jelentkezés engedélyezve</Label>
+                  <Select
+                    name="application"
+                    value={application ? 'Igen' : 'Nem'}
+                    onChange={(e: React.FormEvent): void => {
+                      setApplication(
+                        (e.target as HTMLInputElement).value === 'Igen',
+                      );
+                    }}
+                  >
+                    <option value="Igen">Igen</option>
+                    <option value="Nem">Nem</option>
+                  </Select>
                 </Grid>
                 <Flex
                   justifyContent={['center', null, 'space-between']}
