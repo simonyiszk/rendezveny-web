@@ -558,6 +558,15 @@ export class EventResolver {
 		return true;
 	}
 
+	@ResolveField(nameof<EventDTO>('alreadyRegistered'), _ => Number)
+	@UseFilters(BusinessExceptionFilter)
+	public async getAlreadyRegistered(
+		@Parent() eventDTO: EventDTO
+	): Promise<number> {
+		const event = await this.eventManager.getEventById(eventDTO.id);
+		return this.eventManager.getAlreadyRegistered(event);
+	}
+
 	private returnEventRelationDTO(relation: EventRelation): EventRelationDTO {
 		return {
 			name: relation.user.name ?? '',

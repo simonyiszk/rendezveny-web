@@ -114,6 +114,12 @@ export class EventDTO {
 		nullable: true
 	})
 	public hrTable?: HRTableDTO;
+
+	@Field(_ => Number, {
+		description: 'Number of already registered users',
+		nullable: true
+	})
+	public alreadyRegistered?: number;
 }
 
 @ObjectType({

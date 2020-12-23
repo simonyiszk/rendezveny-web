@@ -644,6 +644,12 @@ export class EventManager extends BaseManager {
 		return (await this.returnRelatedUsers(event, users2, [], users.length)).relations;
 	}
 
+	public async getAlreadyRegistered(
+		event: Event
+	): Promise<number> {
+		return this.registrationRepository.count({ event });
+	}
+
 	private async returnRelatedUsers(
 		event: Event, users: User[], temporaryIdentities: TemporaryIdentity[], count: number
 	): Promise<{ relations: EventRelation[], count: number }> {
