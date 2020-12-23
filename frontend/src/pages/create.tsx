@@ -56,7 +56,7 @@ export default function CreatePage(): JSX.Element {
 
   const [eventName, setEventName] = useState('');
   const [isNameValid, setNameValid] = useState<string[]>([]);
-  const [eventDesc, setEventDesc] = useState('');
+  const [eventDesc, setEventDesc] = useState('<p><br></p>');
   const [eventStart, setEventStart] = useState(new Date());
   const [isStartValid, setStartValid] = useState<string[]>([]);
   const [eventEnd, setEventEnd] = useState(new Date());
@@ -68,11 +68,11 @@ export default function CreatePage(): JSX.Element {
   const [eventPlace, setEventPlace] = useState('');
   const [isPlaceValid, setPlaceValid] = useState<string[]>([]);
   const [eventClosed, setEventClosed] = useState(false);
-  const [eventCapacity, setEventCapacity] = useState('0');
+  const [eventCapacity, setEventCapacity] = useState('');
   const [isCapacityValid, setCapacityValid] = useState<string[]>([]);
   const [regLink, setRegLink] = useState('');
   const [isReglinkValid, setReglinkValid] = useState<string[]>([]);
-  const [application, setApplication] = useState(false);
+  const [application, setApplication] = useState(true);
   const [organizerClubs, setOrganizerClubs] = useState<Club[]>([]);
   const [isOrganizerClubsValid, setOrganizerClubsValid] = useState<string[]>(
     [],
