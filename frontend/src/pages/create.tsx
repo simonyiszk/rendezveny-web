@@ -68,7 +68,7 @@ export default function CreatePage(): JSX.Element {
   const [eventPlace, setEventPlace] = useState('');
   const [isPlaceValid, setPlaceValid] = useState<string[]>([]);
   const [eventClosed, setEventClosed] = useState(false);
-  const [eventCapacity, setEventCapacity] = useState(0);
+  const [eventCapacity, setEventCapacity] = useState('0');
   const [isCapacityValid, setCapacityValid] = useState<string[]>([]);
   const [regLink, setRegLink] = useState('');
   const [isReglinkValid, setReglinkValid] = useState<string[]>([]);
@@ -217,7 +217,7 @@ export default function CreatePage(): JSX.Element {
         eventPlace,
         chiefOrganizers.map((o) => o.id),
         eventClosed,
-        eventCapacity,
+        parseInt(eventCapacity, 10) || 0,
         regLink,
         application,
         organizerClubs.map((c) => c.id),
@@ -549,14 +549,16 @@ export default function CreatePage(): JSX.Element {
                     <Input
                       name="capacity"
                       type="number"
+                      placeholder="Korlátlan"
                       value={eventCapacity}
                       isInvalid={isCapacityValid.length > 0}
                       onChange={(e: React.FormEvent): void => {
-                        const v =
-                          parseInt((e.target as HTMLInputElement).value, 10) ||
-                          0;
-                        setEventCapacity(v);
-                        setCapacityValid(getCapacityValid(v));
+                        setEventCapacity((e.target as HTMLInputElement).value);
+                        setCapacityValid(
+                          getCapacityValid(
+                            (e.target as HTMLInputElement).value,
+                          ),
+                        );
                       }}
                     />
                     <Box>

@@ -285,7 +285,7 @@ export default function DetailsPage({
         setRegStartValid(getRegStartValid(eventRegStart, eventStart));
         setRegEndValid(getRegEndValid(eventRegEnd, eventRegStart));
         setPlaceValid(getPlaceValid(eventPlace));
-        setCapacityValid(getCapacityValid(`${eventCapacity}`));
+        setCapacityValid(getCapacityValid(eventCapacity));
         break;
       case 2:
         setChiefOrganizersValid(getChiefOrganizersValid(chiefOrganizers));
