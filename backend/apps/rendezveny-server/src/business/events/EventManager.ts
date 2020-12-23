@@ -5,7 +5,7 @@ import { Event } from '../../data/models/Event';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { EventDoesNotExistsException } from './exceptions/EventDoesNotExistsException';
 import { checkArgument } from '../../utils/preconditions';
-import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, isPositive, minDate } from 'class-validator';
+import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, isNegative, minDate } from 'class-validator';
 import { Organizer } from '../../data/models/Organizer';
 import { OrganizerNotificationSettings } from '../../data/models/OrganizerNotificationSettings';
 import { EventStartDateValidationException } from './exceptions/EventStartDateValidationException';
@@ -235,9 +235,7 @@ export class EventManager extends BaseManager {
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		EventManager.validateEvent({
-			...settings, name, uniqueName, description, isClosedEvent, hostingClubs
-		});
+		EventManager.validateEvent(settings);
 		checkArgument(
 			isArray(chiefOrganizers) && arrayMinSize(chiefOrganizers, 1),
 			EventChiefOrganizersValidationException
@@ -689,34 +687,15 @@ export class EventManager extends BaseManager {
 		return { relations: [...relations, ...temporaryRelations], count: count };
 	}
 
-	private static validateDatePair(start?: Date, end?: Date): void {
-		checkArgument(
-			!isDefined(start) || isDateString(start!.toISOString()), EventStartDateValidationException
-		);
-		checkArgument(
-			!isDefined(end) || isDateString(end!.toISOString()), EventEndDateValidationException
-		);
+	private static validateDates(start?: Date, end?: Date, regStart?: Date, regEnd?: Date): void {
+		checkArgument(isDateString(start!.toISOString()), EventStartDateValidationException);
+		checkArgument(isDateString(end!.toISOString()), EventEndDateValidationException);
+		checkArgument(isDateString(regStart!.toISOString()), EventRegistrationStartDateValidationException);
+		checkArgument(isDateString(regEnd!.toISOString()), EventRegistrationEndDateValidationException);
 
-		checkArgument(
-			!(start && end) || minDate(end, start),
-			EventDateIntervalValidationException
-		);
-	}
-
-	private static validateRegistrationDatePair(
-		start?: Date, end?: Date
-	): void {
-		checkArgument(
-			!isDefined(start) || isDateString(start!.toISOString()), EventRegistrationStartDateValidationException
-		);
-		checkArgument(
-			!isDefined(end) || isDateString(end!.toISOString()), EventRegistrationEndDateValidationException
-		);
-
-		checkArgument(
-			!(start && end) || minDate(end, start),
-			EventRegistrationDateIntervalValidationException
-		);
+		checkArgument(!(start && end) || minDate(end, start), EventDateIntervalValidationException);
+		checkArgument(!(regStart) || minDate(start, regStart), EventRegistrationDateIntervalValidationException);
+		checkArgument(!(regStart && regEnd) || minDate(regEnd, regStart), EventRegistrationDateIntervalValidationException);
 	}
 
 	private static validateEvent(
@@ -745,7 +724,7 @@ export class EventManager extends BaseManager {
 		}
 		if(typeof settings.capacity === 'number') {
 			checkArgument(
-				!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
+				!isDefined(settings.capacity) || !isNegative(settings.capacity!), EventCapacityValidationException
 			);
 		}
 		if(settings.hostingClubs) {
@@ -754,7 +733,6 @@ export class EventManager extends BaseManager {
 				EventHostingClubsValidationException
 			);
 		}
-		EventManager.validateDatePair(settings.start, settings.end);
-		EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
+		EventManager.validateDates(settings.start, settings.end, settings.registrationStart, settings.registrationEnd);
 	}
 }
