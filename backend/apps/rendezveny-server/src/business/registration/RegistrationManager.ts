@@ -113,7 +113,7 @@ export class RegistrationManager {
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if(typeof event.capacity === 'number' && alreadyRegistered >= event.capacity) {
+		if(typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
 			throw new RegistrationLimitReachedException();
 		}
 
@@ -169,7 +169,7 @@ export class RegistrationManager {
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if(typeof event.capacity === 'number' && alreadyRegistered >= event.capacity) {
+		if(typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
 			throw new RegistrationLimitReachedException();
 		}
 
