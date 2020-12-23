@@ -63,7 +63,10 @@ export default function EventShowPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
-  if (getCurrentEventCalled && getCurrentEventLoading) {
+  if (
+    (!event && !getCurrentEventCalled) ||
+    (getCurrentEventCalled && getCurrentEventLoading)
+  ) {
     return <Loading />;
   }
 
@@ -140,7 +143,11 @@ export default function EventShowPage({
               ' -'}
           </Box>
           {(event ?? getCurrentEventData?.events_getOne)?.registrationEnd && (
-            <Box ml={1}>{convertDateToText(event.registrationEnd)}</Box>
+            <Box ml={1}>
+              {convertDateToText(
+                (event ?? getCurrentEventData?.events_getOne)?.registrationEnd,
+              )}
+            </Box>
           )}
         </Flex>
       </Flex>
