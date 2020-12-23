@@ -122,17 +122,9 @@ export default function EventShowPage({
         </Box>
         <Box>{(event ?? getCurrentEventData?.events_getOne)?.place}</Box>
       </Flex>
-      <Box mt={2} className="quill-container-custom">
-        <ReactQuill
-          value={(event ?? getCurrentEventData?.events_getOne)?.description}
-          style={{ fontFamily: 'Montserrat' }}
-          readOnly
-          theme="bubble"
-        />
-      </Box>
       <Flex mt={2}>
         <Box fontWeight="bold" mr={1}>
-          Regisztrációs időszak:
+          Regisztráció:
         </Box>
         <Flex flexDir={['column', 'row']}>
           <Box>
@@ -152,19 +144,28 @@ export default function EventShowPage({
         </Flex>
       </Flex>
       <Flex flexDir={['column', 'row']}>
-        <Flex mr={1}>
-          <Box fontWeight="bold" mr={1}>
-            Regisztráltak száma:
-          </Box>
-          <Box>{(event ?? getCurrentEventData?.events_getOne)?.capacity}</Box>
-        </Flex>
-        <Flex>
-          <Box fontWeight="bold" mr={1}>
-            Férőhely:
-          </Box>
-          <Box>{(event ?? getCurrentEventData?.events_getOne)?.capacity}</Box>
-        </Flex>
+        <Box fontWeight="bold" mr={1}>
+          Résztvevők száma:
+        </Box>
+        <Box>{`${(event ?? getCurrentEventData?.events_getOne)?.capacity} / ${
+          (event ?? getCurrentEventData?.events_getOne)?.capacity
+        }`}</Box>
       </Flex>
+      <Box
+        mt={4}
+        className="quill-container-custom"
+        px={4}
+        py={2}
+        boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
+        borderRadius="5px"
+      >
+        <ReactQuill
+          value={(event ?? getCurrentEventData?.events_getOne)?.description}
+          style={{ fontFamily: 'Montserrat' }}
+          readOnly
+          theme="bubble"
+        />
+      </Box>
       <Flex justifyContent="center" mt={4}>
         <LinkButton
           text="Regisztráció"
