@@ -91,6 +91,12 @@ export default function EventShowPage({
     })}`;
   };
 
+  const hasDescription = (): boolean => {
+    const desc = (event ?? getCurrentEventData?.events_getOne)?.description;
+    const cleaned = desc.replace(/<\/?[^>]+(>|$)/g, "");
+    return cleaned.length > 0;
+  }
+
   return (
     <Layout>
       <Heading textAlign="center" mb="2rem">
@@ -156,7 +162,7 @@ export default function EventShowPage({
           }`}</Box>
         )}
       </Flex>
-      <Box
+      {hasDescription() && <Box
         mt={4}
         className="quill-container-custom"
         px={4}
@@ -170,7 +176,7 @@ export default function EventShowPage({
           readOnly
           theme="bubble"
         />
-      </Box>
+      </Box>}
       <Flex justifyContent="center" mt={4}>
         <LinkButton
           text="Regisztráció"
