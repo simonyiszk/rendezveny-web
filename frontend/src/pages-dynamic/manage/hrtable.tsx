@@ -16,6 +16,7 @@ import {
   useHRTableUnRegisterMutation,
 } from '../../utils/api/hrtable/HRTableOrganizerSelfMutation';
 import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
+import { useProfileGetNameQuery } from '../../utils/api/profile/UserGetSelfQuery';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
@@ -42,6 +43,12 @@ export default function HRTablePage({
   const [organizer, setOrganizer] = useState<EventOrganizer>();
   const [signUps, setSignUps] = useState<string[]>([]);
   const [signOffs, setSignOffs] = useState<string[]>([]);
+
+  const {
+    called: getSelfNameCalled,
+    loading: getSelfNameLoading,
+    data: getSelfNameData,
+  } = useProfileGetNameQuery();
 
   const [
     getHRTable,
@@ -121,7 +128,8 @@ export default function HRTablePage({
 
   if (
     (getCurrentEventCalled && getCurrentEventLoading) ||
-    (getHRTableCalled && getHRTableLoading)
+    (getHRTableCalled && getHRTableLoading) ||
+    (getSelfNameCalled && getSelfNameLoading)
   ) {
     return <Loading />;
   }
@@ -184,6 +192,7 @@ export default function HRTablePage({
         hrtasks={hrTable?.tasks ?? []}
         hrcb={{ signUps, signOffs, signUpCb, signOffCb }}
         ownSegmentIds={organizer?.hrSegmentIds ?? []}
+        user={getSelfNameData?.users_getSelf}
       />
       <Flex
         justifyContent={['center', null, 'space-between']}

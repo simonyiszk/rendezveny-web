@@ -1,14 +1,21 @@
 import { Box, BoxProps, Flex, Grid } from '@chakra-ui/core';
 import React from 'react';
 
-import { HRCallback, HRSegment, HRTask } from '../interfaces';
+import {
+  HRCallback,
+  HREditCallback,
+  HRSegment,
+  HRTask,
+  User,
+} from '../interfaces';
 import HRTaskComp from './HRTaskComp';
 
 interface Props extends BoxProps {
   hrtasks: HRTask[];
   hrcb?: HRCallback;
-  hredit?: (task: HRTask) => void;
+  hredit?: HREditCallback;
   ownSegmentIds: string[];
+  user: User | undefined;
 }
 
 export default function HRTableComp({
@@ -16,6 +23,7 @@ export default function HRTableComp({
   hrcb,
   hredit,
   ownSegmentIds,
+  user,
 }: Props): JSX.Element {
   const getAllSegment = (): HRSegment[] => {
     return hrtasks.reduce((acc, curr) => {
@@ -86,11 +94,11 @@ export default function HRTableComp({
       <Box>HR Tábla</Box>
       <Flex flexDir="column" mt={8}>
         <Grid
-          templateColumns={`5rem ${getNumOfColumns() * 5}rem`}
-          rowGap="1rem"
+          templateColumns={`${getNumOfColumns() * 4}rem`}
+          rowGap={4}
           overflow="auto"
+          p={2}
         >
-          <Box>Pozíció</Box>
           <Grid templateColumns={`repeat(${getNumOfColumns()}, 1fr)`}>
             {generateTimeSequence().map((t) => (
               <Box key={t[0]}>
@@ -98,15 +106,21 @@ export default function HRTableComp({
               </Box>
             ))}
           </Grid>
-          {hrtasks.map((t) => (
+          {hrtasks.map((t, idx) => (
             <HRTaskComp
               key={t.id}
               hrtask={t}
               calc={calcPosByTimes}
               nCols={getNumOfColumns()}
               hrcb={hrcb}
-              hredit={hredit}
+              hredit={{
+                hrEdit: hredit?.hrEdit,
+                moveUp: idx !== 0 ? hredit?.moveUp : undefined,
+                moveDown:
+                  idx !== hrtasks.length - 1 ? hredit?.moveDown : undefined,
+              }}
               ownSegmentIds={ownSegmentIds}
+              user={user}
             />
           ))}
         </Grid>

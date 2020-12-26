@@ -170,18 +170,42 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
   };
 
   const handleNewTask = (): void => {
-    setTasks([
-      ...tasks.filter((t) => t.id !== newTask?.id),
-      {
-        id: newTask?.id,
-        name: newTask?.name,
-        segments: newTask?.segments,
-        isLocked: false,
-      } as HRTask,
-    ]);
+    const modifiedTask = {
+      id: newTask?.id,
+      name: newTask?.name,
+      segments: newTask?.segments,
+      isLocked: false,
+    } as HRTask;
+
+    const index = tasks.findIndex((t) => t.id === newTask?.id);
+    if (index === -1) {
+      setTasks([...tasks, modifiedTask]);
+    } else {
+      setTasks(
+        tasks.map((t) => {
+          if (t.id !== newTask?.id) return t;
+          return modifiedTask;
+        }),
+      );
+    }
     onClose();
   };
-
+  const moveUp = (task: HRTask): void => {
+    const movedTasks = [...tasks];
+    const idx = movedTasks.findIndex((x) => x.id === task.id);
+    const tmp = movedTasks[idx];
+    movedTasks[idx] = movedTasks[idx - 1];
+    movedTasks[idx - 1] = tmp;
+    setTasks(movedTasks);
+  };
+  const moveDown = (task: HRTask): void => {
+    const movedTasks = [...tasks];
+    const idx = movedTasks.findIndex((x) => x.id === task.id);
+    const tmp = movedTasks[idx];
+    movedTasks[idx] = movedTasks[idx + 1];
+    movedTasks[idx + 1] = tmp;
+    setTasks(movedTasks);
+  };
   const handleDeleteTask = (taskId: string): void => {
     setTasks(tasks.filter((t) => t.id !== taskId));
     onClose();
@@ -246,7 +270,7 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
     <Layout>
       <HRTableComp
         hrtasks={tasks}
-        hredit={openModalLoadTask}
+        hredit={{ hrEdit: openModalLoadTask, moveUp, moveDown }}
         ownSegmentIds={[]}
       />
       <Flex

@@ -1,7 +1,7 @@
-import { Box, BoxProps } from '@chakra-ui/core';
+import { Box, BoxProps, Flex } from '@chakra-ui/core';
 import React from 'react';
 
-import { HRCallback, HRSegment } from '../interfaces';
+import { HRCallback, HRSegment, User } from '../interfaces';
 
 interface Props extends BoxProps {
   hrsegment: HRSegment;
@@ -9,6 +9,7 @@ interface Props extends BoxProps {
   row: number;
   hrcb?: HRCallback;
   ownSegmentIds: string[];
+  user: User | undefined;
 }
 
 export default function HRSegmentComp({
@@ -17,6 +18,7 @@ export default function HRSegmentComp({
   row,
   hrcb,
   ownSegmentIds,
+  user,
 }: Props): JSX.Element {
   const [startPos, endPost] = calc(hrsegment.start, hrsegment.end);
   const getBGColor = (): string => {
@@ -31,13 +33,48 @@ export default function HRSegmentComp({
   const getNameOfOrganizers = (): string => {
     return hrsegment.organizers.map((o) => o.name).join(', ');
   };
-  const getText = (): string => {
-    if (!hrcb) return '';
+  const getInnerNodes = (): JSX.Element => {
+    if (!hrcb) return <Box />;
     if (hrcb.signUps.includes(hrsegment.id))
-      return '✓'.concat(getNameOfOrganizers());
+      return (
+        <>
+          {hrsegment.organizers.map((o) => {
+            return (
+              <Box key={o.userId} mr={1}>
+                {o.name}
+              </Box>
+            );
+          })}
+          <Box fontWeight="bold">{user?.name}</Box>
+        </>
+      );
     if (hrcb.signOffs.includes(hrsegment.id))
-      return 'X'.concat(getNameOfOrganizers());
-    return getNameOfOrganizers();
+      return (
+        <>
+          {hrsegment.organizers.map((o) => {
+            return (
+              <Box
+                key={o.userId}
+                textDecor={o.userId === user?.id ? 'line-through' : 'normal'}
+                mr={1}
+              >
+                {o.name}
+              </Box>
+            );
+          })}
+        </>
+      );
+    return (
+      <>
+        {hrsegment.organizers.map((o) => {
+          return (
+            <Box key={o.userId} mr={1}>
+              {o.name}
+            </Box>
+          );
+        })}
+      </>
+    );
   };
   const handleClick = (): void => {
     if (!hrcb) return;
@@ -45,17 +82,17 @@ export default function HRSegmentComp({
     else hrcb.signUpCb(hrsegment.id);
   };
   return (
-    <Box
+    <Flex
       style={{
         gridColumn: `${startPos + 1} / ${endPost + 1}`,
-        gridRow: `${row + 1} / ${row + 2}`,
+        gridRow: `${row + 2} / ${row + 3}`,
       }}
       backgroundColor={getBGColor()}
       minHeight="1.5rem"
       onClick={handleClick}
     >
-      {getText()}
-    </Box>
+      {getInnerNodes()}
+    </Flex>
   );
 }
 

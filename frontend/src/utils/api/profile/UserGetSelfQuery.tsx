@@ -30,3 +30,23 @@ export const useProfileGetSelfQuery = (
   });
   return getQuery;
 };
+
+export const profileGetNameQuery = gql`
+  query profileGetNameQuery {
+    users_getSelf {
+      id
+      name
+    }
+  }
+`;
+interface QueryResultL {
+  users_getSelf: User;
+}
+export const useProfileGetNameQuery = (
+  cb?: (data: QueryResultL) => void,
+): QueryResult<QueryResultL, OperationVariables> => {
+  const getQuery = useQuery<QueryResultL>(profileGetSelfQuery, {
+    onCompleted: cb,
+  });
+  return getQuery;
+};
