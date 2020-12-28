@@ -21,17 +21,19 @@ export default function HRSegmentComp({
   user,
 }: Props): JSX.Element {
   const [startPos, endPost] = calc(hrsegment.start, hrsegment.end);
+
+  const isSegmentFull = (): boolean => {
+    return hrsegment.capacity - hrsegment.organizers.length === 0;
+  };
+
   const getBGColor = (): string => {
-    if (hrcb && hrsegment.capacity - hrsegment.organizers.length === 0) {
+    if (hrcb && isSegmentFull()) {
       return 'simonyi';
     }
     if (hrsegment.isRequired) {
       return 'red.500';
     }
     return 'yellow.300';
-  };
-  const getNameOfOrganizers = (): string => {
-    return hrsegment.organizers.map((o) => o.name).join(', ');
   };
   const getInnerNodes = (): JSX.Element => {
     if (!hrcb) return <Box />;
@@ -79,7 +81,7 @@ export default function HRSegmentComp({
   const handleClick = (): void => {
     if (!hrcb) return;
     if (ownSegmentIds.includes(hrsegment.id)) hrcb.signOffCb(hrsegment.id);
-    else hrcb.signUpCb(hrsegment.id);
+    else if (!isSegmentFull()) hrcb.signUpCb(hrsegment.id);
   };
   return (
     <Flex
