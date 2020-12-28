@@ -30,7 +30,7 @@ import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import {
   isAdmin,
   isChiefOrganizer,
-  isClubManager,
+  isClubManagerOf,
   isOrganizer,
 } from '../../utils/token/TokenContainer';
 
@@ -64,7 +64,14 @@ export default function EventPage({
       error: getCurrentEventError,
       data: getCurrentEventData,
     },
-  ] = useEventGetInformationQuery();
+  ] = useEventGetInformationQuery((queryData) => {
+    setAccessOrg(isOrganizer());
+    setAccessChiefCMAdmin(
+      isChiefOrganizer() ||
+        isClubManagerOf(queryData.events_getOne.hostingClubs) ||
+        isAdmin(),
+    );
+  });
 
   const client = useApolloClient();
   const [
@@ -72,15 +79,15 @@ export default function EventPage({
     { error: eventTokenMutationErrorID },
   ] = useEventTokenMutationID(client, () => {
     setAccessOrg(isOrganizer());
-    setAccessChiefCMAdmin(isChiefOrganizer() || isClubManager() || isAdmin());
+    setAccessChiefCMAdmin(
+      isChiefOrganizer() || isClubManagerOf(event.hostingClubs) || isAdmin(),
+    );
   });
   const [
     getEventTokenMutationUN,
     { error: eventTokenMutationErrorUN },
   ] = useEventTokenMutationUN(client, () => {
     getCurrentEvent({ variables: { uniqueName } });
-    setAccessOrg(isOrganizer());
-    setAccessChiefCMAdmin(isChiefOrganizer() || isClubManager() || isAdmin());
   });
 
   const toast = useToast();

@@ -21,6 +21,10 @@ export const eventGetInformationQuery = gql`
       uniqueName
       capacity
       alreadyRegistered
+      hostingClubs {
+        id
+        name
+      }
     }
   }
 `;

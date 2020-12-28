@@ -17,6 +17,10 @@ export const eventGetAllQuery = gql`
         uniqueName
         capacity
         alreadyRegistered
+        hostingClubs {
+          id
+          name
+        }
       }
     }
     registeredEvents: events_getAll(isRegisteredUpcoming: true) {
@@ -32,6 +36,10 @@ export const eventGetAllQuery = gql`
         uniqueName
         capacity
         alreadyRegistered
+        hostingClubs {
+          id
+          name
+        }
       }
     }
     availableEvents: events_getAll(canRegisterToUpcoming: true) {
@@ -47,6 +55,10 @@ export const eventGetAllQuery = gql`
         uniqueName
         capacity
         alreadyRegistered
+        hostingClubs {
+          id
+          name
+        }
       }
     }
   }

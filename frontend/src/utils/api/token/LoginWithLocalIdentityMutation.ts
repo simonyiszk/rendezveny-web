@@ -6,7 +6,6 @@ import {
   useMutation,
 } from '@apollo/client';
 
-import { Membership } from '../../../interfaces';
 import { resetContext } from '../../token/ApolloClient';
 import { setAuthToken, setRoleAndClubs } from '../../token/TokenContainer';
 
@@ -41,9 +40,7 @@ export const useLoginMutation = (
         setAuthToken(data.login_withLocalIdentity.access);
         setRoleAndClubs(
           data.login_withLocalIdentity.role,
-          data.login_withLocalIdentity.memberships.map(
-            (m: Membership) => m.role,
-          ),
+          data.login_withLocalIdentity.memberships,
         );
         resetContext(client);
         if (cb) {

@@ -145,7 +145,7 @@ export interface Club {
 }
 export interface Membership {
   club: Club;
-  role: ClubRole;
+  role: string;
   user: User;
 }
 export enum ClubRole {
