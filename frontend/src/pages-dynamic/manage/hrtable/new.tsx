@@ -4,6 +4,7 @@ import {
   Box,
   Flex,
   Grid,
+  Heading,
   Input,
   Modal,
   ModalBody,
@@ -25,6 +26,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import Button from '../../../components/Button';
 import HRTableComp from '../../../components/HRTableComp';
 import { Layout } from '../../../components/Layout';
+import LinkButton from '../../../components/LinkButton';
 import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
 import {
   useCreateHRTableMutation,
@@ -100,7 +102,7 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
 
-  if (!event) {
+  if (!event || !event.uniqueName) {
     if (typeof window !== 'undefined') {
       navigate('/manage');
     }
@@ -268,6 +270,15 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
 
   return (
     <Layout>
+      <LinkButton
+        width={['100%', null, '45%']}
+        text="Vissza"
+        to={`/manage/${event?.uniqueName}/hrtable`}
+        state={{ event }}
+      />
+      <Heading fontSize="3xl" mt={4}>
+        HR Tábla szerkesztése
+      </Heading>
       <HRTableComp
         hrtasks={tasks}
         hredit={{ hrEdit: openModalLoadTask, moveUp, moveDown }}

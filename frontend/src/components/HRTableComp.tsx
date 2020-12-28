@@ -15,7 +15,7 @@ interface Props extends BoxProps {
   hrcb?: HRCallback;
   hredit?: HREditCallback;
   ownSegmentIds: string[];
-  user: User | undefined;
+  user?: User;
 }
 
 export default function HRTableComp({
@@ -91,7 +91,6 @@ export default function HRTableComp({
 
   return (
     <Box>
-      <Box>HR Tábla</Box>
       <Flex flexDir="column" mt={8}>
         <Grid
           templateColumns={`${getNumOfColumns() * 4}rem`}
@@ -132,4 +131,5 @@ export default function HRTableComp({
 HRTableComp.defaultProps = {
   hrcb: undefined,
   hredit: undefined,
+  user: undefined,
 };
