@@ -144,6 +144,10 @@ export class EventResolver {
 			description: 'The ids of the chief organizers',
 			type: () => [GraphQLString]
 		}) chiefOrganizerIds: string[],
+		@Args('organizerIds', {
+			description: 'The ids of the not chief organizers',
+			type: () => [GraphQLString],
+		}) organizerIds: string[],
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
@@ -183,8 +187,9 @@ export class EventResolver {
 			uniqueName,
 			description,
 			isClosedEvent,
-			await Promise.all(hostingClubIds.map(async id => this.clubManager.getClubById(accessContext, id))),
-			await Promise.all(chiefOrganizerIds.map(async id => this.userManager.getUserById(accessContext, id))),
+			hostingClubIds,
+			chiefOrganizerIds,
+			organizerIds,
 			{
 				start, end, registrationEnd, registrationStart, registrationAllowed, isDateOrTime, place, capacity
 			}

@@ -227,19 +227,20 @@ export class EventManager extends BaseManager {
 		uniqueName: string,
 		description: string,
 		isClosedEvent: boolean,
-		hostingClubs: Club[],
-		chiefOrganizers: User[],
+		hostingClubIds: string[],
+		chiefOrganizerIds: string[],
+		organizerIds: string[],
 		settings: {
 			place?: string, capacity?: number,
 			start?: Date, end?: Date, isDateOrTime?: boolean,
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		EventManager.validateEvent(settings);
-		checkArgument(
-			isArray(chiefOrganizers) && arrayMinSize(chiefOrganizers, 1),
-			EventChiefOrganizersValidationException
-		);
+		const hostingClubs = await this.clubRepository.findByIds(hostingClubIds);
+		const chiefOrganizers = await this.userRepository.findByIds(chiefOrganizerIds);
+		const organizers = await this.userRepository.findByIds(organizerIds);
+
+		EventManager.validateEvent({...settings, hostingClubs, chiefOrganizers});
 
 		if(!accessContext.isAdmin() && !hostingClubs.some(club => accessContext.isManagerOfClub(club))) {
 			throw new UnauthorizedException();
@@ -267,11 +268,19 @@ export class EventManager extends BaseManager {
 
 		await this.eventRepository.save(event);
 
-		const organizers = chiefOrganizers
+		const newOrganizers = organizers.filter(o => !chiefOrganizerIds.includes(o.id))
 			.map(user => new Organizer({
-				event: event, user: user, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
+				event: event, user: user, isChief: false,
+				notificationSettings: OrganizerNotificationSettings.ALL
 			}));
-		await this.organizerRepository.save(organizers);
+		await this.organizerRepository.save(newOrganizers);
+
+		const newChiefOrganizers = chiefOrganizers
+			.map(user => new Organizer({
+				event: event, user: user, isChief: true,
+				notificationSettings: OrganizerNotificationSettings.ALL
+			}));
+		await this.organizerRepository.save(newChiefOrganizers);
 
 		return event;
 	}
@@ -299,7 +308,7 @@ export class EventManager extends BaseManager {
 		const hostingClubs = settings.hostingClubIds
 			? await this.clubRepository.findByIds(settings.hostingClubIds)
 			: undefined;
-		EventManager.validateEvent(settings);
+		EventManager.validateEvent({...settings, hostingClubs});
 
 		const uniqueNameUsed = await this.eventRepository.findOne({
 			uniqueName: settings.uniqueName,
@@ -329,11 +338,14 @@ export class EventManager extends BaseManager {
 			await event.loadRelation(this.eventRepository, 'organizers');
 
 			const organizersToRemove = event.organizers
-				.filter(o => !settings.organizerIds!.includes(o.userId!));
+				.filter(o => !settings.organizerIds!.includes(o.userId!) &&
+				!settings.chiefOrganizerIds!.includes(o.userId!));
 
 			await this.organizerRepository.remove(organizersToRemove);
 
 			const newOrganizers = await Promise.all(settings.organizerIds
+				.filter(id => !settings.chiefOrganizerIds?.includes(id))
+				.filter(id => !event.organizers.filter(o => !o.isChief).map(o => o.userId).includes(id))
 				.map(async(userId) => {
 					if(event.organizers.map(o => o.userId).includes(userId)) {
 						const organizer = event.organizers.find(o => o.userId === userId)!;
@@ -351,8 +363,6 @@ export class EventManager extends BaseManager {
 				}));
 
 			await this.organizerRepository.save(newOrganizers);
-
-			await event.loadRelation(this.eventRepository, 'organizers');
 
 			const newChiefOrganizers = await Promise.all(settings.chiefOrganizerIds
 				.filter(id => !event.organizers.filter(o => o.isChief).map(o => o.userId).includes(id))
@@ -711,6 +721,7 @@ export class EventManager extends BaseManager {
 			description?: string,
 			isClosedEvent?: boolean,
 			hostingClubs?: Club[],
+			chiefOrganizers?: User[]
 			place?: string, capacity?: number,
 			start?: Date, end?: Date, isDateOrTime?: boolean,
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
@@ -731,6 +742,12 @@ export class EventManager extends BaseManager {
 		if(typeof settings.capacity === 'number') {
 			checkArgument(
 				!isDefined(settings.capacity) || !isNegative(settings.capacity!), EventCapacityValidationException
+			);
+		}
+		if(settings.chiefOrganizers) {
+			checkArgument(
+				isArray(settings.chiefOrganizers) && arrayMinSize(settings.chiefOrganizers, 1),
+				EventChiefOrganizersValidationException
 			);
 		}
 		if(settings.hostingClubs) {
