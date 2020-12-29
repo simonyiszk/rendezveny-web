@@ -14,7 +14,7 @@ export const eventInformationMutation = gql`
     $place: String!
     $organizerIds: [String!]
     $chiefOrganizerIds: [String!]
-    $isClosedEvent: Boolean!
+    $isClosedEvent: Boolean
     $capacity: Float!
     $uniqueName: String!
     $registrationAllowed: Boolean!
@@ -72,11 +72,11 @@ export const useEventInformationMutation = ({
     place: string,
     organizerIds: string[],
     chiefOrganizerIds: string[],
-    isClosedEvent: boolean,
+    isClosedEvent: boolean | undefined,
     capacity: number,
     uniqueName: string,
     registrationAllowed: boolean,
-    hostingClubIds: string[],
+    hostingClubIds: string[] | undefined,
   ) => Promise<FetchResult>,
   MutationResult,
 ] => {
@@ -97,11 +97,11 @@ export const useEventInformationMutation = ({
     place: string,
     organizerIds: string[],
     chiefOrganizerIds: string[],
-    isClosedEvent: boolean,
+    isClosedEvent: boolean | undefined,
     capacity: number,
     uniqueName: string,
     registrationAllowed: boolean,
-    hostingClubIds: string[],
+    hostingClubIds: string[] | undefined,
   ): Promise<FetchResult> => {
     return mutation({
       variables: {

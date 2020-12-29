@@ -50,6 +50,7 @@ import {
   getRegStartValid,
   getStartValid,
 } from '../../utils/services/EventFormValidation';
+import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
 registerLocale('hu', hu);
 
@@ -69,6 +70,8 @@ export default function DetailsPage({
     // eslint-disable-next-line no-restricted-globals
     location.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
+
+  const [accessCMAdmin, setAccessCMAdmin] = useState(false);
 
   const [organizers, setOrganizers] = useState<User[]>([]);
   const [chiefOrganizers, setChiefOrganizers] = useState<User[]>([]);
@@ -202,6 +205,9 @@ export default function DetailsPage({
     getOrganizers({ variables: { id: queryData.events_getOne.id } });
     getClubs();
     getUniquenames();
+    setAccessCMAdmin(
+      isClubManagerOf(queryData.events_getOne.hostingClubs) || isAdmin(),
+    );
   });
 
   const client = useApolloClient();
@@ -211,6 +217,7 @@ export default function DetailsPage({
   ] = useEventTokenMutationID(client, () => {
     getOrganizers({ variables: { id: event.id } });
     getClubs();
+    setAccessCMAdmin(isClubManagerOf(event.hostingClubs) || isAdmin());
   });
   const [
     getEventTokenMutationUN,
@@ -324,11 +331,11 @@ export default function DetailsPage({
         eventPlace,
         organizers.map((o) => o.id),
         chiefOrganizers.map((o) => o.id),
-        eventClosed,
+        accessCMAdmin ? eventClosed : undefined,
         parseInt(eventCapacity, 10) || 0,
         regLink,
         application,
-        organizerClubs.map((c) => c.id),
+        accessCMAdmin ? organizerClubs.map((c) => c.id) : undefined,
       );
     } else {
       makeToast('Hibás adatok', true);
@@ -421,6 +428,7 @@ export default function DetailsPage({
           <Tab
             _focus={{ boxShadow: 'none' }}
             _selected={{ fontWeight: 'bold', bg: 'simonyi' }}
+            disabled={!accessCMAdmin}
           >
             Szervező körök
           </Tab>
