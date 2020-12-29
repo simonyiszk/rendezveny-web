@@ -5,6 +5,7 @@ export interface EventToken {
 	eid: string
 	reg: 'none' | { rid: string, uid: string, typ: 'tmp' | 'per' }
 	org: 'none' | { uid: string, chf: boolean, typ: 'tmp' | 'per' }
+	rol: { adm: boolean, man: boolean }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
@@ -77,5 +78,13 @@ export class EventContext {
 		else {
 			return this.eventToken.eid === event.id && this.eventToken.org.chf;
 		}
+	}
+
+	public isAdmin(): boolean {
+		return this.eventToken.rol.adm;
+	}
+
+	public isManagerOfHost(): boolean {
+		return this.eventToken.rol.man;
 	}
 }

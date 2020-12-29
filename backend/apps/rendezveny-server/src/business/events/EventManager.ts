@@ -310,6 +310,12 @@ export class EventManager extends BaseManager {
 			: undefined;
 		EventManager.validateEvent({...settings, hostingClubs});
 
+		if(settings.hostingClubIds || settings.isClosedEvent) {
+			if(!eventContext.isAdmin() && !eventContext.isManagerOfHost()) {
+				throw new UnauthorizedException();
+			}
+		}
+
 		const uniqueNameUsed = await this.eventRepository.findOne({
 			uniqueName: settings.uniqueName,
 			id: Not(event.id)
@@ -434,7 +440,11 @@ export class EventManager extends BaseManager {
 						chf: isChief,
 						typ: organizing ? 'per' : 'tmp'
 					}
-					: 'none'
+					: 'none',
+				rol: {
+					adm: accessContext.isAdmin(),
+					man: managerOfHost
+				}
 			} as EventToken, {
 				expiresIn: this.configService.get('token.eventValidity')
 			}),
