@@ -6,10 +6,13 @@ export function getNameValid(eventName: string): string[] {
 export function getReglinkValid(
   regLink: string,
   allReglinks: string[],
+  original?: string,
 ): string[] {
   return [
     ...(regLink.length > 0 ? [] : ['Kötelező mező']),
-    ...(!allReglinks.includes(regLink) ? [] : [`${regLink} már foglalt`]),
+    ...(!allReglinks.filter((l) => l !== original).includes(regLink)
+      ? []
+      : [`${regLink} már foglalt`]),
   ];
 }
 export function getDescriptionValid(eventDescription: string): string[] {

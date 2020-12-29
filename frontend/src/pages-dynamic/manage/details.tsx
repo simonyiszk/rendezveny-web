@@ -116,6 +116,7 @@ export default function DetailsPage({
     [],
   );
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
+  const [originalUniqueName, setOriginalUniqueName] = useState('');
   const [allClubs, setAllClubs] = useState<Club[]>([]);
   const [tabIndex, setTabIndex] = React.useState(0);
 
@@ -208,6 +209,7 @@ export default function DetailsPage({
     setAccessCMAdmin(
       isClubManagerOf(queryData.events_getOne.hostingClubs) || isAdmin(),
     );
+    setOriginalUniqueName(queryData.events_getOne.uniqueName);
   });
 
   const client = useApolloClient();
@@ -217,7 +219,9 @@ export default function DetailsPage({
   ] = useEventTokenMutationID(client, () => {
     getOrganizers({ variables: { id: event.id } });
     getClubs();
+    getUniquenames();
     setAccessCMAdmin(isClubManagerOf(event.hostingClubs) || isAdmin());
+    setOriginalUniqueName(event.uniqueName);
   });
   const [
     getEventTokenMutationUN,
@@ -284,7 +288,9 @@ export default function DetailsPage({
     switch (index) {
       case 0:
         setNameValid(getNameValid(eventName));
-        setReglinkValid(getReglinkValid(regLink, uniqueNames));
+        setReglinkValid(
+          getReglinkValid(regLink, uniqueNames, originalUniqueName),
+        );
         break;
       case 1:
         setStartValid(getStartValid(eventStart));
@@ -470,7 +476,9 @@ export default function DetailsPage({
                       onChange={(e: React.FormEvent): void => {
                         const v = (e.target as HTMLInputElement).value;
                         setRegLink(v);
-                        setReglinkValid(getReglinkValid(v, uniqueNames));
+                        setReglinkValid(
+                          getReglinkValid(v, uniqueNames, originalUniqueName),
+                        );
                       }}
                     />
                     <Box>
