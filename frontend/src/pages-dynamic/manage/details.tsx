@@ -322,7 +322,7 @@ export default function DetailsPage({
         eventRegStart.toISOString(),
         eventRegEnd.toISOString(),
         eventPlace,
-        organizers.concat(chiefOrganizers).map((o) => o.id),
+        organizers.map((o) => o.id),
         chiefOrganizers.map((o) => o.id),
         eventClosed,
         parseInt(eventCapacity, 10) || 0,

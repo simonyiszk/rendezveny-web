@@ -215,6 +215,7 @@ export default function CreatePage(): JSX.Element {
         eventRegStart.toISOString(),
         eventRegEnd.toISOString(),
         eventPlace,
+        organizers.map((o) => o.id),
         chiefOrganizers.map((o) => o.id),
         eventClosed,
         parseInt(eventCapacity, 10) || 0,
