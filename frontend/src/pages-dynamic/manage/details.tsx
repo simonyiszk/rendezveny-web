@@ -117,6 +117,7 @@ export default function DetailsPage({
   );
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [originalUniqueName, setOriginalUniqueName] = useState('');
+  const [autogenUniqueName, setAutogenUniqueName] = useState(false);
   const [allClubs, setAllClubs] = useState<Club[]>([]);
   const [tabIndex, setTabIndex] = React.useState(0);
 
@@ -365,6 +366,15 @@ export default function DetailsPage({
     setOrganizerClubs(selectedList);
   };
 
+  const generateUniqueName = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ /g, '-');
+  };
+
   const datePickerCustomHeader = ({
     date,
     decreaseMonth,
@@ -457,6 +467,17 @@ export default function DetailsPage({
                         const v = (e.target as HTMLInputElement).value;
                         setEventName(v);
                         setNameValid(getNameValid(v));
+                        if (autogenUniqueName) {
+                          const newUniqueName = generateUniqueName(v);
+                          setRegLink(newUniqueName);
+                          setReglinkValid(
+                            getReglinkValid(
+                              newUniqueName,
+                              uniqueNames,
+                              originalUniqueName,
+                            ),
+                          );
+                        }
                       }}
                     />
                     <Box>
@@ -479,6 +500,8 @@ export default function DetailsPage({
                         setReglinkValid(
                           getReglinkValid(v, uniqueNames, originalUniqueName),
                         );
+                        if (v.length === 0) setAutogenUniqueName(true);
+                        else setAutogenUniqueName(false);
                       }}
                     />
                     <Box>

@@ -13,6 +13,7 @@ export function getReglinkValid(
     ...(!allReglinks.filter((l) => l !== original).includes(regLink)
       ? []
       : [`${regLink} már foglalt`]),
+    ...(regLink.match(/^[a-zA-Z0-9-]*$/g) ? [] : ['Érvénytelen karakter']),
   ];
 }
 export function getDescriptionValid(eventDescription: string): string[] {
