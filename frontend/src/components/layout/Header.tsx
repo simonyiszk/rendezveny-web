@@ -12,11 +12,11 @@ import {
 import { Link } from 'gatsby';
 import React from 'react';
 
+import logoSmall from '../../assets/images/simonyi_white_small.svg';
+import logo from '../../assets/images/simonyi_white_white.svg';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import useLogoutService from '../../utils/services/LogoutService';
 import { isLoggedin } from '../../utils/token/TokenContainer';
-import logoSmall from '../assets/images/simonyi_white_small.svg';
-import logo from '../assets/images/simonyi_white_white.svg';
 
 export default function Header(): JSX.Element {
   const client = useApolloClient();
