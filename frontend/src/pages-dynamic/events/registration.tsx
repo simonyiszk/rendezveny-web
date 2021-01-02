@@ -17,11 +17,26 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../components/Button';
-import { Checkbox, CheckboxGroup } from '../../components/CheckboxGroup';
-import { Layout } from '../../components/Layout';
-import Loading from '../../components/Loading';
-import { Radio, RadioGroup } from '../../components/RadioGroup';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { useEventGetCurrentQuery } from '../../api/registration/EventGetCurrentQuery';
+import { useEventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
+import {
+  useModifyFilledInForm,
+  useRegisterDeleteMutation,
+  useRegisterSelfMutation,
+} from '../../api/registration/RegistrationMutation';
+import {
+  useEventTokenMutationID,
+  useEventTokenMutationUN,
+} from '../../api/token/EventsGetTokenMutation';
+import Button from '../../components/control/Button';
+import {
+  Checkbox,
+  CheckboxGroup,
+} from '../../components/control/CheckboxGroup';
+import { Radio, RadioGroup } from '../../components/control/RadioGroup';
+import { Layout } from '../../components/layout/Layout';
+import Loading from '../../components/util/Loading';
 import {
   Event,
   EventRegistrationFormAnswersInput,
@@ -29,18 +44,6 @@ import {
   EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
 } from '../../interfaces';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
-import { useEventGetCurrentQuery } from '../../utils/api/registration/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../../utils/api/registration/EventGetRegistrationQuery';
-import {
-  useModifyFilledInForm,
-  useRegisterDeleteMutation,
-  useRegisterSelfMutation,
-} from '../../utils/api/registration/RegistrationMutation';
-import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
 
 interface PageState {
   event: Event;

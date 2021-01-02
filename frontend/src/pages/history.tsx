@@ -1,11 +1,11 @@
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 
-import EventSection from '../components/EventSection';
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
+import { useEventGetHistoryQuery } from '../api/history/EventsGetHistoryQuery';
+import { Layout } from '../components/layout/Layout';
+import EventSection from '../components/sections/EventSection';
+import Loading from '../components/util/Loading';
 import { HistoryYears } from '../interfaces';
-import { useEventGetHistoryQuery } from '../utils/api/history/EventsGetHistoryQuery';
 
 export default function HistoryPage(): JSX.Element {
   const [allEvent, setAllEvent] = useState<HistoryYears>({});

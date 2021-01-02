@@ -15,17 +15,17 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../components/Button';
-import { Layout } from '../../components/Layout';
-import LinkButton from '../../components/LinkButton';
-import Loading from '../../components/Loading';
-import { Event } from '../../interfaces';
-import { useEventDeleteMutation } from '../../utils/api/details/EventInformationMutation';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
+import { useEventDeleteMutation } from '../../api/details/EventInformationMutation';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
+} from '../../api/token/EventsGetTokenMutation';
+import Button from '../../components/control/Button';
+import LinkButton from '../../components/control/LinkButton';
+import { Layout } from '../../components/layout/Layout';
+import Loading from '../../components/util/Loading';
+import { Event } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import {
   isAdmin,

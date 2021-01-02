@@ -24,11 +24,22 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../components/Button';
-import { Checkbox, CheckboxGroup } from '../../components/CheckboxGroup';
-import { Layout } from '../../components/Layout';
-import Loading from '../../components/Loading';
-import { Radio, RadioGroup } from '../../components/RadioGroup';
+import { useModifyFormMutation } from '../../api/form/FormModifyMutation';
+import { useFormTemplatesGetQuery } from '../../api/form/FormTemplatesGetAllQuery';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { useEventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
+import {
+  useEventTokenMutationID,
+  useEventTokenMutationUN,
+} from '../../api/token/EventsGetTokenMutation';
+import Button from '../../components/control/Button';
+import {
+  Checkbox,
+  CheckboxGroup,
+} from '../../components/control/CheckboxGroup';
+import { Radio, RadioGroup } from '../../components/control/RadioGroup';
+import { Layout } from '../../components/layout/Layout';
+import Loading from '../../components/util/Loading';
 import {
   Event,
   EventQuestionType,
@@ -38,14 +49,6 @@ import {
   EventRegistrationFormQuestionInput,
   EventRegistrationFormTextQuestion,
 } from '../../interfaces';
-import { useModifyFormMutation } from '../../utils/api/form/FormModifyMutation';
-import { useFormTemplatesGetQuery } from '../../utils/api/form/FormTemplatesGetAllQuery';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
-import { useEventGetRegistrationQuery } from '../../utils/api/registration/EventGetRegistrationQuery';
-import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
 
 interface PageState {
   event: Event;

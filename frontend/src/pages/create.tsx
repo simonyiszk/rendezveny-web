@@ -22,15 +22,15 @@ import React, { useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ReactQuill from 'react-quill';
 
-import Button from '../components/Button';
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
-import Multiselect from '../components/Multiselect';
+import { useClubsGetAllQuery } from '../api/details/ClubsGetAllQuery';
+import { useClubsGetOtherMembersQuery } from '../api/details/ClubsGetOtherMembersQuery';
+import { useEventCreateMutation } from '../api/details/EventInformationMutation';
+import { useEventGetUniquenamesQuery } from '../api/index/EventsGetUniquenamesQuery';
+import Button from '../components/control/Button';
+import Multiselect from '../components/control/Multiselect';
+import { Layout } from '../components/layout/Layout';
+import Loading from '../components/util/Loading';
 import { Club, User } from '../interfaces';
-import { useClubsGetAllQuery } from '../utils/api/details/ClubsGetAllQuery';
-import { useClubsGetOtherMembersQuery } from '../utils/api/details/ClubsGetOtherMembersQuery';
-import { useEventCreateMutation } from '../utils/api/details/EventInformationMutation';
-import { useEventGetUniquenamesQuery } from '../utils/api/index/EventsGetUniquenamesQuery';
 import {
   getCapacityValid,
   getChiefOrganizersValid,

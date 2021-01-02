@@ -15,20 +15,23 @@ import {
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../../components/Button';
-import { Checkbox, CheckboxGroup } from '../../../components/CheckboxGroup';
-import { Layout } from '../../../components/Layout';
-import { Radio, RadioGroup } from '../../../components/RadioGroup';
+import {
+  useModifyFilledInForm,
+  useRegisterDeleteMutation,
+} from '../../../api/registration/RegistrationMutation';
+import Button from '../../../components/control/Button';
+import {
+  Checkbox,
+  CheckboxGroup,
+} from '../../../components/control/CheckboxGroup';
+import { Radio, RadioGroup } from '../../../components/control/RadioGroup';
+import { Layout } from '../../../components/layout/Layout';
 import {
   Event,
   EventRegistrationFormAnswersInput,
   EventRegistrationFormMultipleChoiceQuestion,
   EventRelation,
 } from '../../../interfaces';
-import {
-  useModifyFilledInForm,
-  useRegisterDeleteMutation,
-} from '../../../utils/api/registration/RegistrationMutation';
 
 interface PageState {
   user: EventRelation;

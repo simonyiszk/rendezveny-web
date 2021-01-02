@@ -2,11 +2,15 @@ import { Box, Flex, Grid, Input } from '@chakra-ui/react';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import { Checkbox, CheckboxGroup } from '../../../components/CheckboxGroup';
-import { Layout } from '../../../components/Layout';
-import LinkButton from '../../../components/LinkButton';
-import Loading from '../../../components/Loading';
-import { Radio, RadioGroup } from '../../../components/RadioGroup';
+import { useRegistrationGetOneQuery } from '../../../api/registration/EventMembersQuery';
+import {
+  Checkbox,
+  CheckboxGroup,
+} from '../../../components/control/CheckboxGroup';
+import LinkButton from '../../../components/control/LinkButton';
+import { Radio, RadioGroup } from '../../../components/control/RadioGroup';
+import { Layout } from '../../../components/layout/Layout';
+import Loading from '../../../components/util/Loading';
 import {
   Event,
   EventRegistrationFormMultipleChoiceAnswer,
@@ -14,7 +18,6 @@ import {
   EventRegistrationFormTextAnswer,
   EventRelation,
 } from '../../../interfaces';
-import { useRegistrationGetOneQuery } from '../../../utils/api/registration/EventMembersQuery';
 
 interface PageState {
   user: EventRelation;

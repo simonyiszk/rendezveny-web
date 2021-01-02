@@ -2,10 +2,11 @@ import { RouteComponentProps, Router } from '@reach/router';
 import { navigate } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import EventSection from '../components/EventSection';
-import { Layout } from '../components/Layout';
-import LinkButton from '../components/LinkButton';
-import Loading from '../components/Loading';
+import { useEventGetAllQuery } from '../api/index/EventsGetAllQuery';
+import LinkButton from '../components/control/LinkButton';
+import { Layout } from '../components/layout/Layout';
+import EventSection from '../components/sections/EventSection';
+import Loading from '../components/util/Loading';
 import DetailsPage from '../pages-dynamic/manage/details';
 import FormeditorPage from '../pages-dynamic/manage/formeditor';
 import HRTablePage from '../pages-dynamic/manage/hrtable';
@@ -14,7 +15,6 @@ import EventManagePage from '../pages-dynamic/manage/manage';
 import MembersPage from '../pages-dynamic/manage/members';
 import EditMemberRegPage from '../pages-dynamic/manage/members/editreg';
 import ShowMemberRegPage from '../pages-dynamic/manage/members/showreg';
-import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
 import { isAdmin, isClubManager } from '../utils/token/TokenContainer';
 

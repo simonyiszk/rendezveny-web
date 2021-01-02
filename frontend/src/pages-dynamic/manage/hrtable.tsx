@@ -4,23 +4,23 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../components/Button';
-import HRTableComp from '../../components/HRTableComp';
-import { Layout } from '../../components/Layout';
-import LinkButton from '../../components/LinkButton';
-import Loading from '../../components/Loading';
-import { Event, EventOrganizer, HRTable } from '../../interfaces';
-import { useEventGetHRTableQuery } from '../../utils/api/hrtable/HRGetTableQuery';
+import { useEventGetHRTableQuery } from '../../api/hrtable/HRGetTableQuery';
 import {
   useHRTableRegisterMutation,
   useHRTableUnRegisterMutation,
-} from '../../utils/api/hrtable/HRTableOrganizerSelfMutation';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
-import { useProfileGetNameQuery } from '../../utils/api/profile/UserGetSelfQuery';
+} from '../../api/hrtable/HRTableOrganizerSelfMutation';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { useProfileGetNameQuery } from '../../api/profile/UserGetSelfQuery';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
+} from '../../api/token/EventsGetTokenMutation';
+import Button from '../../components/control/Button';
+import LinkButton from '../../components/control/LinkButton';
+import HRTableComp from '../../components/hrtable/HRTableComp';
+import { Layout } from '../../components/layout/Layout';
+import Loading from '../../components/util/Loading';
+import { Event, EventOrganizer, HRTable } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import { isChiefOrganizer } from '../../utils/token/TokenContainer';
 

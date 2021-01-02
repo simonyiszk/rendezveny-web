@@ -2,12 +2,12 @@ import { RouteComponentProps, Router } from '@reach/router';
 import { navigate } from 'gatsby';
 import React from 'react';
 
-import EventSection from '../components/EventSection';
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
+import { useEventGetAllQuery } from '../api/index/EventsGetAllQuery';
+import { Layout } from '../components/layout/Layout';
+import EventSection from '../components/sections/EventSection';
+import Loading from '../components/util/Loading';
 import EventShowPage from '../pages-dynamic/events/events';
 import RegistrationPage from '../pages-dynamic/events/registration';
-import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
 
 export default function EventsPage(): JSX.Element {
   return (

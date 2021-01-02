@@ -4,17 +4,17 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
-import { Layout } from '../../components/Layout';
-import Loading from '../../components/Loading';
-import MemberSection from '../../components/MemberSection';
-import { Event, EventRelation } from '../../interfaces';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
-import { useEventGetMembersQuery } from '../../utils/api/registration/EventMembersQuery';
-import { useSetAttendMutation } from '../../utils/api/registration/RegistrationMutation';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { useEventGetMembersQuery } from '../../api/registration/EventMembersQuery';
+import { useSetAttendMutation } from '../../api/registration/RegistrationMutation';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
+} from '../../api/token/EventsGetTokenMutation';
+import { Layout } from '../../components/layout/Layout';
+import MemberSection from '../../components/sections/MemberSection';
+import Loading from '../../components/util/Loading';
+import { Event, EventRelation } from '../../interfaces';
 
 interface PageState {
   event: Event;

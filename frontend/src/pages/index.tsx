@@ -1,10 +1,10 @@
 import { navigate } from 'gatsby';
 import React from 'react';
 
-import EventSection from '../components/EventSection';
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
-import { useEventGetAllQuery } from '../utils/api/index/EventsGetAllQuery';
+import { useEventGetAllQuery } from '../api/index/EventsGetAllQuery';
+import { Layout } from '../components/layout/Layout';
+import EventSection from '../components/sections/EventSection';
+import Loading from '../components/util/Loading';
 
 export default function IndexPage(): JSX.Element {
   const { called, loading, error, data } = useEventGetAllQuery();

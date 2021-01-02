@@ -8,15 +8,15 @@ import { navigate, PageProps } from 'gatsby';
 import React, { useEffect } from 'react';
 import ReactQuill from 'react-quill';
 
-import { Layout } from '../../components/Layout';
-import LinkButton from '../../components/LinkButton';
-import Loading from '../../components/Loading';
-import { Event } from '../../interfaces';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
+} from '../../api/token/EventsGetTokenMutation';
+import LinkButton from '../../components/control/LinkButton';
+import { Layout } from '../../components/layout/Layout';
+import Loading from '../../components/util/Loading';
+import { Event } from '../../interfaces';
 
 interface PageState {
   event: Event;

@@ -23,15 +23,15 @@ import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 
-import Button from '../../../components/Button';
-import HRTableComp from '../../../components/HRTableComp';
-import { Layout } from '../../../components/Layout';
-import LinkButton from '../../../components/LinkButton';
-import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
 import {
   useCreateHRTableMutation,
   useModifyHRTableMutation,
-} from '../../../utils/api/hrtable/HRModifyTableMutation';
+} from '../../../api/hrtable/HRModifyTableMutation';
+import Button from '../../../components/control/Button';
+import LinkButton from '../../../components/control/LinkButton';
+import HRTableComp from '../../../components/hrtable/HRTableComp';
+import { Layout } from '../../../components/layout/Layout';
+import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
 
 registerLocale('hu', hu);
 

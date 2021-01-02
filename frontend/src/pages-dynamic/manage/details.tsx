@@ -24,20 +24,20 @@ import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ReactQuill from 'react-quill';
 
-import Button from '../../components/Button';
-import { Layout } from '../../components/Layout';
-import Loading from '../../components/Loading';
-import Multiselect from '../../components/Multiselect';
-import { Club, Event, User } from '../../interfaces';
-import { useClubsGetAllQuery } from '../../utils/api/details/ClubsGetAllQuery';
-import { useEventGetOrganizersQuery } from '../../utils/api/details/EventGetOrganizersQuery';
-import { useEventInformationMutation } from '../../utils/api/details/EventInformationMutation';
-import { useEventGetInformationQuery } from '../../utils/api/index/EventsGetInformation';
-import { useEventGetUniquenamesQuery } from '../../utils/api/index/EventsGetUniquenamesQuery';
+import { useClubsGetAllQuery } from '../../api/details/ClubsGetAllQuery';
+import { useEventGetOrganizersQuery } from '../../api/details/EventGetOrganizersQuery';
+import { useEventInformationMutation } from '../../api/details/EventInformationMutation';
+import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { useEventGetUniquenamesQuery } from '../../api/index/EventsGetUniquenamesQuery';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
-} from '../../utils/api/token/EventsGetTokenMutation';
+} from '../../api/token/EventsGetTokenMutation';
+import Button from '../../components/control/Button';
+import Multiselect from '../../components/control/Multiselect';
+import { Layout } from '../../components/layout/Layout';
+import Loading from '../../components/util/Loading';
+import { Club, Event, User } from '../../interfaces';
 import {
   getCapacityValid,
   getChiefOrganizersValid,
