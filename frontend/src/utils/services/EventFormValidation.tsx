@@ -71,6 +71,16 @@ export function getChiefOrganizersValid(chiefOrganizers: User[]): string[] {
   return chiefOrganizers.length > 0 ? [] : ['Legalább egy főszervező kell'];
 }
 
-export function getOrganizerClubsValid(organizerClubs: Club[]): string[] {
-  return organizerClubs.length > 0 ? [] : ['Legalább egy szervező kör kell'];
+export function getOrganizerClubsValid(
+  organizerClubs: Club[],
+  managedClubs: Club[],
+): string[] {
+  const oIds = organizerClubs.map((c) => c.id);
+  return [
+    ...(organizerClubs.length > 0 ? [] : ['Legalább egy szervező kör kell']),
+    ...(managedClubs.filter((c) => !oIds.includes(c.id)).length === 0 ||
+    managedClubs.filter((c) => oIds.includes(c.id)).length > 0
+      ? []
+      : ['A saját köröd nélkül nem tudsz eseményt rendezni']),
+  ];
 }

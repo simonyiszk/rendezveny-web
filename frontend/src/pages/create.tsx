@@ -72,7 +72,6 @@ export default function CreatePage(): JSX.Element {
   const [isCapacityValid, setCapacityValid] = useState<string[]>([]);
   const [regLink, setRegLink] = useState('');
   const [isReglinkValid, setReglinkValid] = useState<string[]>([]);
-  const [application, setApplication] = useState(true);
   const [organizerClubs, setOrganizerClubs] = useState<Club[]>([]);
   const [isOrganizerClubsValid, setOrganizerClubsValid] = useState<string[]>(
     [],
@@ -80,6 +79,7 @@ export default function CreatePage(): JSX.Element {
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [autogenUniqueName, setAutogenUniqueName] = useState(true);
   const [allClubs, setAllClubs] = useState<Club[]>([]);
+  const [managedClubs, setManagedClubs] = useState<Club[]>([]);
   const [tabIndex, setTabIndex] = React.useState(0);
 
   const [
@@ -123,9 +123,16 @@ export default function CreatePage(): JSX.Element {
         (user, index, self) =>
           self.findIndex((t) => t.id === user.id) === index,
       );
+    const resultManagedClubs = queryData.users_getSelf.clubMemberships.nodes.map(
+      (m) => {
+        return { id: m.club.id, name: m.club.name } as Club;
+      },
+    );
     setAllUsers(resultAllUser);
     getClubs();
     getUniquenames();
+    setManagedClubs(resultManagedClubs);
+    setOrganizerClubs(resultManagedClubs);
   });
 
   const toast = useToast();
@@ -186,7 +193,9 @@ export default function CreatePage(): JSX.Element {
         setChiefOrganizersValid(getChiefOrganizersValid(chiefOrganizers));
         break;
       case 3:
-        setOrganizerClubsValid(getOrganizerClubsValid(organizerClubs));
+        setOrganizerClubsValid(
+          getOrganizerClubsValid(organizerClubs, managedClubs),
+        );
         break;
       default:
     }
@@ -221,7 +230,7 @@ export default function CreatePage(): JSX.Element {
         eventClosed,
         parseInt(eventCapacity, 10) || 0,
         regLink,
-        application,
+        true,
         organizerClubs.map((c) => c.id),
       );
     } else {
@@ -698,7 +707,9 @@ export default function CreatePage(): JSX.Element {
                       isInvalid={isOrganizerClubsValid.length > 0}
                       onChangeCb={(values: Club[]): void => {
                         onChangeClubs(values);
-                        setOrganizerClubsValid(getOrganizerClubsValid(values));
+                        setOrganizerClubsValid(
+                          getOrganizerClubsValid(values, managedClubs),
+                        );
                       }}
                       valueProp="id"
                       labelProp="name"
