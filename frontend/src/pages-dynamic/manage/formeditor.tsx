@@ -19,7 +19,7 @@ import {
   Textarea,
   useDisclosure,
   useToast,
-} from '@chakra-ui/core';
+} from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';

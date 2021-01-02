@@ -1,4 +1,4 @@
-import { Box, BoxProps, Flex } from '@chakra-ui/core';
+import { Box, BoxProps, Flex } from '@chakra-ui/react';
 import { Link } from 'gatsby';
 import React from 'react';
 

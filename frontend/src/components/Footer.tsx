@@ -1,4 +1,4 @@
-import { Box, Image, Link as ChakraLink } from '@chakra-ui/core';
+import { Box, Image, Link as ChakraLink } from '@chakra-ui/react';
 import { Link } from 'gatsby';
 import React from 'react';
 
@@ -8,7 +8,7 @@ import logo from '../assets/images/simonyi_white_white.svg';
 export default function Header(): JSX.Element {
   return (
     <Box p={1} backgroundColor="simonyi">
-      <Link to="/">
+      <Link to="/manage">
         <Image
           display={['none', null, 'block']}
           height="2rem"

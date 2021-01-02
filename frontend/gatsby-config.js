@@ -9,7 +9,7 @@ require('dotenv').config();
 module.exports = {
   siteMetadata,
   plugins: [
-    'gatsby-plugin-chakra-ui',
+    '@chakra-ui/gatsby-plugin',
     'gatsby-plugin-emotion',
     {
       resolve: 'gatsby-plugin-manifest',

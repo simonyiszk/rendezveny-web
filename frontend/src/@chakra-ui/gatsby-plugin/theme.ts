@@ -1,9 +1,7 @@
-import { theme } from '@chakra-ui/core';
+import { extendTheme } from '@chakra-ui/react';
 
-export default {
-  ...theme,
+export default extendTheme({
   colors: {
-    ...theme.colors,
     simonyi: '#6abd51',
     grayE1: '#e1e1e1',
   },
@@ -11,4 +9,4 @@ export default {
     body: 'Montserrat',
     heading: 'Montserrat',
   },
-};
+});

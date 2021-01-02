@@ -11,7 +11,7 @@ import {
   ModalOverlay,
   useDisclosure,
   useToast,
-} from '@chakra-ui/core';
+} from '@chakra-ui/react';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 

@@ -1,4 +1,4 @@
-import { Box, BoxProps, Flex, Grid } from '@chakra-ui/core';
+import { Box, BoxProps, Flex, Grid } from '@chakra-ui/react';
 import React from 'react';
 
 import { Log } from '../interfaces';

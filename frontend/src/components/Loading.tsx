@@ -1,4 +1,4 @@
-import { Flex, Spinner } from '@chakra-ui/core';
+import { Flex, Spinner } from '@chakra-ui/react';
 import React from 'react';
 
 import { Layout } from './Layout';
@@ -12,9 +12,7 @@ export default function Loading(): JSX.Element {
         justifyContent="center"
         alignItems="center"
       >
-        <Spinner size="10rem" color="simonyi" thickness="1rem" speed="1s">
-          Loading
-        </Spinner>
+        <Spinner boxSize="10rem" color="simonyi" thickness="1rem" speed="1s" />
       </Flex>
     </Layout>
   );

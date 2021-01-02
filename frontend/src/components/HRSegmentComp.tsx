@@ -1,4 +1,4 @@
-import { Box, BoxProps, Flex } from '@chakra-ui/core';
+import { Box, BoxProps, Flex } from '@chakra-ui/react';
 import React from 'react';
 
 import { HRCallback, HRSegment, User } from '../interfaces';

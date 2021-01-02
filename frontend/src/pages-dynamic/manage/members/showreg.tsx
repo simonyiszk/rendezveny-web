@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, Input } from '@chakra-ui/core';
+import { Box, Flex, Grid, Input } from '@chakra-ui/react';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 

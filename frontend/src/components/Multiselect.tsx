@@ -1,4 +1,4 @@
-import { Box, BoxProps, Flex, PseudoBox } from '@chakra-ui/core';
+import { Box, BoxProps, Flex } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
 interface Props<T> extends BoxProps {
@@ -164,7 +164,7 @@ function UnselectedOption({
   onClickCb,
 }: UnselectedProps): JSX.Element {
   return (
-    <PseudoBox
+    <Box
       py={2}
       px={3}
       cursor="default"
@@ -174,6 +174,6 @@ function UnselectedOption({
       }}
     >
       {text}
-    </PseudoBox>
+    </Box>
   );
 }

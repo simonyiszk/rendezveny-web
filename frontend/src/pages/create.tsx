@@ -14,7 +14,7 @@ import {
   Tabs,
   Text,
   useToast,
-} from '@chakra-ui/core';
+} from '@chakra-ui/react';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
 import { navigate } from 'gatsby';

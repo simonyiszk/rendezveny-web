@@ -1,16 +1,14 @@
 import { useApolloClient } from '@apollo/client';
 import {
   Box,
-  Button,
   Flex,
   Image,
-  Link as ChakraLink,
   Menu,
   MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
-} from '@chakra-ui/core';
+} from '@chakra-ui/react';
 import { Link } from 'gatsby';
 import React from 'react';
 

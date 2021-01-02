@@ -1,5 +1,5 @@
 import { useApolloClient } from '@apollo/client';
-import { Box, Flex, Grid, Input } from '@chakra-ui/core';
+import { Box, Flex, Grid, Input } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 

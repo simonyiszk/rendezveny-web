@@ -2,7 +2,7 @@ import 'react-quill/dist/quill.bubble.css';
 import '../../components/reactquillcustom.css';
 
 import { useApolloClient } from '@apollo/client';
-import { Box, Flex, Heading } from '@chakra-ui/core';
+import { Box, Flex, Heading } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect } from 'react';
@@ -93,9 +93,9 @@ export default function EventShowPage({
 
   const hasDescription = (): boolean => {
     const desc = (event ?? getCurrentEventData?.events_getOne)?.description;
-    const cleaned = desc.replace(/<\/?[^>]+(>|$)/g, "");
+    const cleaned = desc.replace(/<\/?[^>]+(>|$)/g, '');
     return cleaned.length > 0;
-  }
+  };
 
   return (
     <Layout>
@@ -162,21 +162,23 @@ export default function EventShowPage({
           }`}</Box>
         )}
       </Flex>
-      {hasDescription() && <Box
-        mt={4}
-        className="quill-container-custom"
-        px={4}
-        py={2}
-        boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
-        borderRadius="5px"
-      >
-        <ReactQuill
-          value={(event ?? getCurrentEventData?.events_getOne)?.description}
-          style={{ fontFamily: 'Montserrat' }}
-          readOnly
-          theme="bubble"
-        />
-      </Box>}
+      {hasDescription() && (
+        <Box
+          mt={4}
+          className="quill-container-custom"
+          px={4}
+          py={2}
+          boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
+          borderRadius="5px"
+        >
+          <ReactQuill
+            value={(event ?? getCurrentEventData?.events_getOne)?.description}
+            style={{ fontFamily: 'Montserrat' }}
+            readOnly
+            theme="bubble"
+          />
+        </Box>
+      )}
       <Flex justifyContent="center" mt={4}>
         <LinkButton
           text="Regisztráció"

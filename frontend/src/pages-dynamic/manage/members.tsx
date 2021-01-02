@@ -1,5 +1,5 @@
 import { useApolloClient } from '@apollo/client';
-import { useToast } from '@chakra-ui/core';
+import { useToast } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';

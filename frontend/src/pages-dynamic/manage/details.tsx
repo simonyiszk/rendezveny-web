@@ -15,7 +15,7 @@ import {
   Tabs,
   Text,
   useToast,
-} from '@chakra-ui/core';
+} from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';

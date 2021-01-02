@@ -1,4 +1,4 @@
-import { Box, CSSReset, Flex } from '@chakra-ui/core';
+import { Box, CSSReset, Flex } from '@chakra-ui/react';
 import { graphql, useStaticQuery } from 'gatsby';
 import React from 'react';
 import { Helmet } from 'react-helmet';
