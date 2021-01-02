@@ -71,7 +71,7 @@ export function getChiefOrganizersValid(chiefOrganizers: User[]): string[] {
   return chiefOrganizers.length > 0 ? [] : ['Legalább egy főszervező kell'];
 }
 
-export function getOrganizerClubsValid(
+export function getHostingClubsValid(
   organizerClubs: Club[],
   managedClubs: Club[],
 ): string[] {

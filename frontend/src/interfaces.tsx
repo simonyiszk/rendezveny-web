@@ -217,3 +217,19 @@ export interface MutationProps {
   onError: (error: ApolloError) => void;
   refetchQueries: any;
 }
+export interface EventTabProps {
+  name: string;
+  description: string;
+  start: Date;
+  end: Date;
+  regStart: Date;
+  regEnd: Date;
+  place: string;
+  isClosed: boolean;
+  capacity: string;
+  reglink: string;
+  application: boolean;
+  organizers: User[];
+  chiefOrganizers: User[];
+  hostingClubs: Club[];
+}
