@@ -1,4 +1,5 @@
 import { Box, Flex, Grid, Input } from '@chakra-ui/react';
+import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -23,8 +24,8 @@ interface PageState {
   user: EventRelation;
   event: Event;
 }
-interface Props {
-  location: PageProps<null, null, PageState>['location'];
+interface Props extends RouteComponentProps {
+  location?: PageProps<null, null, PageState>['location'];
 }
 
 interface AnswerState {
@@ -34,7 +35,7 @@ interface AnswerState {
 export default function ShowMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event, user } = state;
 
   const [answers, setAnswers] = useState<AnswerState>({});
@@ -164,3 +165,6 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
     </Layout>
   );
 }
+ShowMemberRegPage.defaultProps = {
+  location: undefined,
+};

@@ -20,8 +20,8 @@ interface PageState {
   event: Event;
 }
 interface Props extends RouteComponentProps {
-  location: PageProps<null, null, PageState>['location'];
-  uniqueName: string;
+  location?: PageProps<null, null, PageState>['location'];
+  uniqueName?: string;
 }
 
 export default function MembersPage({
@@ -30,7 +30,7 @@ export default function MembersPage({
 }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
   const [registeredUsers, setRegisteredUsers] = useState<EventRelation[]>([]);
@@ -157,3 +157,7 @@ export default function MembersPage({
     </Layout>
   );
 }
+MembersPage.defaultProps = {
+  location: undefined,
+  uniqueName: undefined,
+};

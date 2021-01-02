@@ -22,7 +22,6 @@ import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
-import ReactQuill from 'react-quill';
 
 import { useClubsGetAllQuery } from '../../api/details/ClubsGetAllQuery';
 import { useEventGetOrganizersQuery } from '../../api/details/EventGetOrganizersQuery';
@@ -52,14 +51,17 @@ import {
 } from '../../utils/services/EventFormValidation';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
+const ReactQuill =
+  typeof window === 'object' ? require('react-quill') : (): boolean => false;
+
 registerLocale('hu', hu);
 
 interface PageState {
   event: Event;
 }
 interface Props extends RouteComponentProps {
-  location: PageProps<null, null, PageState>['location'];
-  uniqueName: string;
+  location?: PageProps<null, null, PageState>['location'];
+  uniqueName?: string;
 }
 
 export default function DetailsPage({
@@ -68,7 +70,7 @@ export default function DetailsPage({
 }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
   const [accessCMAdmin, setAccessCMAdmin] = useState(false);
@@ -305,7 +307,7 @@ export default function DetailsPage({
         setChiefOrganizersValid(getChiefOrganizersValid(chiefOrganizers));
         break;
       case 3:
-        setOrganizerClubsValid(getOrganizerClubsValid(organizerClubs));
+        setOrganizerClubsValid(getOrganizerClubsValid(organizerClubs, []));
         break;
       default:
     }
@@ -838,7 +840,9 @@ export default function DetailsPage({
                       isInvalid={isOrganizerClubsValid.length > 0}
                       onChangeCb={(values: Club[]): void => {
                         onChangeClubs(values);
-                        setOrganizerClubsValid(getOrganizerClubsValid(values));
+                        setOrganizerClubsValid(
+                          getOrganizerClubsValid(values, []),
+                        );
                       }}
                       valueProp="id"
                       labelProp="name"
@@ -893,3 +897,7 @@ export default function DetailsPage({
     </Layout>
   );
 }
+DetailsPage.defaultProps = {
+  location: undefined,
+  uniqueName: undefined,
+};

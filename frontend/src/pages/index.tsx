@@ -14,7 +14,6 @@ export default function IndexPage(): JSX.Element {
   }
 
   if (error) {
-    console.log(error.message);
     if (typeof window !== 'undefined') {
       navigate('/login');
     }

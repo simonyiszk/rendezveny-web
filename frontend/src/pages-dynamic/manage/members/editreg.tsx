@@ -12,6 +12,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
+import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
@@ -38,8 +39,8 @@ interface PageState {
   event: Event;
   answers: AnswerState;
 }
-interface Props {
-  location: PageProps<null, null, PageState>['location'];
+interface Props extends RouteComponentProps {
+  location?: PageProps<null, null, PageState>['location'];
 }
 
 interface AnswerState {
@@ -49,7 +50,7 @@ interface AnswerState {
 export default function EditMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event, user, answers } = state;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -265,3 +266,6 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
     </Layout>
   );
 }
+EditMemberRegPage.defaultProps = {
+  location: undefined,
+};

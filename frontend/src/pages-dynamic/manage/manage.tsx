@@ -38,8 +38,8 @@ interface PageState {
   event: Event;
 }
 interface Props extends RouteComponentProps {
-  location: PageProps<null, null, PageState>['location'];
-  uniqueName: string;
+  location?: PageProps<null, null, PageState>['location'];
+  uniqueName?: string;
 }
 
 export default function EventPage({
@@ -48,7 +48,7 @@ export default function EventPage({
 }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -235,3 +235,7 @@ export default function EventPage({
     </Layout>
   );
 }
+EventPage.defaultProps = {
+  location: undefined,
+  uniqueName: undefined,
+};

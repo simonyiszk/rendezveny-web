@@ -54,8 +54,8 @@ interface PageState {
   event: Event;
 }
 interface Props extends RouteComponentProps {
-  location: PageProps<null, null, PageState>['location'];
-  uniqueName: string;
+  location?: PageProps<null, null, PageState>['location'];
+  uniqueName?: string;
 }
 
 interface AnswerState {
@@ -68,7 +68,7 @@ export default function FormeditorPage({
 }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -690,3 +690,7 @@ export default function FormeditorPage({
     </Layout>
   );
 }
+FormeditorPage.defaultProps = {
+  location: undefined,
+  uniqueName: undefined,
+};

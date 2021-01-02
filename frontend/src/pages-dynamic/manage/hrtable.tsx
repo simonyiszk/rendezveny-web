@@ -28,8 +28,8 @@ interface PageState {
   event: Event;
 }
 interface Props extends RouteComponentProps {
-  location: PageProps<null, null, PageState>['location'];
-  uniqueName: string;
+  location?: PageProps<null, null, PageState>['location'];
+  uniqueName?: string;
 }
 
 export default function HRTablePage({
@@ -38,7 +38,7 @@ export default function HRTablePage({
 }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
   const [accessChief, setAccessChief] = useState(false);
@@ -267,3 +267,7 @@ export default function HRTablePage({
     </Layout>
   );
 }
+HRTablePage.defaultProps = {
+  location: undefined,
+  uniqueName: undefined,
+};

@@ -17,6 +17,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
+import { RouteComponentProps } from '@reach/router';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
@@ -39,14 +40,14 @@ interface PageState {
   event: Event;
   hrTable: HRTable;
 }
-interface Props {
-  location: PageProps<null, null, PageState>['location'];
+interface Props extends RouteComponentProps {
+  location?: PageProps<null, null, PageState>['location'];
 }
 
 export default function HRTableNewPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event, hrTable } = state;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -427,3 +428,6 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
     </Layout>
   );
 }
+HRTableNewPage.defaultProps = {
+  location: undefined,
+};

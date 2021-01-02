@@ -20,7 +20,6 @@ import hu from 'date-fns/locale/hu';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
-import ReactQuill from 'react-quill';
 
 import { useClubsGetAllQuery } from '../api/details/ClubsGetAllQuery';
 import { useClubsGetOtherMembersQuery } from '../api/details/ClubsGetOtherMembersQuery';
@@ -43,6 +42,9 @@ import {
   getRegStartValid,
   getStartValid,
 } from '../utils/services/EventFormValidation';
+
+const ReactQuill =
+  typeof window === 'object' ? require('react-quill') : (): boolean => false;
 
 registerLocale('hu', hu);
 

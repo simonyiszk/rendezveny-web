@@ -6,7 +6,6 @@ import { Box, Flex, Heading } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect } from 'react';
-import ReactQuill from 'react-quill';
 
 import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
@@ -18,12 +17,15 @@ import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
 import { Event } from '../../interfaces';
 
+const ReactQuill =
+  typeof window === 'object' ? require('react-quill') : (): boolean => false;
+
 interface PageState {
   event: Event;
 }
 interface Props extends RouteComponentProps {
-  location: PageProps<null, null, PageState>['location'];
-  uniqueName: string;
+  location?: PageProps<null, null, PageState>['location'];
+  uniqueName?: string;
 }
 
 export default function EventShowPage({
@@ -32,7 +34,7 @@ export default function EventShowPage({
 }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
-    location.state || (typeof history === 'object' && history.state) || {};
+    location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state;
 
   const [
@@ -192,3 +194,7 @@ export default function EventShowPage({
     </Layout>
   );
 }
+EventShowPage.defaultProps = {
+  location: undefined,
+  uniqueName: undefined,
+};
