@@ -1,6 +1,5 @@
 import 'react-quill/dist/quill.snow.css';
 
-import { useToast } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 
@@ -12,6 +11,7 @@ import EventTabs from '../components/event/EventTabs';
 import { Layout } from '../components/layout/Layout';
 import Loading from '../components/util/Loading';
 import { Club, EventTabProps, User } from '../interfaces';
+import useToastService from '../utils/services/ToastService';
 
 export default function CreatePage(): JSX.Element {
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -71,20 +71,8 @@ export default function CreatePage(): JSX.Element {
     setManagedClubs(resultManagedClubs);
   });
 
-  const toast = useToast();
-  const makeToast = (
-    title: string,
-    isError = false,
-    description = '',
-  ): void => {
-    toast({
-      title,
-      description,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
+
   const [getEventCreateMutation] = useEventCreateMutation({
     onCompleted: () => {
       makeToast('Új esemény létrehozva');

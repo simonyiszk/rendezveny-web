@@ -12,7 +12,6 @@ import {
   TabPanels,
   Tabs,
   Text,
-  useToast,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
@@ -29,6 +28,7 @@ import {
   getRegStartValid,
   getStartValid,
 } from '../../utils/services/EventFormValidation';
+import useToastService from '../../utils/services/ToastService';
 import Button from '../control/Button';
 import Multiselect from '../control/Multiselect';
 import Calendar from '../util/Calendar';
@@ -95,16 +95,7 @@ export default function EventTabs({
   );
   const [tabIndex, setTabIndex] = React.useState(0);
 
-  const toast = useToast();
-  const makeToast = (title: string, isError = false, desc = ''): void => {
-    toast({
-      title,
-      description: desc,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
 
   const validTab = (index: number): void => {
     switch (index) {

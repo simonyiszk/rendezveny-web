@@ -1,11 +1,4 @@
-import {
-  Box,
-  Flex,
-  Grid,
-  Input,
-  useDisclosure,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, Flex, Grid, Input, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
@@ -28,6 +21,7 @@ import {
   EventRegistrationFormMultipleChoiceQuestion,
   EventRelation,
 } from '../../../interfaces';
+import useToastService from '../../../utils/services/ToastService';
 
 interface PageState {
   user: EventRelation;
@@ -56,20 +50,8 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
     setNewAnswers(answers);
   };
 
-  const toast = useToast();
-  const makeToast = (
-    title: string,
-    isError = false,
-    description = '',
-  ): void => {
-    toast({
-      title,
-      description,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
+
   const [getModifyFilledInForm] = useModifyFilledInForm({
     onCompleted: () => {
       makeToast('Sikeres módosítás');

@@ -1,5 +1,5 @@
 import { useApolloClient } from '@apollo/client';
-import { Flex, Heading, useDisclosure, useToast } from '@chakra-ui/react';
+import { Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
@@ -18,6 +18,7 @@ import Loading from '../../components/util/Loading';
 import ManagePageButton from '../../components/util/ManagePageButton';
 import { Event } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
+import useToastService from '../../utils/services/ToastService';
 import {
   isAdmin,
   isChiefOrganizer,
@@ -81,20 +82,8 @@ export default function EventPage({
     getCurrentEvent({ variables: { uniqueName } });
   });
 
-  const toast = useToast();
-  const makeToast = (
-    title: string,
-    isError = false,
-    description = '',
-  ): void => {
-    toast({
-      title,
-      description,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
+
   const [getEventDeleteMutation] = useEventDeleteMutation({
     onCompleted: () => {
       makeToast('Sikeres törlés');

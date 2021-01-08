@@ -18,7 +18,6 @@ import {
   Tabs,
   Textarea,
   useDisclosure,
-  useToast,
 } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
@@ -49,6 +48,7 @@ import {
   EventRegistrationFormQuestionInput,
   EventRegistrationFormTextQuestion,
 } from '../../interfaces';
+import useToastService from '../../utils/services/ToastService';
 
 interface PageState {
   event: Event;
@@ -128,20 +128,7 @@ export default function FormeditorPage({
     getCurrentEvent({ variables: { uniqueName } });
   });
 
-  const toast = useToast();
-  const makeToast = (
-    title: string,
-    isError = false,
-    description = '',
-  ): void => {
-    toast({
-      title,
-      description,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
 
   const [getModifyFormMutation] = useModifyFormMutation({
     onCompleted: () => {

@@ -1,7 +1,6 @@
 import 'react-quill/dist/quill.snow.css';
 
 import { useApolloClient } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
@@ -19,6 +18,7 @@ import EventTabs from '../../components/event/EventTabs';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
 import { Club, Event, EventTabProps, User } from '../../interfaces';
+import useToastService from '../../utils/services/ToastService';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
 interface PageState {
@@ -159,20 +159,8 @@ export default function DetailsPage({
     getCurrentEvent({ variables: { uniqueName } });
   });
 
-  const toast = useToast();
-  const makeToast = (
-    title: string,
-    isError = false,
-    description = '',
-  ): void => {
-    toast({
-      title,
-      description,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
+
   const [getEventInformationMutation] = useEventInformationMutation({
     onCompleted: () => {
       makeToast('Sikeres szerkesztés');

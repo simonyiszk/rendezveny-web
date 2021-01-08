@@ -13,7 +13,6 @@ import {
   ModalOverlay,
   Select,
   useDisclosure,
-  useToast,
 } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
@@ -29,6 +28,7 @@ import HRTableComp from '../../../components/hrtable/HRTableComp';
 import { Layout } from '../../../components/layout/Layout';
 import Calendar from '../../../components/util/Calendar';
 import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
+import useToastService from '../../../utils/services/ToastService';
 
 interface PageState {
   event: Event;
@@ -59,20 +59,8 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
       };
     }),
   );
-  const toast = useToast();
-  const makeToast = (
-    title: string,
-    isError = false,
-    description = '',
-  ): void => {
-    toast({
-      title,
-      description,
-      status: isError ? 'error' : 'success',
-      duration: 5000,
-      isClosable: true,
-    });
-  };
+  const makeToast = useToastService();
+
   const [getCreateHRTableMutation] = useCreateHRTableMutation({
     onCompleted: () => {},
     onError: (error) => {
