@@ -4,12 +4,6 @@ import {
   Flex,
   Grid,
   Input,
-  Modal,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
@@ -36,6 +30,7 @@ import {
 } from '../../components/control/CheckboxGroup';
 import { Radio, RadioGroup } from '../../components/control/RadioGroup';
 import { Layout } from '../../components/layout/Layout';
+import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import {
   Event,
@@ -378,35 +373,13 @@ export default function RegistrationPage({
         </Box>
       </Flex>
 
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Biztosan leiratkozol az eseményről?</ModalHeader>
-          <ModalCloseButton />
-          <ModalFooter>
-            <Flex width="100%" flexDirection="column">
-              <Flex
-                justifyContent={['center', null, 'space-between']}
-                flexDir={['column', null, 'row']}
-                width="100%"
-              >
-                <Button
-                  width={['100%', null, '45%']}
-                  text="Igen"
-                  onClick={handleDelete}
-                />
-                <Button
-                  width={['100%', null, '45%']}
-                  text="Nem"
-                  backgroundColor="red.500"
-                  mt={[4, null, 0]}
-                  onClick={onClose}
-                />
-              </Flex>
-            </Flex>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <BinaryModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Biztosan leiratkozol az eseményről?"
+        onAccept={handleDelete}
+        onReject={onClose}
+      />
     </Layout>
   );
 }

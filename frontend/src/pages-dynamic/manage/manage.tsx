@@ -1,16 +1,5 @@
 import { useApolloClient } from '@apollo/client';
-import {
-  Flex,
-  Heading,
-  Modal,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  useDisclosure,
-  useToast,
-} from '@chakra-ui/react';
+import { Flex, Heading, useDisclosure, useToast } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
@@ -24,6 +13,7 @@ import {
 import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
+import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import { Event } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
@@ -203,35 +193,13 @@ export default function EventPage({
         </ProtectedComponent>
       </Flex>
 
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Biztosan törlöd az eseményt?</ModalHeader>
-          <ModalCloseButton />
-          <ModalFooter>
-            <Flex width="100%" flexDirection="column">
-              <Flex
-                justifyContent={['center', null, 'space-between']}
-                flexDir={['column', null, 'row']}
-                width="100%"
-              >
-                <Button
-                  width={['100%', null, '45%']}
-                  text="Igen"
-                  onClick={handleDelete}
-                />
-                <Button
-                  width={['100%', null, '45%']}
-                  text="Nem"
-                  backgroundColor="red.500"
-                  mt={[4, null, 0]}
-                  onClick={onClose}
-                />
-              </Flex>
-            </Flex>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <BinaryModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Biztosan törlöd az eseményt?"
+        onAccept={handleDelete}
+        onReject={onClose}
+      />
     </Layout>
   );
 }
