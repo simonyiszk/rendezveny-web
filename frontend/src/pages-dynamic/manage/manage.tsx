@@ -15,6 +15,7 @@ import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
+import ManagePageButton from '../../components/util/ManagePageButton';
 import { Event } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import {
@@ -138,50 +139,30 @@ export default function EventPage({
         {event?.name ?? getCurrentEventData?.events_getOne.name} kezelése
       </Heading>
       <Flex flexDir="column" alignItems="center">
-        <ProtectedComponent access={accessOrg}>
-          <LinkButton
-            text="Résztvevők kezelése"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to={`/manage/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }/members`}
-            state={{ event: event ?? getCurrentEventData?.events_getOne }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent access={accessChiefCMAdmin}>
-          <LinkButton
-            text="Rendezvény kezelése"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to={`/manage/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }/details`}
-            state={{ event: event ?? getCurrentEventData?.events_getOne }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent access={accessOrg}>
-          <LinkButton
-            text="HR tábla"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to={`/manage/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }/hrtable`}
-            state={{ event: event ?? getCurrentEventData?.events_getOne }}
-          />
-        </ProtectedComponent>
-        <ProtectedComponent access={accessOrg}>
-          <LinkButton
-            text="Regisztrációs form"
-            width={['100%', null, '30rem']}
-            mb="1rem"
-            to={`/manage/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }/formeditor`}
-            state={{ event: event ?? getCurrentEventData?.events_getOne }}
-          />
-        </ProtectedComponent>
+        <ManagePageButton
+          access={accessOrg}
+          text="Résztvevők kezelése"
+          toPostfix="members"
+          event={event ?? getCurrentEventData?.events_getOne}
+        />
+        <ManagePageButton
+          access={accessChiefCMAdmin}
+          text="Rendezvény kezelése"
+          toPostfix="details"
+          event={event ?? getCurrentEventData?.events_getOne}
+        />
+        <ManagePageButton
+          access={accessOrg}
+          text="HR tábla"
+          toPostfix="hrtable"
+          event={event ?? getCurrentEventData?.events_getOne}
+        />
+        <ManagePageButton
+          access={accessOrg}
+          text="Regisztrációs form"
+          toPostfix="formeditor"
+          event={event ?? getCurrentEventData?.events_getOne}
+        />
         <ProtectedComponent access={accessChiefCMAdmin}>
           <Button
             text="Esemény törlése"
