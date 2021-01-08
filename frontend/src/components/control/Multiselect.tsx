@@ -61,6 +61,7 @@ export default function Multiselect<T>({
       borderColor={isInvalid ? 'red.500' : 'inherit'}
       backgroundColor="#fff"
       minHeight="3.125rem"
+      height="100%"
       onClick={(): void => {
         setOpen(!isOpen);
       }}

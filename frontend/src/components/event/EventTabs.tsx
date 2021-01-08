@@ -492,7 +492,7 @@ export default function EventTabs({
                 rowGap={['0', null, '1rem']}
               >
                 <Label minHeight={['0', null, '2rem']}>Fő szervezők</Label>
-                <Box>
+                <Flex flexDir="column">
                   <Multiselect
                     options={allUsers}
                     value={chiefOrganizers}
@@ -511,7 +511,7 @@ export default function EventTabs({
                       </Text>
                     ))}
                   </Box>
-                </Box>
+                </Flex>
                 <Label minHeight={['0', null, '2rem']}>Szervezők</Label>
                 <Multiselect
                   options={allUsers}
@@ -557,7 +557,7 @@ export default function EventTabs({
                 rowGap={['0', null, '1rem']}
               >
                 <Label minHeight={['0', null, '2rem']}>Szerező körök</Label>
-                <Box>
+                <Flex flexDir="column">
                   <Multiselect
                     options={allClubs}
                     value={hostingClubs}
@@ -576,7 +576,7 @@ export default function EventTabs({
                       </Text>
                     ))}
                   </Box>
-                </Box>
+                </Flex>
                 <Label minHeight={['0', null, '2rem']}>
                   Esemény látogathatósága
                 </Label>
