@@ -11,7 +11,6 @@ import {
   useEventTokenMutationUN,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
-import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
@@ -41,7 +40,7 @@ export default function EventPage({
   const state =
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
-  const { event } = state;
+  const { event } = state as PageState;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 

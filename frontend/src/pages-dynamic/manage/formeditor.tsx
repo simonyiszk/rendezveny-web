@@ -66,7 +66,7 @@ export default function FormeditorPage({
   const state =
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
-  const { event } = state;
+  const { event } = state as PageState;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 

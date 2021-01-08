@@ -31,7 +31,7 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
-  const { event, user } = state;
+  const { event, user } = state as PageState;
 
   const [answers, setAnswers] = useState<AnswerState>({});
 

@@ -35,7 +35,7 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
-  const { event, user, answers } = state;
+  const { event, user, answers } = state as PageState;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 

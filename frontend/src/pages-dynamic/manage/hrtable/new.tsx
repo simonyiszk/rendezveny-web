@@ -42,7 +42,7 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
-  const { event, hrTable } = state;
+  const { event, hrTable } = state as PageState;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
