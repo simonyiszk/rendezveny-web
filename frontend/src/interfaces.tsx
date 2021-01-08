@@ -233,3 +233,7 @@ export interface EventTabProps {
   chiefOrganizers: User[];
   hostingClubs: Club[];
 }
+export interface OrganizerWorkingHours {
+  organizer: User;
+  hours: number;
+}
