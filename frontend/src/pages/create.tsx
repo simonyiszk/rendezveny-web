@@ -1,4 +1,3 @@
-import 'react-datepicker/dist/react-datepicker.css';
 import 'react-quill/dist/quill.snow.css';
 
 import { useToast } from '@chakra-ui/react';

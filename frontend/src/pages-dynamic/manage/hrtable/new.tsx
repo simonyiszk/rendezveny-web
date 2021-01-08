@@ -1,5 +1,3 @@
-import 'react-datepicker/dist/react-datepicker.css';
-
 import {
   Box,
   Flex,
@@ -18,11 +16,8 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
-import { getYear } from 'date-fns';
-import hu from 'date-fns/locale/hu';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
 
 import {
   useCreateHRTableMutation,
@@ -32,9 +27,8 @@ import Button from '../../../components/control/Button';
 import LinkButton from '../../../components/control/LinkButton';
 import HRTableComp from '../../../components/hrtable/HRTableComp';
 import { Layout } from '../../../components/layout/Layout';
+import Calendar from '../../../components/util/Calendar';
 import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
-
-registerLocale('hu', hu);
 
 interface PageState {
   event: Event;
@@ -237,34 +231,6 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
     });
   };
 
-  const datePickerCustomHeader = ({
-    date,
-    decreaseMonth,
-    increaseMonth,
-  }: {
-    date: Date;
-    decreaseMonth: () => void;
-    increaseMonth: () => void;
-  }): JSX.Element => (
-    <Flex
-      fontSize="1rem"
-      fontWeight="bold"
-      justifyContent="space-between"
-      px={4}
-    >
-      <Box cursor="pointer" onClick={decreaseMonth}>
-        {'<'}
-      </Box>
-      <Flex>
-        <Box mr={1}>{getYear(date)}.</Box>
-        <Box>{date.toLocaleString('default', { month: 'long' })}</Box>
-      </Flex>
-      <Box cursor="pointer" onClick={increaseMonth}>
-        {'>'}
-      </Box>
-    </Flex>
-  );
-
   const Label = ({ children }: { children: string }): JSX.Element => {
     return <Box mt={['1rem', null, 0]}>{children}</Box>;
   };
@@ -333,32 +299,22 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
                 >
                   <Label>Kezdés</Label>
                   <Box>
-                    <DatePicker
+                    <Calendar
                       name="segmentStart"
                       selected={getNewSegmentProp(s.id, 'start')}
                       onChange={(date: Date): void =>
                         setNewSegmentProp(s.id, 'start', date)
                       }
-                      dateFormat="yyyy.MM.dd. HH:mm"
-                      locale="hu"
-                      showTimeSelect
-                      renderCustomHeader={datePickerCustomHeader}
-                      timeCaption="Időpont"
                     />
                   </Box>
                   <Label>Vége</Label>
                   <Box>
-                    <DatePicker
+                    <Calendar
                       name="segmentEnd"
                       selected={getNewSegmentProp(s.id, 'end')}
                       onChange={(date: Date): void =>
                         setNewSegmentProp(s.id, 'end', date)
                       }
-                      dateFormat="yyyy.MM.dd. HH:mm"
-                      locale="hu"
-                      showTimeSelect
-                      renderCustomHeader={datePickerCustomHeader}
-                      timeCaption="Időpont"
                     />
                   </Box>
                   <Label>Kötezelő</Label>

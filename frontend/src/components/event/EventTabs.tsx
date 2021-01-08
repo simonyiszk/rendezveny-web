@@ -1,4 +1,3 @@
-import 'react-datepicker/dist/react-datepicker.css';
 import 'react-quill/dist/quill.snow.css';
 
 import {
@@ -15,10 +14,7 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { getYear } from 'date-fns';
-import hu from 'date-fns/locale/hu';
 import React, { useState } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
 
 import { Club, EventTabProps, User } from '../../interfaces';
 import {
@@ -35,12 +31,11 @@ import {
 } from '../../utils/services/EventFormValidation';
 import Button from '../control/Button';
 import Multiselect from '../control/Multiselect';
+import Calendar from '../util/Calendar';
 import Label from '../util/Label';
 
 const ReactQuill =
   typeof window === 'object' ? require('react-quill') : (): boolean => false;
-
-registerLocale('hu', hu);
 
 interface Props {
   accessCMAdmin?: boolean;
@@ -162,34 +157,6 @@ export default function EventTabs({
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/ /g, '-');
   };
-
-  const datePickerCustomHeader = ({
-    date,
-    decreaseMonth,
-    increaseMonth,
-  }: {
-    date: Date;
-    decreaseMonth: () => void;
-    increaseMonth: () => void;
-  }): JSX.Element => (
-    <Flex
-      fontSize="1rem"
-      fontWeight="bold"
-      justifyContent="space-between"
-      px={4}
-    >
-      <Box cursor="pointer" onClick={decreaseMonth}>
-        {'<'}
-      </Box>
-      <Flex>
-        <Box mr={1}>{getYear(date)}.</Box>
-        <Box>{date.toLocaleString('default', { month: 'long' })}</Box>
-      </Flex>
-      <Box cursor="pointer" onClick={increaseMonth}>
-        {'>'}
-      </Box>
-    </Flex>
-  );
 
   return (
     <Tabs
@@ -338,18 +305,13 @@ export default function EventTabs({
                     border="2px solid"
                     borderColor={isStartValid ? 'transparent' : 'red.500'}
                   >
-                    <DatePicker
+                    <Calendar
                       name="start"
                       selected={start}
                       onChange={(date: Date): void => {
                         setStart(date);
                         setStartValid(getStartValid(date));
                       }}
-                      dateFormat="yyyy.MM.dd. HH:mm"
-                      locale="hu"
-                      showTimeSelect
-                      renderCustomHeader={datePickerCustomHeader}
-                      timeCaption="Időpont"
                     />
                   </Flex>
                   <Box>
@@ -369,18 +331,13 @@ export default function EventTabs({
                     border="2px solid"
                     borderColor={isEndValid ? 'transparent' : 'red.500'}
                   >
-                    <DatePicker
+                    <Calendar
                       name="end"
                       selected={end}
                       onChange={(date: Date): void => {
                         setEnd(date);
                         setEndValid(getEndValid(date, start));
                       }}
-                      dateFormat="yyyy.MM.dd. HH:mm"
-                      locale="hu"
-                      showTimeSelect
-                      renderCustomHeader={datePickerCustomHeader}
-                      timeCaption="Időpont"
                     />
                   </Flex>
                   <Box>
@@ -402,18 +359,13 @@ export default function EventTabs({
                     border="2px solid"
                     borderColor={isRegStartValid ? 'transparent' : 'red.500'}
                   >
-                    <DatePicker
+                    <Calendar
                       name="regStart"
                       selected={regStart}
                       onChange={(date: Date): void => {
                         setRegStart(date);
                         setRegStartValid(getRegStartValid(date, start));
                       }}
-                      dateFormat="yyyy.MM.dd. HH:mm"
-                      locale="hu"
-                      showTimeSelect
-                      renderCustomHeader={datePickerCustomHeader}
-                      timeCaption="Időpont"
                     />
                   </Flex>
                   <Box>
@@ -433,18 +385,13 @@ export default function EventTabs({
                     border="2px solid"
                     borderColor={isRegEndValid ? 'transparent' : 'red.500'}
                   >
-                    <DatePicker
+                    <Calendar
                       name="regEnd"
                       selected={regEnd}
                       onChange={(date: Date): void => {
                         setRegEnd(date);
                         setRegEndValid(getRegEndValid(date, regStart));
                       }}
-                      dateFormat="yyyy.MM.dd. HH:mm"
-                      locale="hu"
-                      showTimeSelect
-                      renderCustomHeader={datePickerCustomHeader}
-                      timeCaption="Időpont"
                     />
                   </Flex>
                   <Box>
