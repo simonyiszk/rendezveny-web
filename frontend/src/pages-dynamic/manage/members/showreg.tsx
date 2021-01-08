@@ -1,21 +1,16 @@
-import { Box, Flex, Grid, Input } from '@chakra-ui/react';
+import { Box, Flex, Grid } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
 import { useRegistrationGetOneQuery } from '../../../api/registration/EventMembersQuery';
-import {
-  Checkbox,
-  CheckboxGroup,
-} from '../../../components/control/CheckboxGroup';
 import LinkButton from '../../../components/control/LinkButton';
-import { Radio, RadioGroup } from '../../../components/control/RadioGroup';
+import QuestionListElement from '../../../components/form/QuestionListElement';
 import { Layout } from '../../../components/layout/Layout';
 import Loading from '../../../components/util/Loading';
 import {
   Event,
   EventRegistrationFormMultipleChoiceAnswer,
-  EventRegistrationFormMultipleChoiceQuestion,
   EventRegistrationFormTextAnswer,
   EventRelation,
 } from '../../../interfaces';
@@ -95,57 +90,19 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
-        <Box as="form" minWidth="50%">
+        <Box as="form" width="80%">
           <Grid
             gridTemplateColumns={['1fr', null, '1fr 1fr']}
             rowGap={['0', null, '1rem']}
           >
             {event?.registrationForm &&
               event.registrationForm.questions.map((q) => (
-                <React.Fragment key={q.id}>
-                  <Box>{q.question}</Box>
-                  {q.metadata.type === 'text' && (
-                    <Input
-                      isDisabled
-                      mb={['1rem', null, '0']}
-                      value={getAnswer(q.id) || ''}
-                    />
-                  )}
-                  {q.metadata.type === 'multiple_choice' &&
-                    (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                      .multipleAnswers && (
-                      <CheckboxGroup
-                        isDisabled
-                        flexDir="column"
-                        value={getAnswer(q.id) || []}
-                      >
-                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                          (option) => (
-                            <Checkbox key={option.id} value={option.id} mb={2}>
-                              {option.text}
-                            </Checkbox>
-                          ),
-                        )}
-                      </CheckboxGroup>
-                    )}
-                  {q.metadata.type === 'multiple_choice' &&
-                    !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                      .multipleAnswers && (
-                      <RadioGroup
-                        isDisabled
-                        flexDir="column"
-                        value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                      >
-                        {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                          (option) => (
-                            <Radio key={option.id} value={option.id} mb={2}>
-                              {option.text}
-                            </Radio>
-                          ),
-                        )}
-                      </RadioGroup>
-                    )}
-                </React.Fragment>
+                <QuestionListElement
+                  key={q.id}
+                  question={q}
+                  getAnswer={getAnswer}
+                  isDisabled
+                />
               ))}
           </Grid>
           <Flex justifyContent="center" mt={4}>

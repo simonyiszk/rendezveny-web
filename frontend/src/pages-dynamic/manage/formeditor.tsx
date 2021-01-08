@@ -32,11 +32,8 @@ import {
   useEventTokenMutationUN,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
-import {
-  Checkbox,
-  CheckboxGroup,
-} from '../../components/control/CheckboxGroup';
 import { Radio, RadioGroup } from '../../components/control/RadioGroup';
+import QuestionListElement from '../../components/form/QuestionListElement';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
 import {
@@ -321,62 +318,11 @@ export default function FormeditorPage({
           >
             {questions.map((q, idx) => (
               <React.Fragment key={q.id}>
-                <Box
-                  mt={[4, null, 0]}
-                  fontWeight="bold"
-                  mb={[2, null, 0]}
-                  fontSize={['1.25rem', null, '1rem']}
-                  textAlign={['center', null, 'left']}
-                >
-                  {q.question}
-                </Box>
-                {q.metadata.type === 'text' && (
-                  <Input
-                    mb={['0.5rem', null, '0']}
-                    value={getAnswer(q.id) || ''}
-                    onChange={(e: React.FormEvent): void => {
-                      setAnswer(q.id, (e.target as HTMLInputElement).value);
-                    }}
-                  />
-                )}
-                {q.metadata.type === 'multiple_choice' &&
-                  (q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                    .multipleAnswers && (
-                    <CheckboxGroup
-                      flexDir="column"
-                      value={getAnswer(q.id) || []}
-                      onChangeCb={(e: string[]): void => {
-                        setAnswer(q.id, e);
-                      }}
-                    >
-                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                        (option) => (
-                          <Checkbox key={option.id} value={option.id} mb={2}>
-                            {option.text}
-                          </Checkbox>
-                        ),
-                      )}
-                    </CheckboxGroup>
-                  )}
-                {q.metadata.type === 'multiple_choice' &&
-                  !(q.metadata as EventRegistrationFormMultipleChoiceQuestion)
-                    .multipleAnswers && (
-                    <RadioGroup
-                      flexDir="column"
-                      value={getAnswer(q.id) ? getAnswer(q.id)[0] : ''}
-                      onChangeCb={(e: string): void => {
-                        setAnswer(q.id, [e]);
-                      }}
-                    >
-                      {(q.metadata as EventRegistrationFormMultipleChoiceQuestion).options.map(
-                        (option) => (
-                          <Radio key={option.id} value={option.id} mb={2}>
-                            {option.text}
-                          </Radio>
-                        ),
-                      )}
-                    </RadioGroup>
-                  )}
+                <QuestionListElement
+                  question={q}
+                  getAnswer={getAnswer}
+                  setAnswer={setAnswer}
+                />
                 <Grid
                   ml={[0, null, 4]}
                   mt={[1, null, 0]}
