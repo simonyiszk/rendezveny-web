@@ -156,7 +156,7 @@ export default function EventTabs({
       width="100%"
       index={tabIndex}
       onChange={(tab): void => {
-        validTab(tabIndex);
+        if (tab !== tabIndex) validTab(tabIndex);
         setTabIndex(tab);
       }}
     >
