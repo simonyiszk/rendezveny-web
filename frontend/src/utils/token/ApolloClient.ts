@@ -12,7 +12,7 @@ import { getAuthToken, getEventToken } from './TokenContainer';
 
 const httpLink = new HttpLink({
   fetch,
-  uri: process.env.GATSBY_SERVER_API_URL
+  uri: process.env.GATSBY_SERVER_API_URL,
 });
 
 export const resetContext = (client: ApolloClient<object>) => {
@@ -42,7 +42,13 @@ const authMiddleware = (authToken, eventToken) =>
     };
   });
 
-const cache = new InMemoryCache({});
+const cache = new InMemoryCache({
+  typePolicies: {
+    EventRelationDTO: {
+      keyFields: ['userId'],
+    },
+  },
+});
 
 const useAppApolloClient = () => {
   const authToken = getAuthToken();
