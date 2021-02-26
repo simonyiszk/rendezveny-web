@@ -1,0 +1,57 @@
+import 'react-datepicker/dist/react-datepicker.css';
+
+import { Box, Flex } from '@chakra-ui/react';
+import { getYear } from 'date-fns';
+import hu from 'date-fns/locale/hu';
+import React from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+
+registerLocale('hu', hu);
+
+const datePickerCustomHeader = ({
+  date,
+  decreaseMonth,
+  increaseMonth,
+}: {
+  date: Date;
+  decreaseMonth: () => void;
+  increaseMonth: () => void;
+}): JSX.Element => (
+  <Flex fontSize="1rem" fontWeight="bold" justifyContent="space-between" px={4}>
+    <Box cursor="pointer" onClick={decreaseMonth}>
+      {'<'}
+    </Box>
+    <Flex>
+      <Box mr={1}>{getYear(date)}.</Box>
+      <Box>{date.toLocaleString('default', { month: 'long' })}</Box>
+    </Flex>
+    <Box cursor="pointer" onClick={increaseMonth}>
+      {'>'}
+    </Box>
+  </Flex>
+);
+
+interface Props {
+  name: string;
+  selected: Date;
+  onChange: (date: Date) => void;
+}
+
+export default function Calendar({
+  name,
+  selected,
+  onChange,
+}: Props): JSX.Element {
+  return (
+    <DatePicker
+      name={name}
+      selected={selected}
+      onChange={onChange}
+      dateFormat="yyyy.MM.dd. HH:mm"
+      locale="hu"
+      showTimeSelect
+      renderCustomHeader={datePickerCustomHeader}
+      timeCaption="Időpont"
+    />
+  );
+}

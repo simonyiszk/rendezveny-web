@@ -1,11 +1,11 @@
 import { useApolloClient } from '@apollo/client';
-import { Box, Flex, Grid, Input } from '@chakra-ui/core';
+import { Box, Flex, Grid, Input } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
 
-import Button from '../components/Button';
-import { Layout } from '../components/Layout';
-import { useLoginMutation } from '../utils/api/token/LoginWithLocalIdentityMutation';
+import { useLoginMutation } from '../api/token/LoginWithLocalIdentityMutation';
+import Button from '../components/control/Button';
+import { Layout } from '../components/layout/Layout';
 
 export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');

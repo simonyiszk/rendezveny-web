@@ -1,11 +1,11 @@
-import { Box } from '@chakra-ui/core';
+import { Box } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React from 'react';
 
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
+import { useProfileGetSelfQuery } from '../api/profile/UserGetSelfQuery';
+import { Layout } from '../components/layout/Layout';
+import Loading from '../components/util/Loading';
 import { ClubRole } from '../interfaces';
-import { useProfileGetSelfQuery } from '../utils/api/profile/UserGetSelfQuery';
 
 export default function LogsPage(): JSX.Element {
   const getEvents = useProfileGetSelfQuery();

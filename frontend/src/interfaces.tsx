@@ -1,3 +1,5 @@
+import { ApolloError } from '@apollo/client';
+
 export interface Event {
   id: string;
   name: string;
@@ -25,6 +27,7 @@ export interface Event {
   };
   selfRelation: EventRelation;
   selfRelation2: EventRelation;
+  alreadyRegistered: number;
 }
 export interface HistoryYears {
   [year: string]: Event[];
@@ -89,6 +92,21 @@ export interface EventRegistrationFormMultipleChoiceOption {
   id: string;
   text: string;
 }
+export interface EventRegistrationFormInput {
+  questions: EventRegistrationFormQuestionInput[];
+}
+export interface EventRegistrationFormQuestionInput {
+  id: string;
+  isRequired: boolean;
+  metadata: string;
+  question: string;
+}
+export enum EventQuestionType {
+  INVALID = -1,
+  TEXT,
+  RADIOBUTTON,
+  CHECKBOX,
+}
 
 // ANSWERS
 export interface EventRegistrationFormAnswers {
@@ -127,7 +145,7 @@ export interface Club {
 }
 export interface Membership {
   club: Club;
-  role: ClubRole;
+  role: string;
   user: User;
 }
 export enum ClubRole {
@@ -188,9 +206,30 @@ export interface HRCallback {
   signOffCb: (id: string) => void;
 }
 export interface HREditCallback {
-  addNewSegment: (taskId: string) => void;
-  editTask: (taskId: string) => void;
-  deleteTask: (taskId: string) => void;
-  editSegment: (segmentId: string) => void;
-  deleteSegment: (segmentId: string) => void;
+  hrEdit: ((task: HRTask) => void) | undefined;
+  moveUp: ((task: HRTask) => void) | undefined;
+  moveDown: ((task: HRTask) => void) | undefined;
+}
+
+// UTIL
+export interface MutationProps {
+  onCompleted: () => void;
+  onError: (error: ApolloError) => void;
+  refetchQueries: any;
+}
+export interface EventTabProps {
+  name: string;
+  description: string;
+  start: Date;
+  end: Date;
+  regStart: Date;
+  regEnd: Date;
+  place: string;
+  isClosed: boolean;
+  capacity: string;
+  reglink: string;
+  application: boolean;
+  organizers: User[];
+  chiefOrganizers: User[];
+  hostingClubs: Club[];
 }

@@ -1,11 +1,11 @@
-import { Box } from '@chakra-ui/core';
+import { Box } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React from 'react';
 
-import { Layout } from '../components/Layout';
-import Loading from '../components/Loading';
-import LogBox from '../components/LogBox';
-import { useLogGetAllQuery } from '../utils/api/logs/LogsGetAllQuery';
+import { useLogGetAllQuery } from '../api/logs/LogsGetAllQuery';
+import { Layout } from '../components/layout/Layout';
+import LogBox from '../components/sections/LogBox';
+import Loading from '../components/util/Loading';
 
 export default function LogsPage(): JSX.Element {
   const getLogs = useLogGetAllQuery();
