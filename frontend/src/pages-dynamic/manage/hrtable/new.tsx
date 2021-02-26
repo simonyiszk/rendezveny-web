@@ -26,7 +26,7 @@ import Button from '../../../components/control/Button';
 import LinkButton from '../../../components/control/LinkButton';
 import HRTableComp from '../../../components/hrtable/HRTableComp';
 import { Layout } from '../../../components/layout/Layout';
-import Calendar from '../../../components/util/Calendar';
+import Calendar, { roundTime } from '../../../components/util/Calendar';
 import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
 import useToastService from '../../../utils/services/ToastService';
 
@@ -161,19 +161,28 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
       segments: newTask?.segments,
       isLocked: false,
     } as HRTask;
+    console.log(modifiedTask);
 
-    const index = tasks.findIndex((t) => t.id === newTask?.id);
-    if (index === -1) {
-      setTasks([...tasks, modifiedTask]);
-    } else {
-      setTasks(
-        tasks.map((t) => {
-          if (t.id !== newTask?.id) return t;
-          return modifiedTask;
-        }),
+    if (modifiedTask.segments.some((s) => s.start >= s.end)) {
+      makeToast(
+        'Hiba',
+        true,
+        'A szegmens kezdetének előbb kell lennie, mint a végének',
       );
+    } else {
+      const index = tasks.findIndex((t) => t.id === newTask?.id);
+      if (index === -1) {
+        setTasks([...tasks, modifiedTask]);
+      } else {
+        setTasks(
+          tasks.map((t) => {
+            if (t.id !== newTask?.id) return t;
+            return modifiedTask;
+          }),
+        );
+      }
+      onClose();
     }
-    onClose();
   };
   const moveUp = (task: HRTask): void => {
     const movedTasks = [...tasks];
@@ -290,9 +299,9 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
                     <Calendar
                       name="segmentStart"
                       selected={getNewSegmentProp(s.id, 'start')}
-                      onChange={(date: Date): void =>
-                        setNewSegmentProp(s.id, 'start', date)
-                      }
+                      onChange={(date: Date): void => {
+                        setNewSegmentProp(s.id, 'start', roundTime(date, 15));
+                      }}
                     />
                   </Box>
                   <Label>Vége</Label>
@@ -300,9 +309,9 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
                     <Calendar
                       name="segmentEnd"
                       selected={getNewSegmentProp(s.id, 'end')}
-                      onChange={(date: Date): void =>
-                        setNewSegmentProp(s.id, 'end', date)
-                      }
+                      onChange={(date: Date): void => {
+                        setNewSegmentProp(s.id, 'end', roundTime(date, 15));
+                      }}
                     />
                   </Box>
                   <Label>Kötezelő</Label>
