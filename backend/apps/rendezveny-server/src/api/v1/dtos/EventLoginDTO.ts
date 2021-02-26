@@ -10,6 +10,11 @@ export class EventLoginDTO {
 	})
 	public eventToken: string = '';
 
+	@Field({
+		description: 'The event id'
+	})
+	public id: string = '';
+
 	@Field(_ => EventRelationDTO, {
 		description: 'The relation of the token holder to the event'
 	})

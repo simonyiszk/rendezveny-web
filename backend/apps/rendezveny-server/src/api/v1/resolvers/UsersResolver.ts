@@ -72,11 +72,16 @@ export class UsersResolver {
 		@AccessCtx() accessContext: AccessContext,
 		@Parent() userDTO: UserDTO,
 		@PageSize() pageSize: number,
-		@Offset() offset: number
+		@Offset() offset: number,
+		@Args('isManaged', {
+			description: 'The user is manager of the club', nullable: true
+		}) isManaged?: boolean,
 	): Promise<PaginatedMembershipDTO> {
 		const user = await this.userManager.getUserById(accessContext, userDTO.id);
 		const { memberships, count } = await this.userManager.getAllClubMembershipsPaginated(
-			accessContext, user, pageSize, offset
+			accessContext, user, pageSize, offset, {
+				isManaged
+			}
 		);
 
 		return {

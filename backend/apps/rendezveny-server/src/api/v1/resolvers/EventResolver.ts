@@ -144,6 +144,10 @@ export class EventResolver {
 			description: 'The ids of the chief organizers',
 			type: () => [GraphQLString]
 		}) chiefOrganizerIds: string[],
+		@Args('organizerIds', {
+			description: 'The ids of the not chief organizers',
+			type: () => [GraphQLString],
+		}) organizerIds: string[],
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
@@ -183,8 +187,9 @@ export class EventResolver {
 			uniqueName,
 			description,
 			isClosedEvent,
-			await Promise.all(hostingClubIds.map(async id => this.clubManager.getClubById(accessContext, id))),
-			await Promise.all(chiefOrganizerIds.map(async id => this.userManager.getUserById(accessContext, id))),
+			hostingClubIds,
+			chiefOrganizerIds,
+			organizerIds,
 			{
 				start, end, registrationEnd, registrationStart, registrationAllowed, isDateOrTime, place, capacity
 			}
@@ -315,13 +320,24 @@ export class EventResolver {
 	@UseGuards(AuthAccessGuard)
 	public async getEventToken(
 		@AccessCtx() accessContext: AccessContext,
-		@Args('id', { description: 'The id of the event' }) id: string
-	): Promise<EventLoginDTO> {
-		const event = await this.eventManager.getEventById(id);
+		@Args('id', { description: 'The id of the event', nullable: true }) id?: string,
+		@Args('uniqueName', { description: 'The unique name of the event', nullable: true }) uniqueName?: string
+	): Promise<EventLoginDTO | null> {
+		let event = null;
+		if(typeof id !== 'undefined') {
+			event = await this.eventManager.getEventById(id)
+		}
+		if(typeof uniqueName !== 'undefined') {
+			event = await this.eventManager.getEventByUniqueName(uniqueName) 
+		}
+		if(!event) {
+			return null;
+		}
 		const { token, relation } = await this.eventManager.getEventToken(accessContext, event);
 
 		return {
 			eventToken: token,
+			id: event.id,
 			relation: this.returnEventRelationDTO(relation)
 		};
 	}
@@ -545,6 +561,15 @@ export class EventResolver {
 		const event = await this.eventManager.getEventById(id);
 		await this.hrTableManager.deleteHRTable(eventContext, event);
 		return true;
+	}
+
+	@ResolveField(nameof<EventDTO>('alreadyRegistered'), _ => Number)
+	@UseFilters(BusinessExceptionFilter)
+	public async getAlreadyRegistered(
+		@Parent() eventDTO: EventDTO
+	): Promise<number> {
+		const event = await this.eventManager.getEventById(eventDTO.id);
+		return this.eventManager.getAlreadyRegistered(event);
 	}
 
 	private returnEventRelationDTO(relation: EventRelation): EventRelationDTO {

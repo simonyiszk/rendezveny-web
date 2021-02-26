@@ -83,7 +83,7 @@ export class SeedService {
 	public async seedDatabase(): Promise<void> {
 		/* Users */
 
-		const john = new User({ name: 'John', role: UserRole.ADMIN });
+		const john = new User({ name: 'John' });
 		await this.userRepository.save(john);
 		await this.localIdentityRepository.save(new LocalIdentity({
 			username: 'john',
@@ -144,7 +144,7 @@ export class SeedService {
 		/* Membershisp */
 
 		await this.membershipRepository.save(new ClubMembership({
-			user: john, club: geekClub
+			user: john, club: geekClub, clubRole: ClubRole.CLUB_MANAGER
 		}));
 		await this.membershipRepository.save(new ClubMembership({
 			user: john, club: fencingClub
@@ -254,6 +254,36 @@ export class SeedService {
 		});
 		await this.eventRepository.save(emilysParty);
 
+		const birthday2020 = new Event({ // John is organizer
+			name: 'Birthday Party 2020',
+			uniqueName: 'bd-party2020',
+			description: 'Birthday Party 2020',
+			place: 'SCH',
+			start: new Date(2020, 5, 26, 18, 0),
+			end: new Date(2020, 5, 26, 22, 58),
+			registrationStart: new Date(2020, 4, 20, 18, 0),
+			registrationEnd: new Date(2020, 5, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: false,
+			hostingClubs: [geekClub]
+		});
+		await this.eventRepository.save(birthday2020);
+
+		const birthday2019 = new Event({ // John is organizer
+			name: 'Emily\'s party',
+			uniqueName: 'bd-party2019',
+			description: 'Emily\'s party',
+			place: 'SCH',
+			start: new Date(2019, 5, 26, 18, 0),
+			end: new Date(2019, 5, 26, 22, 58),
+			registrationStart: new Date(2019, 4, 20, 18, 0),
+			registrationEnd: new Date(2019, 5, 20, 12, 0),
+			isDateOrTime: false,
+			isClosedEvent: false,
+			hostingClubs: [geekClub]
+		});
+		await this.eventRepository.save(birthday2019);
+
 		const aprilGalaDinner = new Organizer({
 			event: galaDinner, user: april, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
 		});
@@ -281,6 +311,25 @@ export class SeedService {
 			notificationSettings: RegistrationNotificationSettings.ALL
 		});
 		await this.registrationRepository.save(johnGalaDinner);
+		
+		const johnBd2020 = new Registration({
+			event: birthday2020,
+			user: john,
+			registrationDate: new Date("2020-05-01T00:00:00.000Z"),
+			notificationSettings: RegistrationNotificationSettings.ALL,
+			attendDate: new Date("2020-05-01T00:00:00.000Z"),
+		});
+		await this.registrationRepository.save(johnBd2020);
+
+		
+		const johnBd2019 = new Registration({
+			event: birthday2019,
+			user: john,
+			registrationDate: new Date("2019-05-01T00:00:00.000Z"),
+			notificationSettings: RegistrationNotificationSettings.ALL,
+			attendDate: new Date("2019-05-01T00:00:00.000Z"),
+		});
+		await this.registrationRepository.save(johnBd2019);
 
 		/* Form */
 

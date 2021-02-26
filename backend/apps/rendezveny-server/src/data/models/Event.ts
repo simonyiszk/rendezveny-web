@@ -19,7 +19,7 @@ export class Event extends BaseEntity<Event> {
 	@Column()
 	public uniqueName!: string;
 
-	@Column()
+	@Column("text")
 	public description!: string;
 
 	@Column({ type: 'varchar', nullable: true })

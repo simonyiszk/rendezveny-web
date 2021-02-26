@@ -5,7 +5,7 @@ import { Event } from '../../data/models/Event';
 import { checkPagination } from '../utils/pagination/CheckPagination';
 import { EventDoesNotExistsException } from './exceptions/EventDoesNotExistsException';
 import { checkArgument } from '../../utils/preconditions';
-import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, isPositive, minDate } from 'class-validator';
+import { arrayMinSize, isArray, isDateString, isDefined, isNotEmpty, isNegative, minDate } from 'class-validator';
 import { Organizer } from '../../data/models/Organizer';
 import { OrganizerNotificationSettings } from '../../data/models/OrganizerNotificationSettings';
 import { EventStartDateValidationException } from './exceptions/EventStartDateValidationException';
@@ -195,7 +195,9 @@ export class EventManager extends BaseManager {
 	public async getEventByUniqueName(
 		uniqueName: string
 	): Promise<Event> {
-		const event = await this.eventRepository.findOne({ uniqueName }, {});
+		const event = await this.eventRepository.findOne({ uniqueName }, {
+			relations: [nameof<Event>('hostingClubs')]
+		});
 
 		if(!event) {
 			return this.getEventFail(uniqueName);
@@ -225,21 +227,20 @@ export class EventManager extends BaseManager {
 		uniqueName: string,
 		description: string,
 		isClosedEvent: boolean,
-		hostingClubs: Club[],
-		chiefOrganizers: User[],
+		hostingClubIds: string[],
+		chiefOrganizerIds: string[],
+		organizerIds: string[],
 		settings: {
 			place?: string, capacity?: number,
 			start?: Date, end?: Date, isDateOrTime?: boolean,
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
 		}
 	): Promise<Event> {
-		EventManager.validateEvent({
-			...settings, name, uniqueName, description, isClosedEvent, hostingClubs
-		});
-		checkArgument(
-			isArray(chiefOrganizers) && arrayMinSize(chiefOrganizers, 1),
-			EventChiefOrganizersValidationException
-		);
+		const hostingClubs = await this.clubRepository.findByIds(hostingClubIds);
+		const chiefOrganizers = await this.userRepository.findByIds(chiefOrganizerIds);
+		const organizers = await this.userRepository.findByIds(organizerIds);
+
+		EventManager.validateEvent({...settings, hostingClubs, chiefOrganizers});
 
 		if(!accessContext.isAdmin() && !hostingClubs.some(club => accessContext.isManagerOfClub(club))) {
 			throw new UnauthorizedException();
@@ -267,11 +268,19 @@ export class EventManager extends BaseManager {
 
 		await this.eventRepository.save(event);
 
-		const organizers = chiefOrganizers
+		const newOrganizers = organizers.filter(o => !chiefOrganizerIds.includes(o.id))
 			.map(user => new Organizer({
-				event: event, user: user, isChief: true, notificationSettings: OrganizerNotificationSettings.ALL
+				event: event, user: user, isChief: false,
+				notificationSettings: OrganizerNotificationSettings.ALL
 			}));
-		await this.organizerRepository.save(organizers);
+		await this.organizerRepository.save(newOrganizers);
+
+		const newChiefOrganizers = chiefOrganizers
+			.map(user => new Organizer({
+				event: event, user: user, isChief: true,
+				notificationSettings: OrganizerNotificationSettings.ALL
+			}));
+		await this.organizerRepository.save(newChiefOrganizers);
 
 		return event;
 	}
@@ -299,7 +308,13 @@ export class EventManager extends BaseManager {
 		const hostingClubs = settings.hostingClubIds
 			? await this.clubRepository.findByIds(settings.hostingClubIds)
 			: undefined;
-		EventManager.validateEvent(settings);
+		EventManager.validateEvent({...settings, hostingClubs});
+
+		if(settings.hostingClubIds || settings.isClosedEvent) {
+			if(!eventContext.isAdmin() && !eventContext.isManagerOfHost()) {
+				throw new UnauthorizedException();
+			}
+		}
 
 		const uniqueNameUsed = await this.eventRepository.findOne({
 			uniqueName: settings.uniqueName,
@@ -329,11 +344,14 @@ export class EventManager extends BaseManager {
 			await event.loadRelation(this.eventRepository, 'organizers');
 
 			const organizersToRemove = event.organizers
-				.filter(o => !settings.organizerIds!.includes(o.userId!));
+				.filter(o => !settings.organizerIds!.includes(o.userId!) &&
+				!settings.chiefOrganizerIds!.includes(o.userId!));
 
 			await this.organizerRepository.remove(organizersToRemove);
 
 			const newOrganizers = await Promise.all(settings.organizerIds
+				.filter(id => !settings.chiefOrganizerIds?.includes(id))
+				.filter(id => !event.organizers.filter(o => !o.isChief).map(o => o.userId).includes(id))
 				.map(async(userId) => {
 					if(event.organizers.map(o => o.userId).includes(userId)) {
 						const organizer = event.organizers.find(o => o.userId === userId)!;
@@ -351,8 +369,6 @@ export class EventManager extends BaseManager {
 				}));
 
 			await this.organizerRepository.save(newOrganizers);
-
-			await event.loadRelation(this.eventRepository, 'organizers');
 
 			const newChiefOrganizers = await Promise.all(settings.chiefOrganizerIds
 				.filter(id => !event.organizers.filter(o => o.isChief).map(o => o.userId).includes(id))
@@ -424,7 +440,11 @@ export class EventManager extends BaseManager {
 						chf: isChief,
 						typ: organizing ? 'per' : 'tmp'
 					}
-					: 'none'
+					: 'none',
+				rol: {
+					adm: accessContext.isAdmin(),
+					man: managerOfHost
+				}
 			} as EventToken, {
 				expiresIn: this.configService.get('token.eventValidity')
 			}),
@@ -644,6 +664,12 @@ export class EventManager extends BaseManager {
 		return (await this.returnRelatedUsers(event, users2, [], users.length)).relations;
 	}
 
+	public async getAlreadyRegistered(
+		event: Event
+	): Promise<number> {
+		return this.registrationRepository.count({ event });
+	}
+
 	private async returnRelatedUsers(
 		event: Event, users: User[], temporaryIdentities: TemporaryIdentity[], count: number
 	): Promise<{ relations: EventRelation[], count: number }> {
@@ -687,34 +713,15 @@ export class EventManager extends BaseManager {
 		return { relations: [...relations, ...temporaryRelations], count: count };
 	}
 
-	private static validateDatePair(start?: Date, end?: Date): void {
-		checkArgument(
-			!isDefined(start) || isDateString(start!.toISOString()), EventStartDateValidationException
-		);
-		checkArgument(
-			!isDefined(end) || isDateString(end!.toISOString()), EventEndDateValidationException
-		);
+	private static validateDates(start?: Date, end?: Date, regStart?: Date, regEnd?: Date): void {
+		checkArgument(isDateString(start!.toISOString()), EventStartDateValidationException);
+		checkArgument(isDateString(end!.toISOString()), EventEndDateValidationException);
+		checkArgument(isDateString(regStart!.toISOString()), EventRegistrationStartDateValidationException);
+		checkArgument(isDateString(regEnd!.toISOString()), EventRegistrationEndDateValidationException);
 
-		checkArgument(
-			!(start && end) || minDate(end, start),
-			EventDateIntervalValidationException
-		);
-	}
-
-	private static validateRegistrationDatePair(
-		start?: Date, end?: Date
-	): void {
-		checkArgument(
-			!isDefined(start) || isDateString(start!.toISOString()), EventRegistrationStartDateValidationException
-		);
-		checkArgument(
-			!isDefined(end) || isDateString(end!.toISOString()), EventRegistrationEndDateValidationException
-		);
-
-		checkArgument(
-			!(start && end) || minDate(end, start),
-			EventRegistrationDateIntervalValidationException
-		);
+		checkArgument(!(start && end) || minDate(end, start), EventDateIntervalValidationException);
+		checkArgument(!(regStart) || minDate(start, regStart), EventRegistrationDateIntervalValidationException);
+		checkArgument(!(regStart && regEnd) || minDate(regEnd, regStart), EventRegistrationDateIntervalValidationException);
 	}
 
 	private static validateEvent(
@@ -724,6 +731,7 @@ export class EventManager extends BaseManager {
 			description?: string,
 			isClosedEvent?: boolean,
 			hostingClubs?: Club[],
+			chiefOrganizers?: User[]
 			place?: string, capacity?: number,
 			start?: Date, end?: Date, isDateOrTime?: boolean,
 			registrationStart?: Date, registrationEnd?: Date, registrationAllowed?: boolean
@@ -743,7 +751,13 @@ export class EventManager extends BaseManager {
 		}
 		if(typeof settings.capacity === 'number') {
 			checkArgument(
-				!isDefined(settings.capacity) || isPositive(settings.capacity!), EventCapacityValidationException
+				!isDefined(settings.capacity) || !isNegative(settings.capacity!), EventCapacityValidationException
+			);
+		}
+		if(settings.chiefOrganizers) {
+			checkArgument(
+				isArray(settings.chiefOrganizers) && arrayMinSize(settings.chiefOrganizers, 1),
+				EventChiefOrganizersValidationException
 			);
 		}
 		if(settings.hostingClubs) {
@@ -752,7 +766,6 @@ export class EventManager extends BaseManager {
 				EventHostingClubsValidationException
 			);
 		}
-		EventManager.validateDatePair(settings.start, settings.end);
-		EventManager.validateRegistrationDatePair(settings.registrationStart, settings.registrationEnd);
+		EventManager.validateDates(settings.start, settings.end, settings.registrationStart, settings.registrationEnd);
 	}
 }
