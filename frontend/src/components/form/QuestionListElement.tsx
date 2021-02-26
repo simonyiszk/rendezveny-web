@@ -31,6 +31,11 @@ export default function QuestionListElement({
         textAlign={['center', null, 'left']}
       >
         {question.question}
+        {question.isRequired && (
+          <Box as="span" color="red.500" ml={1}>
+            *
+          </Box>
+        )}
       </Box>
       {question.metadata.type === 'text' && (
         <Input
