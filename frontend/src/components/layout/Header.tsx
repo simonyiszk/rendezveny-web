@@ -74,9 +74,9 @@ export default function Header(): JSX.Element {
                 isDisabled={!isLoggedin()}
                 _hover={{ bg: 'simonyi' }}
                 as={Link}
-                to="/manage"
+                to="/create"
               >
-                Kezelés
+                Létrehozás
               </MenuItem>
             </MenuList>
           </Menu>
