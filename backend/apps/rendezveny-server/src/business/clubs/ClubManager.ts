@@ -9,7 +9,7 @@ import { isNotEmpty } from 'class-validator';
 import { ClubNameValidationException } from './exceptions/ClubNameValidationException';
 import { AccessContext } from '../auth/tokens/AccessToken';
 import { BaseManager, Manager } from '../utils/BaseManager';
-import { AuthClub, AuthContext, AuthorizeGuard, IsAdmin, IsManagerOfClub, IsUser } from '../auth/AuthorizeGuard';
+import { AuthClub, AuthContext, AuthorizeGuard, IsAdmin, IsManager, IsMemberOfClub, IsUser } from '../auth/AuthorizeGuard';
 import { ClubMembershipRepository, ClubRepository } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { nameof } from '../../utils/nameof';
@@ -128,7 +128,7 @@ export class ClubManager extends BaseManager {
 		await this.clubRepository.remove(club);
 	}
 
-	@AuthorizeGuard(IsManagerOfClub(), IsAdmin())
+	@AuthorizeGuard(IsMemberOfClub(), IsManager(), IsAdmin())
 	public async getAllClubMemberships(
 		@AuthContext() accessContext: AccessContext,
 		@AuthClub() club: Club
@@ -141,7 +141,7 @@ export class ClubManager extends BaseManager {
 		};
 	}
 
-	@AuthorizeGuard(IsManagerOfClub(), IsAdmin())
+	@AuthorizeGuard(IsMemberOfClub(), IsManager(), IsAdmin())
 	public async getAllClubMembershipsPaginated(
 		@AuthContext() accessContext: AccessContext,
 		@AuthClub() club: Club,

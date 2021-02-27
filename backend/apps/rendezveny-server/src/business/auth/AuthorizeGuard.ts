@@ -85,6 +85,7 @@ export type Guard =
 	{ type: 'is_manager' } |
 	{ type: 'is_same_user', user: string } |
 	{ type: 'is_manager_of_club', club: string } |
+	{ type: 'is_member_of_club', club: string } |
 	{ type: 'is_registered', event: string } |
 	{ type: 'is_organizer', event: string } |
 	{ type: 'is_chief_organizer', event: string };
@@ -107,6 +108,10 @@ export function IsSameUser(name?: string): { type: 'is_same_user', user: string 
 
 export function IsManagerOfClub(name?: string): { type: 'is_manager_of_club', club: string } & Guard {
 	return { type: 'is_manager_of_club', club: name ?? 'default' };
+}
+
+export function IsMemberOfClub(name?: string): { type: 'is_member_of_club', club: string } & Guard {
+	return { type: 'is_member_of_club', club: name ?? 'default' };
 }
 
 export function IsRegistered(name?: string): { type: 'is_registered', event: string } & Guard {
@@ -166,6 +171,13 @@ export function AuthorizeGuard(...guards: Guard[]): MethodDecorator {
 						if(context instanceof AccessContext) {
 							const club = args[clubs[guard.club]] as Club;
 							isAuthorized = context.isUser() && context.isManagerOfClub(club);
+						}
+						break;
+					}
+					case 'is_member_of_club': {
+						if(context instanceof AccessContext) {
+							const club = args[clubs[guard.club]] as Club;
+							isAuthorized = context.isUser() && context.isMemberOfClub(club);
 						}
 						break;
 					}
