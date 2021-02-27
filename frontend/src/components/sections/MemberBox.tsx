@@ -1,3 +1,4 @@
+import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { Box, BoxProps, Flex } from '@chakra-ui/react';
 import { Link } from 'gatsby';
 import React from 'react';
@@ -53,7 +54,7 @@ export default function MemberBox({
       </Box>
       <Box flexBasis="4.25rem">
         <Button
-          text={user.registration.didAttend ? '✓' : 'X'}
+          text={user.registration.didAttend ? <CheckIcon boxSize="1.2em" /> : <CloseIcon />}
           onClick={(): void => {
             setAttendCb(user);
           }}
