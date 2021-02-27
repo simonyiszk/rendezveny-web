@@ -1,4 +1,5 @@
 import { useApolloClient } from '@apollo/client';
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon, SettingsIcon } from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -333,7 +334,7 @@ export default function FormeditorPage({
                     width={[null, null, '2rem']}
                     px="0.5rem"
                     mb={[null, null, 2]}
-                    text="U"
+                    text={<ArrowUpIcon boxSize={6} />}
                     onClick={(): void => {
                       if (idx !== 0) {
                         moveUp(q.id);
@@ -346,7 +347,7 @@ export default function FormeditorPage({
                     width={[null, null, '2rem']}
                     px="0.5rem"
                     mb={[null, null, 2]}
-                    text="D"
+                    text={<ArrowDownIcon boxSize={6} />}
                     onClick={(): void => {
                       if (idx !== questions.length - 1) {
                         moveDown(q.id);
@@ -363,7 +364,7 @@ export default function FormeditorPage({
                     width={[null, null, '2rem']}
                     px="0.5rem"
                     mb={[null, null, 2]}
-                    text="E"
+                    text={<SettingsIcon />}
                     onClick={(): void => {
                       openModalLoadQuestion(q, true);
                       onOpen();
@@ -374,7 +375,7 @@ export default function FormeditorPage({
                     width={[null, null, '2rem']}
                     px="0.5rem"
                     mb={[null, null, 2]}
-                    text="X"
+                    text={<CloseIcon  />}
                     onClick={(): void => handleDeleteQuestion(q.id)}
                     backgroundColor="red.500"
                   />

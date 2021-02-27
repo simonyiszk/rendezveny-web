@@ -1,3 +1,4 @@
+import { ArrowDownIcon, ArrowUpIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Box, BoxProps, Flex, Grid } from '@chakra-ui/react';
 import React from 'react';
 
@@ -51,7 +52,7 @@ export default function HRTaskComp({
             <Button
               width={['2.5rem']}
               px="0.5rem"
-              text="E"
+              text={<SettingsIcon />}
               backgroundColor="white"
               cursor="pointer"
               mr={2}
@@ -62,7 +63,7 @@ export default function HRTaskComp({
             <Button
               width={['2.5rem']}
               px="0.5rem"
-              text="U"
+              text={<ArrowUpIcon boxSize={6} />}
               onClick={(): void => {
                 if (hredit.moveUp) {
                   hredit.moveUp(hrtask);
@@ -75,7 +76,7 @@ export default function HRTaskComp({
             <Button
               width={['2.5rem']}
               px="0.5rem"
-              text="D"
+              text={<ArrowDownIcon boxSize={6} />}
               onClick={(): void => {
                 if (hredit.moveDown) {
                   hredit.moveDown(hrtask);

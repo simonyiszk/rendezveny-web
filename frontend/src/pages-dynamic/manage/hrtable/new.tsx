@@ -1,3 +1,4 @@
+import { CloseIcon } from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -336,7 +337,7 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
                     my={['1rem', null, 0]}
                     width="30%"
                     justifySelf="end"
-                    text="X"
+                    text={<CloseIcon />}
                     onClick={(): void => handleDeleteNewSegment(s.id)}
                     backgroundColor="red.500"
                   />

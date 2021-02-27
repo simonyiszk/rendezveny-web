@@ -13,6 +13,9 @@ import {
   Tabs,
   Text,
 } from '@chakra-ui/react';
+
+import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
+
 import React, { useState } from 'react';
 
 import { Club, EventTabProps, User } from '../../interfaces';
@@ -270,8 +273,8 @@ export default function EventTabs({
                 </Grid>
                 <Flex justifyContent="flex-end" mt={4}>
                   <Button
-                    width="45%"
-                    text="-->"
+                    width={["45%", null, "10rem"]}
+                    text={<ArrowForwardIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
                       setTabIndex(tabIndex + 1);
@@ -472,16 +475,16 @@ export default function EventTabs({
                   width="100%"
                 >
                   <Button
-                    width="45%"
-                    text="<--"
+                    width={["45%", null, "10rem"]}
+                    text={<ArrowBackIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
                       setTabIndex(tabIndex - 1);
                     }}
                   />
                   <Button
-                    width="45%"
-                    text="-->"
+                    width={["45%", null, "10rem"]}
+                    text={<ArrowForwardIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
                       setTabIndex(tabIndex + 1);
@@ -539,16 +542,16 @@ export default function EventTabs({
                   width="100%"
                 >
                   <Button
-                    width="45%"
-                    text="<--"
+                    width={["45%", null, "10rem"]}
+                    text={<ArrowBackIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
                       setTabIndex(tabIndex - 1);
                     }}
                   />
                   <Button
-                    width="45%"
-                    text="-->"
+                    width={["45%", null, "10rem"]}
+                    text={<ArrowForwardIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
                       setTabIndex(tabIndex + 1);
@@ -604,8 +607,8 @@ export default function EventTabs({
                 </Grid>
                 <Flex justifyContent="flex-start" mt={4}>
                   <Button
-                    width="45%"
-                    text="<--"
+                    width={["45%", null, "10rem"]}
+                    text={<ArrowBackIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
                       setTabIndex(tabIndex - 1);
