@@ -12,6 +12,7 @@ import {
   TabPanels,
   Tabs,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
 
 import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
@@ -36,6 +37,8 @@ import Button from '../control/Button';
 import Multiselect from '../control/Multiselect';
 import Calendar from '../util/Calendar';
 import Label from '../util/Label';
+import UserSelectorModal from '../userselector/UserSelectorModal';
+import Multiselectpopup from '../control/Multiselectpopup';
 
 const ReactQuill =
   typeof window === 'object' ? require('react-quill') : (): boolean => false;
@@ -46,6 +49,7 @@ interface Props {
   uniqueNames: string[];
   originalUniqueName?: string;
   allClubs: Club[];
+  showedClubs: Club[];
   handleSubmit: (values: EventTabProps) => void;
   withApplication: boolean;
   initialValues: EventTabProps;
@@ -57,6 +61,7 @@ export default function EventTabs({
   uniqueNames,
   originalUniqueName,
   allClubs,
+  showedClubs,
   handleSubmit,
   withApplication,
   initialValues,
@@ -99,6 +104,8 @@ export default function EventTabs({
   const [tabIndex, setTabIndex] = React.useState(0);
 
   const makeToast = useToastService();
+  const useDisclosureChiefOrganizers = useDisclosure();
+  const useDisclosureOrganizers = useDisclosure();
 
   const validTab = (index: number): void => {
     switch (index) {
@@ -273,7 +280,7 @@ export default function EventTabs({
                 </Grid>
                 <Flex justifyContent="flex-end" mt={4}>
                   <Button
-                    width={["45%", null, "10rem"]}
+                    width={['45%', null, '10rem']}
                     text={<ArrowForwardIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
@@ -475,7 +482,7 @@ export default function EventTabs({
                   width="100%"
                 >
                   <Button
-                    width={["45%", null, "10rem"]}
+                    width={['45%', null, '10rem']}
                     text={<ArrowBackIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
@@ -483,7 +490,7 @@ export default function EventTabs({
                     }}
                   />
                   <Button
-                    width={["45%", null, "10rem"]}
+                    width={['45%', null, '10rem']}
                     text={<ArrowForwardIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
@@ -503,16 +510,10 @@ export default function EventTabs({
                 >
                   <Label minHeight={['0', null, '2rem']}>Fő szervezők</Label>
                   <Flex flexDir="column">
-                    <Multiselect
-                      options={allUsers}
+                    <Multiselectpopup
                       value={chiefOrganizers}
                       isInvalid={isChiefOrganizersValid.length > 0}
-                      onChangeCb={(values: User[], newValue?: User): void => {
-                        onChangeChiefOrganizers(values, newValue);
-                        setChiefOrganizersValid(
-                          getChiefOrganizersValid(values),
-                        );
-                      }}
+                      onClick={useDisclosureChiefOrganizers.onOpen}
                       valueProp="id"
                       labelProp="name"
                     />
@@ -525,12 +526,9 @@ export default function EventTabs({
                     </Box>
                   </Flex>
                   <Label minHeight={['0', null, '2rem']}>Szervezők</Label>
-                  <Multiselect
-                    options={allUsers}
+                  <Multiselectpopup
                     value={organizers}
-                    onChangeCb={(values: User[], newValue?: User): void => {
-                      onChangeOrganizers(values, newValue);
-                    }}
+                    onClick={useDisclosureOrganizers.onOpen}
                     valueProp="id"
                     labelProp="name"
                   />
@@ -542,7 +540,7 @@ export default function EventTabs({
                   width="100%"
                 >
                   <Button
-                    width={["45%", null, "10rem"]}
+                    width={['45%', null, '10rem']}
                     text={<ArrowBackIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
@@ -550,7 +548,7 @@ export default function EventTabs({
                     }}
                   />
                   <Button
-                    width={["45%", null, "10rem"]}
+                    width={['45%', null, '10rem']}
                     text={<ArrowForwardIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
@@ -607,7 +605,7 @@ export default function EventTabs({
                 </Grid>
                 <Flex justifyContent="flex-start" mt={4}>
                   <Button
-                    width={["45%", null, "10rem"]}
+                    width={['45%', null, '10rem']}
                     text={<ArrowBackIcon boxSize={6} />}
                     onClick={(): void => {
                       validTab(tabIndex);
@@ -664,6 +662,25 @@ export default function EventTabs({
           />
         </Flex>
       </Flex>
+      <UserSelectorModal
+        clubs={showedClubs}
+        useDisclosureProps={useDisclosureChiefOrganizers}
+        title="Fő szervezők"
+        users={chiefOrganizers}
+        setUsers={(values: User[], newValue?: User): void => {
+          onChangeChiefOrganizers(values, newValue);
+          setChiefOrganizersValid(getChiefOrganizersValid(values));
+        }}
+      />
+      <UserSelectorModal
+        clubs={showedClubs}
+        useDisclosureProps={useDisclosureOrganizers}
+        title="Szervezők"
+        users={organizers}
+        setUsers={(values: User[], newValue?: User): void => {
+          onChangeOrganizers(values, newValue);
+        }}
+      />
     </Box>
   );
 }

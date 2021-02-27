@@ -1,4 +1,11 @@
-import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
+import {
+  gql,
+  OperationVariables,
+  QueryResult,
+  QueryTuple,
+  useLazyQuery,
+  useQuery,
+} from '@apollo/client';
 
 import { User } from '../../interfaces';
 
@@ -29,6 +36,14 @@ export const useProfileGetSelfQuery = (
     onCompleted: cb,
   });
   return getQuery;
+};
+export const useProfileGetSelfQueryLazy = (
+  cb?: (data: QueryResultL) => void,
+): QueryTuple<QueryResultL, OperationVariables> => {
+  const [getQuery, data] = useLazyQuery<QueryResultL>(profileGetSelfQuery, {
+    onCompleted: cb,
+  });
+  return [getQuery, data];
 };
 
 export const profileGetNameQuery = gql`

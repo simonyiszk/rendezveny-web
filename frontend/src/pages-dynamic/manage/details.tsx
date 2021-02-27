@@ -20,6 +20,7 @@ import Loading from '../../components/util/Loading';
 import { Club, Event, EventTabProps, User } from '../../interfaces';
 import useToastService from '../../utils/services/ToastService';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
+import { useProfileGetSelfQueryLazy } from '../../api/profile/UserGetSelfQuery';
 
 interface PageState {
   event: Event;
@@ -44,6 +45,7 @@ export default function DetailsPage({
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [originalUniqueName, setOriginalUniqueName] = useState('');
   const [allClubs, setAllClubs] = useState<Club[]>([]);
+  const [ownClubs, setOwnClubs] = useState<Club[]>([]);
   const [initialValues, setInitialValues] = useState<EventTabProps>();
 
   const [
@@ -124,6 +126,20 @@ export default function DetailsPage({
   });
 
   const [
+    getOwnClubs,
+    {
+      called: getOwnClubsCalled,
+      loading: getOwnClubsLoading,
+      error: getOwnClubsError,
+    },
+  ] = useProfileGetSelfQueryLazy((queryData) => {
+    setOwnClubs(
+      queryData.users_getSelf.clubMemberships.nodes.map((c) => {
+        return { id: c.club.id, name: c.club.name } as Club;
+      }),
+    );
+  });
+  const [
     getCurrentEvent,
     {
       called: getCurrentEventCalled,
@@ -134,6 +150,7 @@ export default function DetailsPage({
   ] = useEventGetInformationQuery((queryData) => {
     getOrganizers({ variables: { id: queryData.events_getOne.id } });
     getClubs();
+    getOwnClubs();
     getUniquenames();
     setAccessCMAdmin(
       isClubManagerOf(queryData.events_getOne.hostingClubs) || isAdmin(),
@@ -148,6 +165,7 @@ export default function DetailsPage({
   ] = useEventTokenMutationID(client, () => {
     getOrganizers({ variables: { id: event.id } });
     getClubs();
+    getOwnClubs();
     getUniquenames();
     setAccessCMAdmin(isClubManagerOf(event.hostingClubs) || isAdmin());
     setOriginalUniqueName(event.uniqueName);
@@ -180,6 +198,7 @@ export default function DetailsPage({
   if (
     (getOrganizersCalled && getOrganizersLoading) ||
     (getClubsCalled && getClubsLoading) ||
+    (getOwnClubsCalled && getOwnClubsLoading) ||
     (getCurrentEventCalled && getCurrentEventLoading) ||
     (getUniquenamesCalled && getUniquenamesLoading) ||
     !initialValues
@@ -194,6 +213,7 @@ export default function DetailsPage({
     getOrganizersError ||
     getCurrentEventError ||
     getClubsError ||
+    getOwnClubsError ||
     getUniquenamesError
   ) {
     if (typeof window !== 'undefined') {
@@ -230,6 +250,11 @@ export default function DetailsPage({
         uniqueNames={uniqueNames}
         originalUniqueName={originalUniqueName}
         allClubs={allClubs}
+        showedClubs={
+          accessCMAdmin
+            ? allClubs
+            : allClubs.filter((c) => ownClubs.map((o) => o.id).includes(c.id))
+        }
         handleSubmit={handleSubmit}
         withApplication
         initialValues={initialValues}
