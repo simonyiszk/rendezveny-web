@@ -396,13 +396,14 @@ export default function FormeditorPage({
           >
             <Button
               width={['100%', null, '45%']}
-              text="Mentés"
-              onClick={handleSubmit}
+              mb={[4, null, 0]}
+              text="Új kérdés"
+              onClick={openModalNewQuestion}
             />
             <Button
               width={['100%', null, '45%']}
-              text="Új kérdés"
-              onClick={openModalNewQuestion}
+              text="Mentés"
+              onClick={handleSubmit}
             />
           </Flex>
         </Box>
@@ -438,7 +439,7 @@ export default function FormeditorPage({
                             setNewQuestionType(EventQuestionType.TEXT);
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
-                              isRequired: false,
+                              isRequired: true,
                               question: '',
                               metadata: {
                                 maxLength: 0,
@@ -456,7 +457,7 @@ export default function FormeditorPage({
                             setNewQuestionType(EventQuestionType.RADIOBUTTON);
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
-                              isRequired: false,
+                              isRequired: true,
                               question: '',
                               metadata: {
                                 multipleAnswers: false,
@@ -476,7 +477,7 @@ export default function FormeditorPage({
                             setNewQuestionType(EventQuestionType.CHECKBOX);
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
-                              isRequired: false,
+                              isRequired: true,
                               question: '',
                               metadata: {
                                 multipleAnswers: true,
@@ -556,11 +557,11 @@ export default function FormeditorPage({
                             setNewQuestionRequired(e === 'Igen');
                           }}
                         >
-                          <Radio width="40%" value="Igen" mb={2}>
-                            Igen
-                          </Radio>
                           <Radio width="40%" value="Nem" mb={2}>
                             Nem
+                          </Radio>
+                          <Radio width="40%" value="Igen" mb={2}>
+                            Igen
                           </Radio>
                         </RadioGroup>
                       </Box>
@@ -612,6 +613,7 @@ export default function FormeditorPage({
               <Button
                 width={['100%', null, '45%']}
                 text="Vissza"
+                backgroundColor="gray.300"
                 onClick={(): void => {
                   setNewQuestionType(EventQuestionType.INVALID);
                 }}

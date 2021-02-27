@@ -199,12 +199,22 @@ export default function EventShowPage({
         </Box>
       )}
       <Flex
-        justifyContent={
-          access ? ['center', null, 'space-between'] : 'center'
-        }
+        justifyContent={access ? ['center', null, 'space-between'] : 'center'}
         flexDir={['column', null, 'row']}
         mt={4}
       >
+        {access && (
+          <LinkButton
+            text="Szerkesztés"
+            width={['100%', null, '45%']}
+            order={[1, null, 0]}
+            to={`/manage/${
+              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+            }`}
+            mt={[4, null, 0]}
+            state={{ event: null }}
+          />
+        )}
         <LinkButton
           text="Regisztráció"
           width={['100%', null, '45%']}
@@ -213,17 +223,6 @@ export default function EventShowPage({
           }/registration`}
           state={{ event: null }}
         />
-        {access && (
-          <LinkButton
-            text="Szerkesztés"
-            width={['100%', null, '45%']}
-            to={`/manage/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }`}
-            mt={[4, null, 0]}
-            state={{ event: null }}
-          />
-        )}
       </Flex>
     </Layout>
   );

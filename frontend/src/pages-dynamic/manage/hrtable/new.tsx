@@ -256,13 +256,14 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
       >
         <Button
           width={['100%', null, '45%']}
-          text="Mentés"
-          onClick={handleSubmit}
+          mb={[4, null, 0]}
+          text="Új feladat"
+          onClick={openModalNewTask}
         />
         <Button
           width={['100%', null, '45%']}
-          text="Új feladat"
-          onClick={openModalNewTask}
+          text="Mentés"
+          onClick={handleSubmit}
         />
       </Flex>
 
@@ -362,17 +363,18 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
               >
                 <Button
                   width={['100%', null, '45%']}
-                  text="Mentés"
-                  onClick={handleNewTask}
-                />
-                <Button
-                  width={['100%', null, '45%']}
+                  order={[1, null, 0]}
                   text="Törlés"
                   backgroundColor="red.500"
                   mt={[4, null, 0]}
                   onClick={(): void => {
                     handleDeleteTask(newTask?.id);
                   }}
+                />
+                <Button
+                  width={['100%', null, '45%']}
+                  text="Mentés"
+                  onClick={handleNewTask}
                 />
               </Flex>
             </Flex>

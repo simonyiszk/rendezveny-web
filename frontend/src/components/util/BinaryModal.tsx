@@ -34,23 +34,14 @@ export default function BinaryModal({
         <ModalCloseButton />
         <ModalFooter>
           <Flex width="100%" flexDirection="column">
-            <Flex
-              justifyContent={['center', null, 'space-between']}
-              flexDir={['column', null, 'row']}
-              width="100%"
-            >
+            <Flex justifyContent="space-between" width="100%">
               <Button
-                width={['100%', null, '45%']}
-                text="Igen"
-                onClick={onAccept}
-              />
-              <Button
-                width={['100%', null, '45%']}
+                width="45%"
                 text="Nem"
-                backgroundColor="red.500"
-                mt={[4, null, 0]}
+                backgroundColor="gray.300"
                 onClick={onReject}
               />
+              <Button width="45%" text="Igen" onClick={onAccept} />
             </Flex>
           </Flex>
         </ModalFooter>

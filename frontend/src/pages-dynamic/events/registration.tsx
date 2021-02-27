@@ -287,6 +287,13 @@ export default function RegistrationPage({
               flexDir={['column', null, 'row']}
               mt={4}
             >
+              <Button
+                width={['100%', null, '45%']}
+                order={[1, null, 0]}
+                text="Regisztráció törlése"
+                backgroundColor="red.500"
+                onClick={onOpen}
+              />
               {questionCounter > 0 && (
                 <Button
                   width={['100%', null, '45%']}
@@ -295,12 +302,6 @@ export default function RegistrationPage({
                   onClick={handleModify}
                 />
               )}
-              <Button
-                width={['100%', null, '45%']}
-                text="Regisztráció törlése"
-                backgroundColor="red.500"
-                onClick={onOpen}
-              />
             </Flex>
           )}
         </Box>

@@ -263,24 +263,29 @@ export default function HRTablePage({
   return (
     <Layout>
       <ProtectedComponent access={accessChief}>
-        <LinkButton
-          width={['100%', null, '45%']}
-          text="Szerkesztés"
-          to={`/manage/${
-            event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-          }/hrtable/new`}
-          state={{
-            event: event ?? getCurrentEventData?.events_getOne,
-            hrTable,
-          }}
-        />
-      </ProtectedComponent>
-      <ProtectedComponent access={accessChief}>
-        <Button
-          width={['100%', null, '45%']}
-          text="Statisztika"
-          onClick={onOpen}
-        />
+        <Flex
+          justifyContent={['center', null, 'space-between']}
+          flexDir={['column', null, 'row']}
+          mt={4}
+        >
+          <Button
+            width={['100%', null, '45%']}
+            mb={[4, null, 0]}
+            text="Statisztika"
+            onClick={onOpen}
+          />
+          <LinkButton
+            width={['100%', null, '45%']}
+            text="Szerkesztés"
+            to={`/manage/${
+              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+            }/hrtable/new`}
+            state={{
+              event: event ?? getCurrentEventData?.events_getOne,
+              hrTable,
+            }}
+          />
+        </Flex>
       </ProtectedComponent>
       <Heading fontSize="3xl" mt={4}>
         HR Tábla
@@ -298,15 +303,16 @@ export default function HRTablePage({
       >
         <Button
           width={['100%', null, '45%']}
-          text="Mentés"
-          onClick={handleSubmit}
+          order={[1, null, 0]}
+          text="Mégse"
+          backgroundColor="gray.300"
+          mt={[4, null, 0]}
+          onClick={handleCancel}
         />
         <Button
           width={['100%', null, '45%']}
-          text="Mégse"
-          backgroundColor="red.500"
-          mt={[4, null, 0]}
-          onClick={handleCancel}
+          text="Mentés"
+          onClick={handleSubmit}
         />
       </Flex>
 

@@ -150,15 +150,16 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
           >
             <Button
               width={['100%', null, '45%']}
-              text="Módosítás"
-              onClick={handleModify}
-            />
-            <Button
-              width={['100%', null, '45%']}
+              order={[1, null, 0]}
               text="Regisztráció törlése"
               backgroundColor="red.500"
               mt={[4, null, 0]}
               onClick={onOpen}
+            />
+            <Button
+              width={['100%', null, '45%']}
+              text="Módosítás"
+              onClick={handleModify}
             />
           </Flex>
         </Box>
