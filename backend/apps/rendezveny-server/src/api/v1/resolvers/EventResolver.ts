@@ -415,14 +415,12 @@ export class EventResolver {
 		description: 'Gets the registration form templates'
 	})
 	@UseFilters(BusinessExceptionFilter)
-	@UseGuards(AuthAccessGuard)
 	public async getRegistrationFormTemplates(
-		@AccessCtx() accessContext: AccessContext,
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
 	): Promise<PaginatedRegistrationFormTemplateQuestionDTO> {
 		const { templates, count } = await this.formTemplateManager.getAllTemplatesPaginated(
-			accessContext, pageSize, offset
+			pageSize, offset
 		);
 
 		return {
