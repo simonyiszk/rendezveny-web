@@ -1,5 +1,10 @@
 import { useApolloClient } from '@apollo/client';
-import { ArrowDownIcon, ArrowUpIcon, CloseIcon, SettingsIcon } from '@chakra-ui/icons';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CloseIcon,
+  SettingsIcon,
+} from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -375,7 +380,7 @@ export default function FormeditorPage({
                     width={[null, null, '2rem']}
                     px="0.5rem"
                     mb={[null, null, 2]}
-                    text={<CloseIcon  />}
+                    text={<CloseIcon />}
                     onClick={(): void => handleDeleteQuestion(q.id)}
                     backgroundColor="red.500"
                   />
