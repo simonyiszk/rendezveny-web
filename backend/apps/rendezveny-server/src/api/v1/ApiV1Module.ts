@@ -29,33 +29,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 })
 export class ApiV1Module {
 	public static forRoot(): DynamicModule[] {
-		return [
-			GraphQLModule.forRootAsync({
-				imports: [ConfigModule],
-				inject: [ConfigService],
-				useFactory: async(configService: ConfigService) => ({
-					debug: configService.get<boolean>('debug'),
-					playground: configService.get<boolean>('debug'),
-					path: '/api/v1',
+		return  [
+			GraphQLModule.forRoot({
+				debug: true,
+				playground: true,
+				path: '/api/v1',
+				
+				context: ({ req }) => ({ req }),
+				fieldResolverEnhancers: ['guards'],
 
-					cors: configService.get<boolean>('debug') === true
-						? {
-							origin: true
-						}
-						: {
-							origin: configService.get('security.domain'),
-							methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-							allowedHeaders: ['Content-Type', 'Authorization'],
-							credentials: true,
-							preflightContinue: false
-						},
-
-					context: ({ req }) => ({ req }),
-					fieldResolverEnhancers: ['guards'],
-
-					autoSchemaFile: join(process.cwd(), 'apps/rendezveny-server/src/api/v1/schema.gql'),
-					sortSchema: true
-				})
+				autoSchemaFile: join(process.cwd(), 'apps/rendezveny-server/src/api/v1/schema.gql'),
+				sortSchema: true
 			})
 		];
 	}
