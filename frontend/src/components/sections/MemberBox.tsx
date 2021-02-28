@@ -54,7 +54,13 @@ export default function MemberBox({
       </Box>
       <Box flexBasis="4.25rem">
         <Button
-          text={user.registration.didAttend ? <CheckIcon boxSize="1.2em" /> : <CloseIcon />}
+          text={
+            user.registration.didAttend ? (
+              <CheckIcon boxSize="1.2em" />
+            ) : (
+              <CloseIcon />
+            )
+          }
           onClick={(): void => {
             setAttendCb(user);
           }}

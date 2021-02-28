@@ -10,6 +10,7 @@ import { useEventGetOrganizersQuery } from '../../api/details/EventGetOrganizers
 import { useEventInformationMutation } from '../../api/details/EventInformationMutation';
 import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import { useEventGetUniquenamesQuery } from '../../api/index/EventsGetUniquenamesQuery';
+import { useProfileGetSelfQueryLazy } from '../../api/profile/UserGetSelfQuery';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
@@ -20,7 +21,6 @@ import Loading from '../../components/util/Loading';
 import { Club, Event, EventTabProps, User } from '../../interfaces';
 import useToastService from '../../utils/services/ToastService';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
-import { useProfileGetSelfQueryLazy } from '../../api/profile/UserGetSelfQuery';
 
 interface PageState {
   event: Event;
@@ -41,7 +41,7 @@ export default function DetailsPage({
 
   const [accessCMAdmin, setAccessCMAdmin] = useState(false);
 
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [, setAllUsers] = useState<User[]>([]);
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [originalUniqueName, setOriginalUniqueName] = useState('');
   const [allClubs, setAllClubs] = useState<Club[]>([]);
@@ -246,7 +246,6 @@ export default function DetailsPage({
     <Layout>
       <EventTabs
         accessCMAdmin={accessCMAdmin}
-        allUsers={allUsers}
         uniqueNames={uniqueNames}
         originalUniqueName={originalUniqueName}
         allClubs={allClubs}

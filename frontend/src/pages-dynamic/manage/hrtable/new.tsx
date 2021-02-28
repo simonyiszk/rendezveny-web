@@ -162,7 +162,6 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
       segments: newTask?.segments,
       isLocked: false,
     } as HRTask;
-    console.log(modifiedTask);
 
     if (modifiedTask.segments.some((s) => s.start >= s.end)) {
       makeToast(

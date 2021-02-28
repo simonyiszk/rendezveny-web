@@ -14,10 +14,9 @@ import {
   Tabs,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { useClubsGetClubMembersQuery } from '../../api/details/ClubsGetOtherMembersQuery';
 
+import { useClubsGetClubMembersQuery } from '../../api/details/ClubsGetOtherMembersQuery';
 import { Club, User } from '../../interfaces';
-import Button from '../control/Button';
 import UserSelector from './UserSelector';
 
 interface Props {
@@ -47,14 +46,7 @@ export default function UserSelectorModal({
   const [tabIndex, setTabIndex] = useState(initialTabIndex);
   const [membersData, setMembersData] = useState<MembersData>({});
 
-  const [
-    getClubMembers,
-    {
-      called: getClubMembersCalled,
-      loading: getClubMembersLoading,
-      error: getClubMembersError,
-    },
-  ] = useClubsGetClubMembersQuery((queryData) => {
+  const [getClubMembers] = useClubsGetClubMembersQuery((queryData) => {
     setMembersData({
       ...membersData,
       [queryData.clubs_getOne
@@ -65,6 +57,7 @@ export default function UserSelectorModal({
   useEffect(() => {
     if (clubs.length > 0)
       getClubMembers({ variables: { id: clubs[initialTabIndex].id } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onChangeTab = (tabidx: number) => {
@@ -115,7 +108,6 @@ export default function UserSelectorModal({
                   {!membersData[c.id] && <Box>Loading...</Box>}
                   {membersData[c.id] && (
                     <UserSelector
-                      club={c}
                       users={membersData[c.id]}
                       selectedUsers={users}
                       onClick={selectUser}
@@ -128,7 +120,7 @@ export default function UserSelectorModal({
         </ModalBody>
 
         <ModalFooter>
-          <Box></Box>
+          <Box />
         </ModalFooter>
       </ModalContent>
     </Modal>

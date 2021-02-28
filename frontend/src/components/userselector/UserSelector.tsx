@@ -1,17 +1,15 @@
 import { Box } from '@chakra-ui/react';
 import React from 'react';
 
-import { Club, User } from '../../interfaces';
+import { User } from '../../interfaces';
 
 interface Props {
-  club: Club;
   users: User[];
   selectedUsers: User[];
   onClick: (user: User) => void;
 }
 
 export default function UserSelector({
-  club,
   users,
   selectedUsers,
   onClick,

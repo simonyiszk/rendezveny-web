@@ -14,7 +14,7 @@ import { Club, EventTabProps, User } from '../interfaces';
 import useToastService from '../utils/services/ToastService';
 
 export default function CreatePage(): JSX.Element {
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [, setAllUsers] = useState<User[]>([]);
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [allClubs, setAllClubs] = useState<Club[]>([]);
   const [managedClubs, setManagedClubs] = useState<Club[]>([]);
@@ -121,9 +121,9 @@ export default function CreatePage(): JSX.Element {
   return (
     <Layout>
       <EventTabs
-        allUsers={allUsers}
         uniqueNames={uniqueNames}
         allClubs={allClubs}
+        showedClubs={allClubs}
         handleSubmit={handleSubmit}
         withApplication={false}
         initialValues={{

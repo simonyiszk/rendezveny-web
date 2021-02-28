@@ -64,3 +64,11 @@ export function Radio({
     />
   );
 }
+RadioGroup.defaultProps = {
+  onChangeCb: undefined,
+  isDisabled: false,
+};
+Radio.defaultProps = {
+  onClickCb: undefined,
+  isDisabled: false,
+};

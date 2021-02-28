@@ -16,7 +16,6 @@ export default function Multiselectpopup<T>({
   valueProp,
   isInvalid,
   onClick,
-  ...props
 }: Props<T>): JSX.Element {
   return (
     <Flex
@@ -50,7 +49,7 @@ export default function Multiselectpopup<T>({
         cursor="pointer"
         height="100%"
         alignItems="center"
-        onClick={(e): void => {
+        onClick={(_e): void => {
           onClick();
         }}
       >

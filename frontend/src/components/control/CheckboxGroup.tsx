@@ -68,3 +68,11 @@ export function Checkbox({
     />
   );
 }
+CheckboxGroup.defaultProps = {
+  onChangeCb: undefined,
+  isDisabled: false,
+};
+Checkbox.defaultProps = {
+  onClickCb: undefined,
+  isDisabled: false,
+};

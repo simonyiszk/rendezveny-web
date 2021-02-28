@@ -1,5 +1,6 @@
 import 'react-quill/dist/quill.snow.css';
 
+import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -14,9 +15,6 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react';
-
-import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
-
 import React, { useState } from 'react';
 
 import { Club, EventTabProps, User } from '../../interfaces';
@@ -35,17 +33,16 @@ import {
 import useToastService from '../../utils/services/ToastService';
 import Button from '../control/Button';
 import Multiselect from '../control/Multiselect';
+import Multiselectpopup from '../control/Multiselectpopup';
+import UserSelectorModal from '../userselector/UserSelectorModal';
 import Calendar from '../util/Calendar';
 import Label from '../util/Label';
-import UserSelectorModal from '../userselector/UserSelectorModal';
-import Multiselectpopup from '../control/Multiselectpopup';
 
 const ReactQuill =
   typeof window === 'object' ? require('react-quill') : (): boolean => false;
 
 interface Props {
   accessCMAdmin?: boolean;
-  allUsers: User[];
   uniqueNames: string[];
   originalUniqueName?: string;
   allClubs: Club[];
@@ -57,7 +54,6 @@ interface Props {
 
 export default function EventTabs({
   accessCMAdmin,
-  allUsers,
   uniqueNames,
   originalUniqueName,
   allClubs,

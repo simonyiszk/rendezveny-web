@@ -21,7 +21,6 @@ export default function Multiselect<T>({
   valueProp,
   onChangeCb,
   isInvalid,
-  ...props
 }: Props<T>): JSX.Element {
   const [isOpen, setOpen] = useState(false);
 
@@ -88,7 +87,7 @@ export default function Multiselect<T>({
         cursor="pointer"
         height="100%"
         alignItems="center"
-        onClick={(e): void => {
+        onClick={(_e): void => {
           setOpen(!isOpen);
         }}
       >

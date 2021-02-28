@@ -1,10 +1,4 @@
-import {
-  ApolloClient,
-  ApolloLink,
-  from,
-  HttpLink,
-  InMemoryCache,
-} from '@apollo/client';
+import { ApolloClient, from, HttpLink, InMemoryCache } from '@apollo/client';
 import { setContext } from 'apollo-link-context';
 import fetch from 'isomorphic-fetch';
 
@@ -14,12 +8,6 @@ const httpLink = new HttpLink({
   fetch,
   uri: process.env.GATSBY_SERVER_API_URL,
 });
-
-export const resetContext = (client: ApolloClient<object>) => {
-  client.setLink(
-    from([authMiddleware(getAuthToken(), getEventToken()), httpLink]),
-  );
-};
 
 const authMiddleware = (authToken, eventToken) =>
   setContext((operation) => {
@@ -41,6 +29,12 @@ const authMiddleware = (authToken, eventToken) =>
       headers: {},
     };
   });
+
+export const resetContext = (client: ApolloClient<object>) => {
+  client.setLink(
+    from([authMiddleware(getAuthToken(), getEventToken()), httpLink]),
+  );
+};
 
 const cache = new InMemoryCache({
   typePolicies: {
