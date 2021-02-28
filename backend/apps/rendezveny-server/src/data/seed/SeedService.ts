@@ -333,19 +333,6 @@ export class SeedService {
 
 		/* Form */
 
-		await this.formTempRepository.save(new FormQuestionTemplate({
-			question: 'Food preference',
-			type: FormQuestionType.MULTIPLE_CHOICE,
-			typeMetadata: {
-				type: 'multiple_choice',
-				multipleAnswers: false,
-				options: [
-					{ id: 'regular', text: 'Regular' },
-					{ id: 'vegi', text: 'Vegetarian' }
-				]
-			}
-		}));
-
 		const foodPreference = new FormQuestion({
 			question: 'Food preference',
 			event: galaDinner,
@@ -423,6 +410,45 @@ export class SeedService {
 		});
 
 		await this.formAnswerRepository.save([johnFoodPreference, johnNickName]);
+
+		/* Template */
+
+		const foodPrefTemplate = new FormQuestionTemplate({
+			question: 'Food preference',
+			type: FormQuestionType.MULTIPLE_CHOICE,
+			typeMetadata: {
+				type: 'multiple_choice',
+				multipleAnswers: false,
+				options: [
+					{ id: 'regular', text: 'Regular' },
+					{ id: 'vegi', text: 'Vegetarian' }
+				]
+			}
+		});
+
+		const nickNameTemplate = new FormQuestionTemplate({
+			question: "Mi a beceneved?",
+			type: FormQuestionType.TEXT,
+			typeMetadata: {
+				type: 'text',
+				maxLength: 25
+			}
+		})
+
+		const accomodationTemplate = new FormQuestionTemplate({
+			question: "Melyik napokra kérsz szállást?",
+			type: FormQuestionType.MULTIPLE_CHOICE,
+			typeMetadata: {
+				type: 'multiple_choice',
+				options: [
+					{ id: 'friday', text: 'Péntek' },
+					{ id: 'saturday', text: 'Szombat' }
+				],
+				multipleAnswers: true
+			}
+		})
+
+		await this.formTempRepository.save([foodPrefTemplate, nickNameTemplate, accomodationTemplate]);
 
 		/* HR Table */
 
