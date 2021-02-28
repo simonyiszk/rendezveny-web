@@ -1,11 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './AppModule';
-import {
-	initializeTransactionalContext
-} from 'typeorm-transactional-cls-hooked';
-import { ConfigService } from '@nestjs/config';
-import * as helmet from 'helmet';
-import * as rateLimit from 'express-rate-limit';
+import { initializeTransactionalContext } from 'typeorm-transactional-cls-hooked';
 
 initializeTransactionalContext();
 

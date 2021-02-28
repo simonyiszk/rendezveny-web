@@ -10,12 +10,9 @@ import { EventResolver } from './resolvers/EventResolver';
 import { RegistrationResolver } from './resolvers/RegistrationResolver';
 import { OrganizerResolver } from './resolvers/OrganizerResolver';
 import { LogResolver } from './resolvers/LogResolver';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-	imports: [
-		BusinessModule
-	],
+	imports: [BusinessModule],
 	providers: [
 		UsersResolver,
 		ClubsResolver,
@@ -29,12 +26,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 })
 export class ApiV1Module {
 	public static forRoot(): DynamicModule[] {
-		return  [
+		return [
 			GraphQLModule.forRoot({
 				debug: true,
 				playground: true,
 				path: '/api/v1',
-				
+
 				context: ({ req }) => ({ req }),
 				fieldResolverEnhancers: ['guards'],
 
