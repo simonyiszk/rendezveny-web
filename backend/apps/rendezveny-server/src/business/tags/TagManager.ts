@@ -13,29 +13,22 @@ import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 @Manager()
 export class TagManager extends BaseManager {
-	public constructor(
-		@InjectRepository(TagRepository) private readonly tagRepository: TagRepository
-	) {
+	public constructor(@InjectRepository(TagRepository) private readonly tagRepository: TagRepository) {
 		super();
 	}
 
 	@AuthorizeGuard(IsUser(), IsAdmin())
-	public async getAllTags(
-		@AuthContext() _accessContext: AccessContext
-	): Promise<Tag[]> {
+	public async getAllTags(@AuthContext() _accessContext: AccessContext): Promise<Tag[]> {
 		return this.tagRepository.find();
 	}
 
 	@Transactional()
 	@AuthorizeGuard(IsAdmin())
-	public async addTag(
-		@AuthContext() _accessContext: AccessContext,
-		name: string
-	): Promise<Tag> {
+	public async addTag(@AuthContext() _accessContext: AccessContext, name: string): Promise<Tag> {
 		checkArgument(isNotEmpty(name), TagInvalidNameException);
 
 		const tag = await this.tagRepository.findOne({ name });
-		if(tag) {
+		if (tag) {
 			throw new TagAlreadyExistsException();
 		}
 
@@ -46,14 +39,11 @@ export class TagManager extends BaseManager {
 
 	@Transactional()
 	@AuthorizeGuard(IsAdmin())
-	public async deleteTag(
-		@AuthContext() _accessContext: AccessContext,
-		name: string
-	): Promise<void> {
+	public async deleteTag(@AuthContext() _accessContext: AccessContext, name: string): Promise<void> {
 		checkArgument(isNotEmpty(name), TagInvalidNameException);
 
 		const tag = await this.tagRepository.findOne({ name });
-		if(!tag) {
+		if (!tag) {
 			throw new TagDoesNotExistException(name);
 		}
 

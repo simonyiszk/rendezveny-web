@@ -7,7 +7,7 @@ import { PaginatedDTO } from '../utils/PaginatedDTO';
 function EventRegistrationFormTypeQuestionDTO<T>(t: T) {
 	@ObjectType({ isAbstract: true })
 	class BaseEventRegistrationFormQuestionDTO {
-		@Field(_ => GraphQLString, {
+		@Field((_) => GraphQLString, {
 			description: 'The type of the question'
 		})
 		public readonly type: T = t;
@@ -45,9 +45,10 @@ export class EventRegistrationFormMultipleChoiceOptionDTO {
 @ObjectType({
 	description: 'The metadata of a multiple choice question of the registration form for an event'
 })
-export class EventRegistrationFormMultipleChoiceQuestionDTO
-	extends EventRegistrationFormTypeQuestionDTO('multiple_choice') {
-	@Field(_ => [EventRegistrationFormMultipleChoiceOptionDTO], {
+export class EventRegistrationFormMultipleChoiceQuestionDTO extends EventRegistrationFormTypeQuestionDTO(
+	'multiple_choice'
+) {
+	@Field((_) => [EventRegistrationFormMultipleChoiceOptionDTO], {
 		description: 'The options'
 	})
 	public options?: EventRegistrationFormMultipleChoiceOptionDTO[];
@@ -63,7 +64,7 @@ export const EventRegistrationFormQuestionMetadataDTO = createUnionType({
 	name: 'EventRegistrationFormQuestionMetadataDTO',
 	types: () => [EventRegistrationFormTextQuestionDTO, EventRegistrationFormMultipleChoiceQuestionDTO],
 	resolveType: (value) => {
-		switch(value.type) {
+		switch (value.type) {
 			case 'text':
 				return EventRegistrationFormTextQuestionDTO;
 			case 'multiple_choice':
@@ -88,7 +89,7 @@ export class EventRegistrationFormQuestionDTO {
 	})
 	public question: string = '';
 
-	@Field(_ => EventRegistrationFormQuestionMetadataDTO, {
+	@Field((_) => EventRegistrationFormQuestionMetadataDTO, {
 		description: 'The metadata of the question type'
 	})
 	public metadata?: typeof EventRegistrationFormQuestionMetadataDTO;
@@ -113,7 +114,7 @@ export class RegistrationFormTemplateQuestionDTO {
 	})
 	public question: string = '';
 
-	@Field(_ => EventRegistrationFormQuestionMetadataDTO, {
+	@Field((_) => EventRegistrationFormQuestionMetadataDTO, {
 		description: 'The metadata of the question type'
 	})
 	public metadata?: typeof EventRegistrationFormQuestionMetadataDTO;
@@ -128,7 +129,7 @@ export class PaginatedRegistrationFormTemplateQuestionDTO extends PaginatedDTO(R
 	description: 'The data of the registration form for an event'
 })
 export class EventRegistrationFormDTO {
-	@Field(_ => [EventRegistrationFormQuestionDTO], {
+	@Field((_) => [EventRegistrationFormQuestionDTO], {
 		description: 'The questions in the form'
 	})
 	public questions?: EventRegistrationFormQuestionDTO[];
@@ -164,7 +165,7 @@ export class EventRegistrationFormQuestionInput {
 	description: 'The data of the registration form for an event'
 })
 export class EventRegistrationFormInput {
-	@Field(_ => [EventRegistrationFormQuestionInput], {
+	@Field((_) => [EventRegistrationFormQuestionInput], {
 		description: 'The questions in the form'
 	})
 	public questions!: EventRegistrationFormQuestionInput[];

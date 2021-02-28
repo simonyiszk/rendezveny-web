@@ -19,7 +19,8 @@ import { EventContext } from '../auth/tokens/EventToken';
 import {
 	AuthContext,
 	AuthEvent,
-	AuthorizeGuard, AuthRegistration,
+	AuthorizeGuard,
+	AuthRegistration,
 	IsAdmin,
 	IsOrganizer,
 	IsRegistered,
@@ -61,10 +62,9 @@ export class RegistrationManager {
 	): Promise<Registration> {
 		const registration = await this.registrationRepository.findOne({ id, event }, {});
 
-		if(!registration) {
+		if (!registration) {
 			return this.getRegistrationFail(id);
-		}
-		else {
+		} else {
 			return this.getRegistration(eventContext, event, registration);
 		}
 	}
@@ -78,9 +78,7 @@ export class RegistrationManager {
 		return registration;
 	}
 
-	private async getRegistrationFail(
-		id: string
-	): Promise<Registration> {
+	private async getRegistrationFail(id: string): Promise<Registration> {
 		throw new RegistrationDoesNotExistsException(id);
 	}
 
@@ -92,33 +90,33 @@ export class RegistrationManager {
 		filledInForm: FilledInForm
 	): Promise<Registration> {
 		const user = await this.userRepository.findOne(accessContext.getUserId());
-		if(typeof user === 'undefined') {
+		if (typeof user === 'undefined') {
 			throw new UserDoesNotExistsException(accessContext.getUserId());
 		}
 
 		await event.loadRelation(this.eventRepository, 'hostingClubs');
-		if(event.isClosedEvent && !event.hostingClubs.some(club => accessContext.isMemberOfClub(club))) {
+		if (event.isClosedEvent && !event.hostingClubs.some((club) => accessContext.isMemberOfClub(club))) {
 			throw new RegistrationClosedEventException(event.hostingClubs);
 		}
 
 		const now = new Date();
-		if(event.registrationAllowed === false) {
+		if (event.registrationAllowed === false) {
 			throw new RegistrationDisabledException();
 		}
-		if(event.registrationStart && event.registrationStart > now) {
+		if (event.registrationStart && event.registrationStart > now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if(event.registrationEnd && event.registrationEnd < now) {
+		if (event.registrationEnd && event.registrationEnd < now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if(typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
+		if (typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
 			throw new RegistrationLimitReachedException();
 		}
 
 		const registration = await this.registrationRepository.findOne({ user, event });
-		if(registration) {
+		if (registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}
 
@@ -146,30 +144,31 @@ export class RegistrationManager {
 		checkArgument(isNotEmpty(email) && isEmail(email), RegistrationEmailValidationException);
 
 		await event.loadRelation(this.eventRepository, 'hostingClubs');
-		if(event.isClosedEvent) {
+		if (event.isClosedEvent) {
 			throw new RegistrationClosedEventException(event.hostingClubs);
 		}
 
 		const registration = await this.registrationRepository.findOne({
-			event: event, temporaryIdentity: { email }
+			event: event,
+			temporaryIdentity: { email }
 		});
-		if(registration) {
+		if (registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}
 
 		const now = new Date();
-		if(event.registrationAllowed === false) {
+		if (event.registrationAllowed === false) {
 			throw new RegistrationDisabledException();
 		}
-		if(event.registrationStart && event.registrationStart > now) {
+		if (event.registrationStart && event.registrationStart > now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if(event.registrationEnd && event.registrationEnd < now) {
+		if (event.registrationEnd && event.registrationEnd < now) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if(typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
+		if (typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
 			throw new RegistrationLimitReachedException();
 		}
 
@@ -198,12 +197,12 @@ export class RegistrationManager {
 		filledInForm?: FilledInForm
 	): Promise<Registration> {
 		const user = await this.userRepository.findOne({ id: userId });
-		if(!user) {
+		if (!user) {
 			throw new UserDoesNotExistsException(userId);
 		}
 
 		const registration = await this.registrationRepository.findOne({ user, event });
-		if(registration) {
+		if (registration) {
 			throw new RegistrationAllreadyRegisteredException();
 		}
 
@@ -215,7 +214,7 @@ export class RegistrationManager {
 		});
 		await this.registrationRepository.save(newRegistration);
 
-		if(filledInForm) {
+		if (filledInForm) {
 			await this.formManager.fillInForm(event, newRegistration, filledInForm);
 		}
 

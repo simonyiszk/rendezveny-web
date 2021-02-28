@@ -5,7 +5,7 @@ export enum LogType {
 	SUCCESS,
 	UNAUTHORIZED,
 	BUSINESS_ERROR,
-	OTHER_ERROR,
+	OTHER_ERROR
 }
 
 @Entity()
@@ -30,10 +30,14 @@ export class Log extends BaseEntity<Log> {
 	public result!: LogType;
 
 	public constructor(params?: {
-		at: Date, issuer: Record<string, unknown>, query: string, args: Record<string, unknown>, result: LogType
+		at: Date;
+		issuer: Record<string, unknown>;
+		query: string;
+		args: Record<string, unknown>;
+		result: LogType;
 	}) {
 		super();
-		if(params) {
+		if (params) {
 			this.at = params.at;
 			this.issuer = params.issuer;
 			this.query = params.query;

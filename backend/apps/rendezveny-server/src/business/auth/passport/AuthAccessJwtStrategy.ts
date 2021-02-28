@@ -22,7 +22,7 @@ export class AuthAccessJwtStrategy extends PassportStrategy(Strategy, 'access') 
 
 	public async validate(payload: Token): Promise<AccessToken> {
 		checkArgument(isAccessToken(payload), AuthInvalidTokenException);
-		return payload as unknown as AccessToken;
+		return (payload as unknown) as AccessToken;
 	}
 }
 

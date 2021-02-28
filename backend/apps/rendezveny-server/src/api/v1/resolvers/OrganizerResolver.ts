@@ -19,7 +19,7 @@ export class OrganizerResolver {
 		private readonly organizerManager: OrganizerManager
 	) {}
 
-	@Mutation(_ => EventOrganizerDTO, {
+	@Mutation((_) => EventOrganizerDTO, {
 		name: 'organizer_addOrganizer',
 		description: 'Adds an organizer for the event'
 	})
@@ -30,7 +30,7 @@ export class OrganizerResolver {
 		@EventCtx() eventContext: EventContext,
 		@Args('id', { description: 'The id of the registration' }) id: string,
 		@Args('userId', { description: 'The id of the user' }) userId: string,
-		@Args('isChief', { description: 'Indicates whether the user should be chief' }) isChief: boolean,
+		@Args('isChief', { description: 'Indicates whether the user should be chief' }) isChief: boolean
 	): Promise<EventOrganizerDTO> {
 		const event = await this.eventManager.getEventById(id);
 		const organizer = await this.organizerManager.addOrganizer(eventContext, event, userId, isChief);
@@ -40,7 +40,7 @@ export class OrganizerResolver {
 		};
 	}
 
-	@Mutation(_ => EventOrganizerDTO, {
+	@Mutation((_) => EventOrganizerDTO, {
 		name: 'organizer_modifyOrganizer',
 		description: 'Modifies an organizer'
 	})
@@ -50,12 +50,15 @@ export class OrganizerResolver {
 	public async modifyOrganizer(
 		@EventCtx() eventContext: EventContext,
 		@Args('id', { description: 'The id of organizer' }) id: string,
-		@Args('isChief', { description: 'Indicates whether the user should be chief' }) isChief: boolean,
+		@Args('isChief', { description: 'Indicates whether the user should be chief' }) isChief: boolean
 	): Promise<EventOrganizerDTO> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const organizer = await this.organizerManager.getOrganizerById(eventContext, event, id);
 		const modifiedOrganizer = await this.organizerManager.makeChiefOrganizer(
-			eventContext, event, organizer, isChief
+			eventContext,
+			event,
+			organizer,
+			isChief
 		);
 
 		return {
@@ -64,7 +67,7 @@ export class OrganizerResolver {
 		};
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'organizer_deleteOrganizer',
 		description: 'Deletes an organizer'
 	})
@@ -73,7 +76,7 @@ export class OrganizerResolver {
 	@Transactional()
 	public async deleteOrganizer(
 		@EventCtx() eventContext: EventContext,
-		@Args('id', { description: 'The id of organizer' }) id: string,
+		@Args('id', { description: 'The id of organizer' }) id: string
 	): Promise<boolean> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const organizer = await this.organizerManager.getOrganizerById(eventContext, event, id);
@@ -82,25 +85,24 @@ export class OrganizerResolver {
 		return true;
 	}
 
-	@ResolveField(nameof<EventOrganizerDTO>('hrSegmentIds'), _ => [GraphQLString])
+	@ResolveField(nameof<EventOrganizerDTO>('hrSegmentIds'), (_) => [GraphQLString])
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
 	public async getFormAnswer(
 		@EventCtx() eventContext: EventContext,
 		@Parent() organizerDTO: EventOrganizerDTO
 	): Promise<string[]> {
-		if(typeof organizerDTO.id === 'string') {
+		if (typeof organizerDTO.id === 'string') {
 			const event = await this.eventManager.getEventById(eventContext.getEventId());
 			const organizer = await this.organizerManager.getOrganizerById(eventContext, event, organizerDTO.id);
 			const hrSegments = await this.organizerManager.getHrSegments(eventContext, event, organizer);
-			return hrSegments.map(segment => segment.id);
-		}
-		else {
+			return hrSegments.map((segment) => segment.id);
+		} else {
 			return [];
 		}
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'organizer_registerToHRTask',
 		description: 'Registers the organizer for a HR task'
 	})
@@ -110,7 +112,7 @@ export class OrganizerResolver {
 	public async registerToHRTask(
 		@EventCtx() eventContext: EventContext,
 		@Args('id', { description: 'The id of organizer' }) id: string,
-		@Args('hrSegmentId', { description: 'The id of the segment to register to' }) hrSegmentId: string,
+		@Args('hrSegmentId', { description: 'The id of the segment to register to' }) hrSegmentId: string
 	): Promise<boolean> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const organizer = await this.organizerManager.getOrganizerById(eventContext, event, id);
@@ -119,7 +121,7 @@ export class OrganizerResolver {
 		return true;
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'organizer_unregisterFromHRTask',
 		description: 'Unregisters an organizer from a HR task'
 	})
@@ -129,7 +131,7 @@ export class OrganizerResolver {
 	public async unregisterFromHRTask(
 		@EventCtx() eventContext: EventContext,
 		@Args('id', { description: 'The id of organizer' }) id: string,
-		@Args('hrSegmentId', { description: 'The id of the segment to register to' }) hrSegmentId: string,
+		@Args('hrSegmentId', { description: 'The id of the segment to register to' }) hrSegmentId: string
 	): Promise<boolean> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const organizer = await this.organizerManager.getOrganizerById(eventContext, event, id);

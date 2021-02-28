@@ -22,7 +22,7 @@ export class AuthEventJwtStrategy extends PassportStrategy(Strategy, 'event') {
 
 	public async validate(payload: Token): Promise<EventToken> {
 		checkArgument(isEventToken(payload), AuthInvalidTokenException);
-		return payload as unknown as EventToken;
+		return (payload as unknown) as EventToken;
 	}
 }
 

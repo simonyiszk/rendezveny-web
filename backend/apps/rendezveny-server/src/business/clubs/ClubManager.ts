@@ -9,7 +9,15 @@ import { isNotEmpty } from 'class-validator';
 import { ClubNameValidationException } from './exceptions/ClubNameValidationException';
 import { AccessContext } from '../auth/tokens/AccessToken';
 import { BaseManager, Manager } from '../utils/BaseManager';
-import { AuthClub, AuthContext, AuthorizeGuard, IsAdmin, IsManager, IsMemberOfClub, IsUser } from '../auth/AuthorizeGuard';
+import {
+	AuthClub,
+	AuthContext,
+	AuthorizeGuard,
+	IsAdmin,
+	IsManager,
+	IsMemberOfClub,
+	IsUser
+} from '../auth/AuthorizeGuard';
 import { ClubMembershipRepository, ClubRepository } from '../../data/repositories/repositories';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { nameof } from '../../utils/nameof';
@@ -25,9 +33,7 @@ export class ClubManager extends BaseManager {
 	}
 
 	@AuthorizeGuard(IsUser(), IsAdmin())
-	public async getAllClubs(
-		@AuthContext() _accessContext: AccessContext
-	): Promise<{ clubs: Club[], count: number}> {
+	public async getAllClubs(@AuthContext() _accessContext: AccessContext): Promise<{ clubs: Club[]; count: number }> {
 		const [clubs, count] = await this.clubRepository.findAndCount();
 		return { clubs, count };
 	}
@@ -35,8 +41,9 @@ export class ClubManager extends BaseManager {
 	@AuthorizeGuard(IsUser(), IsAdmin())
 	public async getAllClubsPaginated(
 		@AuthContext() _accessContext: AccessContext,
-		pageSize: number, offset: number
-	): Promise<{ clubs: Club[], count: number}> {
+		pageSize: number,
+		offset: number
+	): Promise<{ clubs: Club[]; count: number }> {
 		checkPagination(pageSize, offset);
 
 		const [clubs, count] = await this.clubRepository.findAndCount({
@@ -47,51 +54,36 @@ export class ClubManager extends BaseManager {
 		return { clubs, count };
 	}
 
-	public async getClubById(
-		@AuthContext() accessContext: AccessContext,
-		id: string
-	): Promise<Club> {
+	public async getClubById(@AuthContext() accessContext: AccessContext, id: string): Promise<Club> {
 		const club = await this.clubRepository.findOne({ id });
 
-		if(!club) {
+		if (!club) {
 			return this.getClubFail(accessContext, id);
-		}
-		else {
+		} else {
 			return this.getClub(accessContext, club);
 		}
 	}
 
 	@AuthorizeGuard(IsUser(), IsAdmin())
-	public async getClub(
-		@AuthContext() _accessContext: AccessContext,
-		@AuthClub() club: Club
-	): Promise<Club> {
+	public async getClub(@AuthContext() _accessContext: AccessContext, @AuthClub() club: Club): Promise<Club> {
 		return club;
 	}
 
 	@AuthorizeGuard(IsUser(), IsAdmin())
-	private async getClubFail(
-		@AuthContext() _accessContext: AccessContext,
-		id: string
-	): Promise<Club> {
+	private async getClubFail(@AuthContext() _accessContext: AccessContext, id: string): Promise<Club> {
 		throw new ClubDoesNotExistsException(id);
 	}
 
 	@Transactional()
 	@AuthorizeGuard(IsAdmin())
-	public async addClub(
-		@AuthContext() accessContext: AccessContext,
-		name: string,
-		externalId: number
-	): Promise<Club> {
+	public async addClub(@AuthContext() accessContext: AccessContext, name: string, externalId: number): Promise<Club> {
 		checkArgument(isNotEmpty(name), ClubNameValidationException);
 
 		const clubWithName = await this.clubRepository.findOne({ name });
 
-		if(clubWithName) {
+		if (clubWithName) {
 			throw new ClubWithNameExistsException(name);
-		}
-		else {
+		} else {
 			const club = new Club({ name, externalId });
 			return this.clubRepository.save(club);
 		}
@@ -109,10 +101,9 @@ export class ClubManager extends BaseManager {
 
 		const clubWithName = await this.clubRepository.findOne({ name });
 
-		if(clubWithName && club.id !== clubWithName.id) {
+		if (clubWithName && club.id !== clubWithName.id) {
 			throw new ClubWithNameExistsException(name);
-		}
-		else {
+		} else {
 			club.name = name;
 			club.externalId = externalId;
 			return this.clubRepository.save(club);
@@ -121,10 +112,7 @@ export class ClubManager extends BaseManager {
 
 	@Transactional()
 	@AuthorizeGuard(IsAdmin())
-	public async deleteClub(
-		@AuthContext() accessContext: AccessContext,
-		@AuthClub() club: Club
-	): Promise<void> {
+	public async deleteClub(@AuthContext() accessContext: AccessContext, @AuthClub() club: Club): Promise<void> {
 		await this.clubRepository.remove(club);
 	}
 
@@ -132,7 +120,7 @@ export class ClubManager extends BaseManager {
 	public async getAllClubMemberships(
 		@AuthContext() accessContext: AccessContext,
 		@AuthClub() club: Club
-	): Promise<{ memberships: ClubMembership[], count: number}> {
+	): Promise<{ memberships: ClubMembership[]; count: number }> {
 		const memberships = await this.membershipRepository.find({ club });
 
 		return {
@@ -148,26 +136,28 @@ export class ClubManager extends BaseManager {
 		pageSize: number,
 		offset: number,
 		searchForName?: string
-	): Promise<{ memberships: ClubMembership[], count: number}> {
+	): Promise<{ memberships: ClubMembership[]; count: number }> {
 		checkPagination(pageSize, offset);
 
-		const [memberships, count] = typeof searchForName === 'string'
-			? await this.membershipRepository.createQueryBuilder('membership')
-				.leftJoinAndSelect(`membership.${nameof<ClubMembership>('user')}`, 'user')
-				.andWhere(`membership.${nameof<ClubMembership>('club')}.id = :clubId`, {
-					clubId: club.id
-				})
-				.andWhere(`user.${nameof<User>('name')} like :searchForName`, {
-					searchForName: `%${searchForName}%`
-				})
-				.take(pageSize)
-				.skip(offset * pageSize)
-				.getManyAndCount()
-			: await this.membershipRepository.findAndCount({
-				where: { club },
-				take: pageSize,
-				skip: offset * pageSize
-			});
+		const [memberships, count] =
+			typeof searchForName === 'string'
+				? await this.membershipRepository
+						.createQueryBuilder('membership')
+						.leftJoinAndSelect(`membership.${nameof<ClubMembership>('user')}`, 'user')
+						.andWhere(`membership.${nameof<ClubMembership>('club')}.id = :clubId`, {
+							clubId: club.id
+						})
+						.andWhere(`user.${nameof<User>('name')} like :searchForName`, {
+							searchForName: `%${searchForName}%`
+						})
+						.take(pageSize)
+						.skip(offset * pageSize)
+						.getManyAndCount()
+				: await this.membershipRepository.findAndCount({
+						where: { club },
+						take: pageSize,
+						skip: offset * pageSize
+				  });
 		return {
 			memberships,
 			count

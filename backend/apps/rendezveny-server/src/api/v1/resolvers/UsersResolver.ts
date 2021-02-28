@@ -15,11 +15,9 @@ import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 @Resolver((_: never) => UserDTO)
 @UseInterceptors(LoggingInterceptor)
 export class UsersResolver {
-	public constructor(
-		private readonly userManager: UserManager
-	) {}
+	public constructor(private readonly userManager: UserManager) {}
 
-	@Query(_ => PaginatedUserDTO, {
+	@Query((_) => PaginatedUserDTO, {
 		name: 'users_getAll',
 		description: 'Gets the users in the system'
 	})
@@ -40,7 +38,7 @@ export class UsersResolver {
 		};
 	}
 
-	@Query(_ => UserDTO, {
+	@Query((_) => UserDTO, {
 		name: 'users_getOne',
 		description: 'Gets one user based on its id'
 	})
@@ -53,19 +51,17 @@ export class UsersResolver {
 		return this.userManager.getUserById(accessContext, id);
 	}
 
-	@Query(_ => UserDTO, {
+	@Query((_) => UserDTO, {
 		name: 'users_getSelf',
 		description: 'Gets the current user'
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
-	public async getSelf(
-		@AccessCtx() accessContext: AccessContext
-	): Promise<UserDTO> {
+	public async getSelf(@AccessCtx() accessContext: AccessContext): Promise<UserDTO> {
 		return this.userManager.getUserById(accessContext, accessContext.getUserId());
 	}
 
-	@ResolveField(nameof<UserDTO>('clubMemberships'), _ => PaginatedMembershipDTO)
+	@ResolveField(nameof<UserDTO>('clubMemberships'), (_) => PaginatedMembershipDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async getUserMemberships(
@@ -74,18 +70,24 @@ export class UsersResolver {
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
 		@Args('isManaged', {
-			description: 'The user is manager of the club', nullable: true
-		}) isManaged?: boolean,
+			description: 'The user is manager of the club',
+			nullable: true
+		})
+		isManaged?: boolean
 	): Promise<PaginatedMembershipDTO> {
 		const user = await this.userManager.getUserById(accessContext, userDTO.id);
 		const { memberships, count } = await this.userManager.getAllClubMembershipsPaginated(
-			accessContext, user, pageSize, offset, {
+			accessContext,
+			user,
+			pageSize,
+			offset,
+			{
 				isManaged
 			}
 		);
 
 		return {
-			nodes: memberships.map(m => ({
+			nodes: memberships.map((m) => ({
 				club: m.club,
 				user: m.user,
 				role: MembershipResolver.transformClubRole(m.clubRole)
@@ -94,7 +96,7 @@ export class UsersResolver {
 		};
 	}
 
-	@ResolveField(nameof<UserDTO>('localIdentity'), _ => LocalIdentityDTO, { nullable: true })
+	@ResolveField(nameof<UserDTO>('localIdentity'), (_) => LocalIdentityDTO, { nullable: true })
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async getLocalIdentity(

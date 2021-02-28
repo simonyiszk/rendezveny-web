@@ -9,26 +9,26 @@ interface IPaginatedType<T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function PaginatedDTO<T>(classRef: Type<T>): new() => IPaginatedType<T> {
+export function PaginatedDTO<T>(classRef: Type<T>): new () => IPaginatedType<T> {
 	@ObjectType({ isAbstract: true })
 	class BasePaginatedType implements IPaginatedType<T> {
-		@Field(_ => [classRef], {
+		@Field((_) => [classRef], {
 			description: 'The paginated data'
 		})
 		public nodes!: T[];
 
-		@Field(_ => Int, {
+		@Field((_) => Int, {
 			description: 'The total number of data entries'
 		})
 		public totalCount!: number;
 
-		@Field(_ => Int, {
+		@Field((_) => Int, {
 			nullable: true,
 			description: 'The size of the page, if pagination is enabled'
 		})
 		public pageSize?: number;
 
-		@Field(_ => Int, {
+		@Field((_) => Int, {
 			nullable: true,
 			description: 'The offset of the page, if pagination is enabled'
 		})

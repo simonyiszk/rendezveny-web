@@ -15,24 +15,27 @@ export class Club extends BaseEntity<Club> {
 	@Column()
 	public externalId!: number;
 
-	@OneToMany(_ => ClubMembership, membership => membership.club, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => ClubMembership,
+		(membership) => membership.club,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public memberships!: ClubMembership[];
 
-	@ManyToMany(_ => Event, event => event.hostingClubs)
+	@ManyToMany(
+		(_) => Event,
+		(event) => event.hostingClubs
+	)
 	public hostedEvents!: Event[];
 
-	public constructor(params?: {
-		name: string,
-		externalId: number,
-		memberships?: ClubMembership[]
-	}) {
+	public constructor(params?: { name: string; externalId: number; memberships?: ClubMembership[] }) {
 		super();
-		if(params) {
+		if (params) {
 			this.name = params.name;
 			this.externalId = params.externalId;
-			if(params.memberships) {
+			if (params.memberships) {
 				this.memberships = params.memberships;
 			}
 		}

@@ -17,7 +17,8 @@ import { nameof } from '../../../utils/nameof';
 import {
 	EventRegistrationFormDTO,
 	EventRegistrationFormInput,
-	EventRegistrationFormQuestionMetadataDTO, PaginatedRegistrationFormTemplateQuestionDTO
+	EventRegistrationFormQuestionMetadataDTO,
+	PaginatedRegistrationFormTemplateQuestionDTO
 } from '../dtos/EventRegistrationFormDTO';
 import { FormManager } from '../../../business/registration/FormManager';
 import { HRTableDTO, HRTableInput } from '../dtos/HRTableDTO';
@@ -42,7 +43,7 @@ export class EventResolver {
 		private readonly hrTableManager: HRTableManager
 	) {}
 
-	@Query(_ => PaginatedEventDTO, {
+	@Query((_) => PaginatedEventDTO, {
 		name: 'events_getAll',
 		description: 'Gets the events in the system'
 	})
@@ -53,44 +54,54 @@ export class EventResolver {
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
 		@Args('isRegisteredUpcoming', {
-			description: 'The user is registered to and the event is upcoming', nullable: true
-		}) isRegisteredUpcoming?: boolean,
+			description: 'The user is registered to and the event is upcoming',
+			nullable: true
+		})
+		isRegisteredUpcoming?: boolean,
 		@Args('isRegisteredPast', {
-			description: 'The user is registered to and the event is past', nullable: true
-		}) isRegisteredPast?: boolean,
+			description: 'The user is registered to and the event is past',
+			nullable: true
+		})
+		isRegisteredPast?: boolean,
 		@Args('isOrganizerUpcoming', {
-			description: 'The user is organizer of and the event is upcoming', nullable: true
-		}) isOrganizerUpcoming?: boolean,
+			description: 'The user is organizer of and the event is upcoming',
+			nullable: true
+		})
+		isOrganizerUpcoming?: boolean,
 		@Args('isOrganizerPast', {
-			description: 'The user is organizer of and the event is past', nullable: true
-		}) isOrganizerPast?: boolean,
+			description: 'The user is organizer of and the event is past',
+			nullable: true
+		})
+		isOrganizerPast?: boolean,
 		@Args('canRegisterToUpcoming', {
-			description: 'The user can register to and the event is upcoming', nullable: true
-		}) canRegisterToUpcoming?: boolean,
+			description: 'The user can register to and the event is upcoming',
+			nullable: true
+		})
+		canRegisterToUpcoming?: boolean,
 		@Args('canRegisterToPast', {
-			description: 'The user can register to and the event is past', nullable: true
-		}) canRegisterToPast?: boolean
+			description: 'The user can register to and the event is past',
+			nullable: true
+		})
+		canRegisterToPast?: boolean
 	): Promise<PaginatedEventDTO> {
-		const { events, count } = await this.eventManager.getAllEventsPaginated(
-			accessContext, pageSize, offset, {
-				isRegisteredUpcoming,
-				isRegisteredPast,
-				isOrganizerUpcoming,
-				isOrganizerPast,
-				canRegisterToUpcoming,
-				canRegisterToPast
-			}
-		);
+		const { events, count } = await this.eventManager.getAllEventsPaginated(accessContext, pageSize, offset, {
+			isRegisteredUpcoming,
+			isRegisteredPast,
+			isOrganizerUpcoming,
+			isOrganizerPast,
+			canRegisterToUpcoming,
+			canRegisterToPast
+		});
 
 		return {
-			nodes: events.map(event => EventResolver.eventToDTO(event)),
+			nodes: events.map((event) => EventResolver.eventToDTO(event)),
 			totalCount: count,
 			pageSize: pageSize,
 			offset: offset
 		};
 	}
 
-	@Query(_ => EventDTO, {
+	@Query((_) => EventDTO, {
 		name: 'events_getOne',
 		description: 'Gets one event based on its id',
 		nullable: true
@@ -100,30 +111,26 @@ export class EventResolver {
 		@Args('id', { description: 'The id of the event', nullable: true }) id?: string,
 		@Args('uniqueName', { description: 'The unique name of the event', nullable: true }) uniqueName?: string
 	): Promise<EventDTO | null> {
-		if(typeof id !== 'undefined') {
+		if (typeof id !== 'undefined') {
 			return EventResolver.eventToDTO(await this.eventManager.getEventById(id));
-		}
-		else if(typeof uniqueName !== 'undefined') {
+		} else if (typeof uniqueName !== 'undefined') {
 			return EventResolver.eventToDTO(await this.eventManager.getEventByUniqueName(uniqueName));
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
 
-	@Query(_ => EventDTO, {
+	@Query((_) => EventDTO, {
 		name: 'events_getCurrent',
 		description: 'Gets the current event'
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
-	public async getCurrent(
-		@EventCtx() eventContext: EventContext
-	): Promise<EventDTO> {
+	public async getCurrent(@EventCtx() eventContext: EventContext): Promise<EventDTO> {
 		return EventResolver.eventToDTO(await this.eventManager.getEventById(eventContext.getEventId()));
 	}
 
-	@Mutation(_ => EventDTO, {
+	@Mutation((_) => EventDTO, {
 		name: 'events_addEvent',
 		description: 'Adds an event'
 	})
@@ -139,64 +146,84 @@ export class EventResolver {
 		@Args('hostingClubIds', {
 			description: 'The ids of the hosting clubs',
 			type: () => [GraphQLString]
-		}) hostingClubIds: string[],
+		})
+		hostingClubIds: string[],
 		@Args('chiefOrganizerIds', {
 			description: 'The ids of the chief organizers',
 			type: () => [GraphQLString]
-		}) chiefOrganizerIds: string[],
+		})
+		chiefOrganizerIds: string[],
 		@Args('organizerIds', {
 			description: 'The ids of the not chief organizers',
-			type: () => [GraphQLString],
-		}) organizerIds: string[],
+			type: () => [GraphQLString]
+		})
+		organizerIds: string[],
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
-		}) start?: Date,
+		})
+		start?: Date,
 		@Args('end', {
 			description: 'The end date of the event',
 			nullable: true
-		}) end?: Date,
+		})
+		end?: Date,
 		@Args('registrationStart', {
 			description: 'Indicates start of the registration for the event',
 			nullable: true
-		}) registrationStart?: Date,
+		})
+		registrationStart?: Date,
 		@Args('registrationEnd', {
 			description: 'Indicates end of the registration for the event',
 			nullable: true
-		}) registrationEnd?: Date,
+		})
+		registrationEnd?: Date,
 		@Args('registrationAllowed', {
 			description: 'Indicates end of the registration for the event is allowed',
 			nullable: true
-		}) registrationAllowed?: boolean,
+		})
+		registrationAllowed?: boolean,
 		@Args('dateOrTime', {
 			description: 'Indicates whether the dates contain times as well',
 			nullable: true
-		}) isDateOrTime?: boolean,
+		})
+		isDateOrTime?: boolean,
 		@Args('place', {
 			description: 'The place of the event',
 			nullable: true
-		}) place?: string,
+		})
+		place?: string,
 		@Args('capacity', {
 			description: 'The capacity of the event',
 			nullable: true
-		}) capacity?: number
+		})
+		capacity?: number
 	): Promise<EventDTO> {
-		return EventResolver.eventToDTO(await this.eventManager.addEvent(
-			accessContext,
-			name,
-			uniqueName,
-			description,
-			isClosedEvent,
-			hostingClubIds,
-			chiefOrganizerIds,
-			organizerIds,
-			{
-				start, end, registrationEnd, registrationStart, registrationAllowed, isDateOrTime, place, capacity
-			}
-		));
+		return EventResolver.eventToDTO(
+			await this.eventManager.addEvent(
+				accessContext,
+				name,
+				uniqueName,
+				description,
+				isClosedEvent,
+				hostingClubIds,
+				chiefOrganizerIds,
+				organizerIds,
+				{
+					start,
+					end,
+					registrationEnd,
+					registrationStart,
+					registrationAllowed,
+					isDateOrTime,
+					place,
+					capacity
+				}
+			)
+		);
 	}
 
-	@Mutation(_ => EventDTO, {
+	@Mutation((_) => EventDTO, {
 		name: 'events_modifyEvent',
 		description: 'Modifies an event'
 	})
@@ -207,76 +234,90 @@ export class EventResolver {
 		@EventCtx() eventContext: EventContext,
 		@Args('id', {
 			description: 'The id of the event'
-		}) id: string,
+		})
+		id: string,
 		@Args('name', {
 			description: 'The name of the event',
 			nullable: true
-		}) name: string,
+		})
+		name: string,
 		@Args('uniqueName', {
 			description: 'The unique name of the event',
 			nullable: true
-		}) uniqueName: string,
+		})
+		uniqueName: string,
 		@Args('description', {
 			description: 'The description of the event',
 			nullable: true
-		}) description: string,
+		})
+		description: string,
 		@Args('isClosedEvent', {
 			description: 'Indicates whether the event is closed',
 			nullable: true
-		}) isClosedEvent: boolean,
+		})
+		isClosedEvent: boolean,
 		@Args('hostingClubIds', {
 			description: 'The ids of the hosting clubs',
 			type: () => [GraphQLString],
 			nullable: true
-		}) hostingClubIds: string[],
+		})
+		hostingClubIds: string[],
 		@Args('chiefOrganizerIds', {
 			description: 'The ids of the chief organizers',
 			type: () => [GraphQLString],
 			nullable: true
-		}) chiefOrganizerIds: string[],
+		})
+		chiefOrganizerIds: string[],
 		@Args('organizerIds', {
 			description: 'The ids of the not chief organizers',
 			type: () => [GraphQLString],
 			nullable: true
-		}) organizerIds: string[],
+		})
+		organizerIds: string[],
 		@Args('start', {
 			description: 'The start date of the event',
 			nullable: true
-		}) start?: Date,
+		})
+		start?: Date,
 		@Args('end', {
 			description: 'The end date of the event',
 			nullable: true
-		}) end?: Date,
+		})
+		end?: Date,
 		@Args('registrationStart', {
 			description: 'Indicates start of the registration for the event',
 			nullable: true
-		}) registrationStart?: Date,
+		})
+		registrationStart?: Date,
 		@Args('registrationEnd', {
 			description: 'Indicates end of the registration for the event',
 			nullable: true
-		}) registrationEnd?: Date,
+		})
+		registrationEnd?: Date,
 		@Args('registrationAllowed', {
 			description: 'Indicates end of the registration for the event is allowed',
 			nullable: true
-		}) registrationAllowed?: boolean,
+		})
+		registrationAllowed?: boolean,
 		@Args('dateOrTime', {
 			description: 'Indicates whether the dates contain times as well',
 			nullable: true
-		}) isDateOrTime?: boolean,
+		})
+		isDateOrTime?: boolean,
 		@Args('place', {
 			description: 'The place of the event',
 			nullable: true
-		}) place?: string,
+		})
+		place?: string,
 		@Args('capacity', {
 			description: 'The capacity of the event',
 			nullable: true
-		}) capacity?: number
+		})
+		capacity?: number
 	): Promise<EventDTO> {
 		const event = await this.eventManager.getEventById(id);
-		return EventResolver.eventToDTO(await this.eventManager.editEvent(
-			eventContext,
-			event,
-			{
+		return EventResolver.eventToDTO(
+			await this.eventManager.editEvent(eventContext, event, {
 				name,
 				uniqueName,
 				description,
@@ -292,11 +333,11 @@ export class EventResolver {
 				isDateOrTime,
 				place,
 				capacity
-			}
-		));
+			})
+		);
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'events_deleteEvent',
 		description: 'Deletes an event'
 	})
@@ -312,7 +353,7 @@ export class EventResolver {
 		return true;
 	}
 
-	@Mutation(_ => EventLoginDTO, {
+	@Mutation((_) => EventLoginDTO, {
 		name: 'events_getToken',
 		description: 'Gets one event based on its id'
 	})
@@ -324,13 +365,13 @@ export class EventResolver {
 		@Args('uniqueName', { description: 'The unique name of the event', nullable: true }) uniqueName?: string
 	): Promise<EventLoginDTO | null> {
 		let event = null;
-		if(typeof id !== 'undefined') {
-			event = await this.eventManager.getEventById(id)
+		if (typeof id !== 'undefined') {
+			event = await this.eventManager.getEventById(id);
 		}
-		if(typeof uniqueName !== 'undefined') {
-			event = await this.eventManager.getEventByUniqueName(uniqueName) 
+		if (typeof uniqueName !== 'undefined') {
+			event = await this.eventManager.getEventByUniqueName(uniqueName);
 		}
-		if(!event) {
+		if (!event) {
 			return null;
 		}
 		const { token, relation } = await this.eventManager.getEventToken(accessContext, event);
@@ -342,7 +383,7 @@ export class EventResolver {
 		};
 	}
 
-	@ResolveField(nameof<EventDTO>('relations'), _ => PaginatedEventRelationDTO)
+	@ResolveField(nameof<EventDTO>('relations'), (_) => PaginatedEventRelationDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
 	public async getRelations(
@@ -353,40 +394,53 @@ export class EventResolver {
 		@Args('registered', {
 			description: 'Indicates whether only registered or not registered users should be shown',
 			nullable: true
-		}) registered?: boolean,
+		})
+		registered?: boolean,
 		@Args('attended', {
 			description: 'Indicates whether only attended or not registered but not attended users should be shown',
 			nullable: true
-		}) attended?: boolean,
+		})
+		attended?: boolean,
 		@Args('organizer', {
 			description: 'Indicates whether only organizers or potential organizers should be shown',
 			nullable: true
-		}) organizer?: boolean,
+		})
+		organizer?: boolean,
 		@Args('chiefOrganizer', {
 			description: 'Indicates whether only chief organizers or potential chief organizers should be shown',
 			nullable: true
-		}) chiefOrganizer?: boolean,
+		})
+		chiefOrganizer?: boolean,
 		@Args('name', {
 			description: 'The name to search for (empty if list all)',
 			nullable: true
-		}) name?: string
+		})
+		name?: string
 	): Promise<PaginatedEventRelationDTO> {
 		const event = await this.eventManager.getEventById(eventDTO.id);
 		const { relations, count } = await this.eventManager.getRelatedUsersPaginated(
-			eventContext, event, pageSize, offset, {
-				registered, attended, organizer, chiefOrganizer, name
+			eventContext,
+			event,
+			pageSize,
+			offset,
+			{
+				registered,
+				attended,
+				organizer,
+				chiefOrganizer,
+				name
 			}
 		);
 
 		return {
-			nodes: relations.map(relation => this.returnEventRelationDTO(relation)),
+			nodes: relations.map((relation) => this.returnEventRelationDTO(relation)),
 			totalCount: count,
 			pageSize: pageSize,
 			offset: offset
 		};
 	}
 
-	@ResolveField(nameof<EventDTO>('selfRelation'), _ => EventRelationDTO)
+	@ResolveField(nameof<EventDTO>('selfRelation'), (_) => EventRelationDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
 	public async getSelfRelation(
@@ -398,7 +452,7 @@ export class EventResolver {
 		return this.returnEventRelationDTO(eventRelation);
 	}
 
-	@ResolveField(nameof<EventDTO>('selfRelation2'), _ => EventRelationDTO)
+	@ResolveField(nameof<EventDTO>('selfRelation2'), (_) => EventRelationDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	public async getSelfRelation2(
@@ -410,21 +464,19 @@ export class EventResolver {
 		return this.returnEventRelationDTO(eventRelation);
 	}
 
-	@Query(_ => PaginatedRegistrationFormTemplateQuestionDTO, {
+	@Query((_) => PaginatedRegistrationFormTemplateQuestionDTO, {
 		name: 'events_getRegistrationFormTemplates',
 		description: 'Gets the registration form templates'
 	})
 	@UseFilters(BusinessExceptionFilter)
 	public async getRegistrationFormTemplates(
 		@PageSize() pageSize: number,
-		@Offset() offset: number,
+		@Offset() offset: number
 	): Promise<PaginatedRegistrationFormTemplateQuestionDTO> {
-		const { templates, count } = await this.formTemplateManager.getAllTemplatesPaginated(
-			pageSize, offset
-		);
+		const { templates, count } = await this.formTemplateManager.getAllTemplatesPaginated(pageSize, offset);
 
 		return {
-			nodes: templates.map(template => ({
+			nodes: templates.map((template) => ({
 				id: template.id,
 				question: template.question,
 				metadata: template.typeMetadata as typeof EventRegistrationFormQuestionMetadataDTO
@@ -435,15 +487,13 @@ export class EventResolver {
 		};
 	}
 
-	@ResolveField(nameof<EventDTO>('registrationForm'), _ => EventRegistrationFormDTO)
+	@ResolveField(nameof<EventDTO>('registrationForm'), (_) => EventRegistrationFormDTO)
 	@UseFilters(BusinessExceptionFilter)
-	public async getRegistrationForm(
-		@Parent() eventDTO: EventDTO
-	): Promise<EventRegistrationFormDTO> {
+	public async getRegistrationForm(@Parent() eventDTO: EventDTO): Promise<EventRegistrationFormDTO> {
 		const event = await this.eventManager.getEventById(eventDTO.id);
 		const form = await this.formManager.getForm(event);
 		return {
-			questions: form.questions.map(question => ({
+			questions: form.questions.map((question) => ({
 				id: question.id,
 				isRequired: question.isRequired,
 				question: question.question,
@@ -452,7 +502,7 @@ export class EventResolver {
 		};
 	}
 
-	@Mutation(_ => EventRegistrationFormDTO, {
+	@Mutation((_) => EventRegistrationFormDTO, {
 		name: 'events_modifyRegistrationForm',
 		description: 'Modifies the registration form'
 	})
@@ -465,11 +515,12 @@ export class EventResolver {
 		@Args('form', {
 			description: 'The modified form',
 			type: () => EventRegistrationFormInput
-		}) form: EventRegistrationFormInput
+		})
+		form: EventRegistrationFormInput
 	): Promise<EventRegistrationFormDTO> {
 		const event = await this.eventManager.getEventById(id);
 		const newForm = await this.formManager.modifyForm(eventContext, event, {
-			questions: form.questions.map(question => ({
+			questions: form.questions.map((question) => ({
 				id: question.id,
 				question: question.question,
 				isRequired: question.isRequired,
@@ -478,7 +529,7 @@ export class EventResolver {
 		});
 
 		return {
-			questions: newForm.questions.map(question => ({
+			questions: newForm.questions.map((question) => ({
 				id: question.id,
 				isRequired: question.isRequired,
 				question: question.question,
@@ -487,7 +538,7 @@ export class EventResolver {
 		};
 	}
 
-	@ResolveField(nameof<EventDTO>('hrTable'), _ => HRTableDTO, {
+	@ResolveField(nameof<EventDTO>('hrTable'), (_) => HRTableDTO, {
 		nullable: true
 	})
 	@UseFilters(BusinessExceptionFilter)
@@ -499,15 +550,14 @@ export class EventResolver {
 		const event = await this.eventManager.getEventById(eventDTO.id);
 		const hrTableState = await this.hrTableManager.getHRTable(eventContext, event);
 
-		if(hrTableState) {
+		if (hrTableState) {
 			return this.returnHrTableState(eventContext, event, hrTableState);
-		}
-		else {
+		} else {
 			return undefined;
 		}
 	}
 
-	@Mutation(_ => HRTableDTO, {
+	@Mutation((_) => HRTableDTO, {
 		name: 'events_createHRTable',
 		description: 'Creates the HR table'
 	})
@@ -524,7 +574,7 @@ export class EventResolver {
 		return this.returnHrTableState(eventContext, event, hrTableState!);
 	}
 
-	@Mutation(_ => HRTableDTO, {
+	@Mutation((_) => HRTableDTO, {
 		name: 'events_modifyHRTable',
 		description: 'Modifies the HR table'
 	})
@@ -537,7 +587,8 @@ export class EventResolver {
 		@Args('hrTable', {
 			description: 'The modified HRTable',
 			type: () => HRTableInput
-		}) hrTable: HRTableInput
+		})
+		hrTable: HRTableInput
 	): Promise<HRTableDTO> {
 		const event = await this.eventManager.getEventById(id);
 		await this.hrTableManager.modifyHRTable(eventContext, event, hrTable);
@@ -545,7 +596,7 @@ export class EventResolver {
 		return this.returnHrTableState(eventContext, event, hrTableState!);
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'events_deleteHRTable',
 		description: 'Deletes the HR table'
 	})
@@ -561,11 +612,9 @@ export class EventResolver {
 		return true;
 	}
 
-	@ResolveField(nameof<EventDTO>('alreadyRegistered'), _ => Number)
+	@ResolveField(nameof<EventDTO>('alreadyRegistered'), (_) => Number)
 	@UseFilters(BusinessExceptionFilter)
-	public async getAlreadyRegistered(
-		@Parent() eventDTO: EventDTO
-	): Promise<number> {
+	public async getAlreadyRegistered(@Parent() eventDTO: EventDTO): Promise<number> {
 		const event = await this.eventManager.getEventById(eventDTO.id);
 		return this.eventManager.getAlreadyRegistered(event);
 	}
@@ -581,34 +630,44 @@ export class EventResolver {
 			isOrganizer: relation.isOrganizer(),
 			isChiefOrganizer: relation.isChiefOrganizer(),
 			registration: relation.isRegistered()
-			? {
-				id: relation.getRegistration().id,
-				didAttend: relation.didAttend()
-			}
-			: undefined,
+				? {
+						id: relation.getRegistration().id,
+						didAttend: relation.didAttend()
+				  }
+				: undefined,
 			organizer: relation.isOrganizer()
-			? {
-				id: relation.getOrganizerId(),
-				isChiefOrganizer: relation.isChiefOrganizer()
-			}
-			: undefined
+				? {
+						id: relation.getOrganizerId(),
+						isChiefOrganizer: relation.isChiefOrganizer()
+				  }
+				: undefined
 		};
 	}
 
 	private async returnHrTableState(
-		eventContext: EventContext, event: Event, hrTableState: HRTableState
+		eventContext: EventContext,
+		event: Event,
+		hrTableState: HRTableState
 	): Promise<HRTableDTO> {
 		return {
 			...hrTableState,
-			tasks: await Promise.all(hrTableState.tasks.map(async task => ({
-				...task,
-				segments: await Promise.all(task.segments.map(async segment => ({
-					...segment,
-					organizers: (await this.eventManager.getUserRelation(
-						eventContext, event, segment.organizers.map(o => o.user)
-					)).map(r => this.returnEventRelationDTO(r))
-				})))
-			})))
+			tasks: await Promise.all(
+				hrTableState.tasks.map(async (task) => ({
+					...task,
+					segments: await Promise.all(
+						task.segments.map(async (segment) => ({
+							...segment,
+							organizers: (
+								await this.eventManager.getUserRelation(
+									eventContext,
+									event,
+									segment.organizers.map((o) => o.user)
+								)
+							).map((r) => this.returnEventRelationDTO(r))
+						}))
+					)
+				}))
+			)
 		};
 	}
 

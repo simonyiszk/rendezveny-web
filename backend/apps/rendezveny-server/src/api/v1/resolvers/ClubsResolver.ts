@@ -16,11 +16,9 @@ import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 @Resolver((_: never) => ClubDTO)
 @UseInterceptors(LoggingInterceptor)
 export class ClubsResolver {
-	public constructor(
-		private readonly clubManager: ClubManager
-	) {}
+	public constructor(private readonly clubManager: ClubManager) {}
 
-	@Query(_ => PaginatedClubDTO, {
+	@Query((_) => PaginatedClubDTO, {
 		name: 'clubs_getAll',
 		description: 'Gets the clubs in the system'
 	})
@@ -29,7 +27,7 @@ export class ClubsResolver {
 	public async getClubs(
 		@AccessCtx() accessContext: AccessContext,
 		@PageSize() pageSize: number,
-		@Offset() offset: number,
+		@Offset() offset: number
 	): Promise<PaginatedClubDTO> {
 		const { clubs, count } = await this.clubManager.getAllClubsPaginated(accessContext, pageSize, offset);
 
@@ -41,7 +39,7 @@ export class ClubsResolver {
 		};
 	}
 
-	@Query(_ => ClubDTO, {
+	@Query((_) => ClubDTO, {
 		name: 'clubs_getOne',
 		description: 'Gets one club based on its id'
 	})
@@ -54,7 +52,7 @@ export class ClubsResolver {
 		return this.clubManager.getClubById(accessContext, id);
 	}
 
-	@Mutation(_ => ClubDTO, {
+	@Mutation((_) => ClubDTO, {
 		name: 'clubs_addOne',
 		description: 'Adds one club'
 	})
@@ -69,7 +67,7 @@ export class ClubsResolver {
 		return this.clubManager.addClub(accessContext, name, externalId);
 	}
 
-	@Mutation(_ => ClubDTO, {
+	@Mutation((_) => ClubDTO, {
 		name: 'clubs_editOne',
 		description: 'Edits one club'
 	})
@@ -86,7 +84,7 @@ export class ClubsResolver {
 		return this.clubManager.editClub(accessContext, club, name, externalId);
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'clubs_deleteOne',
 		description: 'Deletes one club'
 	})
@@ -101,7 +99,7 @@ export class ClubsResolver {
 		return true;
 	}
 
-	@ResolveField(nameof<ClubDTO>('clubMemberships'), _ => PaginatedMembershipDTO)
+	@ResolveField(nameof<ClubDTO>('clubMemberships'), (_) => PaginatedMembershipDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthAccessGuard)
 	@Transactional()
@@ -111,16 +109,22 @@ export class ClubsResolver {
 		@PageSize() pageSize: number,
 		@Offset() offset: number,
 		@Args('searchForName', {
-			description: 'The name of members to search for', nullable: true
-		}) searchForName?: string
+			description: 'The name of members to search for',
+			nullable: true
+		})
+		searchForName?: string
 	): Promise<PaginatedMembershipDTO> {
 		const club = await this.clubManager.getClubById(accessContext, clubDTO.id);
 		const { memberships, count } = await this.clubManager.getAllClubMembershipsPaginated(
-			accessContext, club, pageSize, offset, searchForName
+			accessContext,
+			club,
+			pageSize,
+			offset,
+			searchForName
 		);
 
 		return {
-			nodes: memberships.map(m => ({
+			nodes: memberships.map((m) => ({
 				club: m.club,
 				user: m.user,
 				role: MembershipResolver.transformClubRole(m.clubRole)

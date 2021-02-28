@@ -1,5 +1,4 @@
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { PaginatedEventDTO } from '../dtos/EventDTO';
 import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { BusinessExceptionFilter } from '../utils/BusinessExceptionFilter';
 import { EventManager } from '../../../business/events/EventManager';
@@ -10,7 +9,8 @@ import { FormManager } from '../../../business/registration/FormManager';
 import { EventRegistrationDTO } from '../dtos/EventRegistrationDTO';
 import {
 	EventRegistrationFormAnswerMetadataDTO,
-	EventRegistrationFormAnswersDTO, EventRegistrationFormAnswersInput
+	EventRegistrationFormAnswersDTO,
+	EventRegistrationFormAnswersInput
 } from '../dtos/EventRegistrationFormAnswerDTO';
 import { RegistrationManager } from '../../../business/registration/RegistrationManager';
 import { GraphQLBoolean } from 'graphql';
@@ -28,7 +28,7 @@ export class RegistrationResolver {
 		private readonly formManager: FormManager
 	) {}
 
-	@Query(_ => EventRegistrationDTO, {
+	@Query((_) => EventRegistrationDTO, {
 		name: 'registration_getOne',
 		description: 'Gets one registration by its id'
 	})
@@ -47,7 +47,7 @@ export class RegistrationResolver {
 		};
 	}
 
-	@Mutation(_ => EventRegistrationDTO, {
+	@Mutation((_) => EventRegistrationDTO, {
 		name: 'registration_registerSelf',
 		description: 'Registers the current user to the event'
 	})
@@ -60,19 +60,18 @@ export class RegistrationResolver {
 		@Args('filledInForm', {
 			description: 'The filled in form',
 			type: () => EventRegistrationFormAnswersInput
-		}) filledInForm: EventRegistrationFormAnswersInput
+		})
+		filledInForm: EventRegistrationFormAnswersInput
 	): Promise<EventRegistrationDTO> {
 		const event = await this.eventManager.getEventById(eventId);
 
-		const registration = await this.registrationManager.registerSelf(
-			accessContext, event, {
-				answers: filledInForm.answers.map(answer => ({
-					id: answer.id,
-					answer: JSON.parse(answer.answer)
-				}))
-			}
-		);
-		
+		const registration = await this.registrationManager.registerSelf(accessContext, event, {
+			answers: filledInForm.answers.map((answer) => ({
+				id: answer.id,
+				answer: JSON.parse(answer.answer)
+			}))
+		});
+
 		return {
 			id: registration.id,
 			registrationDate: registration.registrationDate ?? undefined,
@@ -80,7 +79,7 @@ export class RegistrationResolver {
 		};
 	}
 
-	@Mutation(_ => EventRegistrationDTO, {
+	@Mutation((_) => EventRegistrationDTO, {
 		name: 'registration_registerUser',
 		description: 'Registers an user by an organizer'
 	})
@@ -95,7 +94,8 @@ export class RegistrationResolver {
 			description: 'The filled in form',
 			type: () => EventRegistrationFormAnswersInput,
 			nullable: true
-		}) filledInForm?: EventRegistrationFormAnswersInput
+		})
+		filledInForm?: EventRegistrationFormAnswersInput
 	): Promise<EventRegistrationDTO> {
 		const event = await this.eventManager.getEventById(eventId);
 
@@ -105,11 +105,11 @@ export class RegistrationResolver {
 			userId,
 			filledInForm
 				? {
-					answers: filledInForm.answers.map(answer => ({
-						id: answer.id,
-						answer: JSON.parse(answer.answer)
-					}))
-				}
+						answers: filledInForm.answers.map((answer) => ({
+							id: answer.id,
+							answer: JSON.parse(answer.answer)
+						}))
+				  }
 				: undefined
 		);
 
@@ -120,7 +120,7 @@ export class RegistrationResolver {
 		};
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'registration_setAttendState',
 		description: 'Sets the attending information for the registration'
 	})
@@ -134,16 +134,15 @@ export class RegistrationResolver {
 	): Promise<boolean> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const registration = await this.registrationManager.getRegistrationById(eventContext, event, id);
-		if(attended) {
+		if (attended) {
 			await this.registrationManager.attendRegistree(eventContext, event, registration);
-		}
-		else {
+		} else {
 			await this.registrationManager.unattendRegistree(eventContext, event, registration);
 		}
 		return true;
 	}
 
-	@Mutation(_ => EventRegistrationFormAnswersDTO, {
+	@Mutation((_) => EventRegistrationFormAnswersDTO, {
 		name: 'registration_modifyFilledInForm',
 		description: 'Modifies the registration form'
 	})
@@ -156,27 +155,28 @@ export class RegistrationResolver {
 		@Args('filledInForm', {
 			description: 'The filled in form',
 			type: () => EventRegistrationFormAnswersInput
-		}) filledInForm: EventRegistrationFormAnswersInput
+		})
+		filledInForm: EventRegistrationFormAnswersInput
 	): Promise<EventRegistrationFormAnswersDTO> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const registration = await this.registrationManager.getRegistrationById(eventContext, event, id);
 
 		const modifiedFilledInForm = await this.formManager.modifyFilledInForm(eventContext, event, registration, {
-			answers: filledInForm.answers.map(answer => ({
+			answers: filledInForm.answers.map((answer) => ({
 				id: answer.id,
 				answer: JSON.parse(answer.answer)
 			}))
 		});
 
 		return {
-			answers: modifiedFilledInForm.answers.map(answer => ({
+			answers: modifiedFilledInForm.answers.map((answer) => ({
 				id: answer.id,
 				answer: answer.answer as typeof EventRegistrationFormAnswerMetadataDTO
 			}))
 		};
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'registration_deleteOne',
 		description: 'Deletes the registration'
 	})
@@ -193,8 +193,7 @@ export class RegistrationResolver {
 		return true;
 	}
 
-
-	@ResolveField(nameof<EventRegistrationDTO>('formAnswer'), _ => EventRegistrationFormAnswersDTO)
+	@ResolveField(nameof<EventRegistrationDTO>('formAnswer'), (_) => EventRegistrationFormAnswersDTO)
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthEventGuard)
 	public async getFormAnswer(
@@ -203,12 +202,14 @@ export class RegistrationResolver {
 	): Promise<EventRegistrationFormAnswersDTO> {
 		const event = await this.eventManager.getEventById(eventContext.getEventId());
 		const registration = await this.registrationManager.getRegistrationById(
-			eventContext, event, registrationDTO.id
+			eventContext,
+			event,
+			registrationDTO.id
 		);
 		const filledInForm = await this.formManager.getFilledInForm(eventContext, event, registration);
 
 		return {
-			answers: filledInForm.answers.map(answer => ({
+			answers: filledInForm.answers.map((answer) => ({
 				id: answer.id,
 				answer: answer.answer as typeof EventRegistrationFormAnswerMetadataDTO
 			}))

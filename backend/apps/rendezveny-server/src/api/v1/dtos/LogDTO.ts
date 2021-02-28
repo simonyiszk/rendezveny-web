@@ -33,7 +33,7 @@ export class LogDTO {
 	@Field({ nullable: true })
 	public token?: string = '';
 
-	@Field(_ => IssuerType)
+	@Field((_) => IssuerType)
 	public type!: IssuerType;
 
 	@Field({ nullable: true })
@@ -48,7 +48,7 @@ export class LogDTO {
 	@Field()
 	public args: string = '';
 
-	@Field(_ => ResultType)
+	@Field((_) => ResultType)
 	public result!: ResultType;
 }
 

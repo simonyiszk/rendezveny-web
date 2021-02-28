@@ -8,7 +8,7 @@ import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 @UseInterceptors(LoggingInterceptor)
 export class MembershipResolver {
 	public static transformClubRole(role: ClubRole): ClubRoleDTO {
-		switch(role) {
+		switch (role) {
 			case ClubRole.MEMBER:
 				return ClubRoleDTO.MEMBER;
 			case ClubRole.CLUB_MANAGER:

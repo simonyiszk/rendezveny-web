@@ -16,7 +16,7 @@ export interface TextFormQuestionMetadata {
 
 export interface MultipleChoiceFormQuestionMetadata {
 	type: 'multiple_choice';
-	options: { id: string, text: string }[];
+	options: { id: string; text: string }[];
 	multipleAnswers: boolean;
 }
 
@@ -46,25 +46,33 @@ export class FormQuestion extends BaseEntity<FormQuestion> {
 	@Column()
 	public readonly eventId?: string;
 
-	@ManyToOne(_ => Event, event => event.formQuestions, { eager: true, onDelete: 'CASCADE' })
+	@ManyToOne(
+		(_) => Event,
+		(event) => event.formQuestions,
+		{ eager: true, onDelete: 'CASCADE' }
+	)
 	@JoinColumn({ name: nameof<FormQuestion>('eventId') })
 	public event!: Event;
 
-	@OneToMany(_ => FormQuestionAnswer, answer => answer.formQuestion, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => FormQuestionAnswer,
+		(answer) => answer.formQuestion,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public answers!: FormQuestionAnswer[];
 
 	public constructor(params?: {
-		question: string,
-		isRequired: boolean,
-		type: FormQuestionType,
-		typeMetadata: FormQuestionMetadata,
-		order: number,
-		event: Event
+		question: string;
+		isRequired: boolean;
+		type: FormQuestionType;
+		typeMetadata: FormQuestionMetadata;
+		order: number;
+		event: Event;
 	}) {
 		super();
-		if(params) {
+		if (params) {
 			this.question = params.question;
 			this.isRequired = params.isRequired;
 			this.type = params.type;

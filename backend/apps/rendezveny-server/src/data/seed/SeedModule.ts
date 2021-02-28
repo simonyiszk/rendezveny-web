@@ -17,8 +17,6 @@ import config from '../../config/config';
 		BusinessModule,
 		JwtModule.register({})
 	],
-	providers: [
-		SeedService
-	]
+	providers: [SeedService]
 })
 export class SeedModule {}

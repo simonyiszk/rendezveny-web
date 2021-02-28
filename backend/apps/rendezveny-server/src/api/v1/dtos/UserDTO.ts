@@ -19,18 +19,18 @@ export class UserDTO {
 	})
 	public name: string = '';
 
-	@Field(_ => PaginatedMembershipDTO, {
+	@Field((_) => PaginatedMembershipDTO, {
 		description: 'The club memberships of the user'
 	})
 	public clubMemberships?: PaginatedMembershipDTO;
 
-	@Field(_ => LocalIdentityDTO, {
+	@Field((_) => LocalIdentityDTO, {
 		nullable: true,
 		description: 'The local identity of the user (if has one)'
 	})
 	public localIdentity?: LocalIdentityDTO;
 
-	@Field(_ => AuthSCHIdentityDTO, {
+	@Field((_) => AuthSCHIdentityDTO, {
 		nullable: true,
 		description: 'The local identity of the user (if has one)'
 	})

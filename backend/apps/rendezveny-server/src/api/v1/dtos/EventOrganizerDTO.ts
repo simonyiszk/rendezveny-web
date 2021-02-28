@@ -16,7 +16,7 @@ export class EventOrganizerDTO {
 	})
 	public isChiefOrganizer: boolean = false;
 
-	@Field(_ => [GraphQLString], {
+	@Field((_) => [GraphQLString], {
 		description: 'The segments the organizer is assigned to'
 	})
 	public hrSegmentIds?: string[];

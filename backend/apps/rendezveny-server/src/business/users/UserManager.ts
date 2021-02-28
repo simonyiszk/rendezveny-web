@@ -49,14 +49,9 @@ export class UserManager extends BaseManager {
 	}
 
 	@AuthorizeGuard(IsAdmin())
-	public async getAllUsers(
-		@AuthContext() _accessContext: AccessContext
-	): Promise<{ users: User[], count: number}> {
+	public async getAllUsers(@AuthContext() _accessContext: AccessContext): Promise<{ users: User[]; count: number }> {
 		const [users, count] = await this.userRepository.findAndCount({
-			relations: [
-				nameof<User>('localIdentity'),
-				nameof<User>('authSCHIdentity')
-			]
+			relations: [nameof<User>('localIdentity'), nameof<User>('authSCHIdentity')]
 		});
 		return { users, count };
 	}
@@ -64,15 +59,13 @@ export class UserManager extends BaseManager {
 	@AuthorizeGuard(IsAdmin())
 	public async getAllUsersPaginated(
 		@AuthContext() _accessContext: AccessContext,
-		pageSize: number, offset: number
-	): Promise<{ users: User[], count: number}> {
+		pageSize: number,
+		offset: number
+	): Promise<{ users: User[]; count: number }> {
 		checkPagination(pageSize, offset);
 
 		const [users, count] = await this.userRepository.findAndCount({
-			relations: [
-				nameof<User>('localIdentity'),
-				nameof<User>('authSCHIdentity')
-			],
+			relations: [nameof<User>('localIdentity'), nameof<User>('authSCHIdentity')],
 			take: pageSize,
 			skip: offset * pageSize
 		});
@@ -80,22 +73,17 @@ export class UserManager extends BaseManager {
 		return { users, count };
 	}
 
-	public async getUserById(
-		accessContext: AccessContext,
-		id: string,
-		options?: { event?: Event }
-	): Promise<User> {
-		const user = await this.userRepository.findOne({ id }, {
-			relations: [
-				nameof<User>('localIdentity'),
-				nameof<User>('authSCHIdentity')
-			]
-		});
+	public async getUserById(accessContext: AccessContext, id: string, options?: { event?: Event }): Promise<User> {
+		const user = await this.userRepository.findOne(
+			{ id },
+			{
+				relations: [nameof<User>('localIdentity'), nameof<User>('authSCHIdentity')]
+			}
+		);
 
-		if(!user) {
+		if (!user) {
 			return this.getUserFail(accessContext, id, options?.event);
-		}
-		else {
+		} else {
 			return this.getUser(accessContext, user, options?.event);
 		}
 	}
@@ -122,7 +110,10 @@ export class UserManager extends BaseManager {
 	@AuthorizeGuard(IsAdmin())
 	public async addUserWithLocalIdentity(
 		@AuthContext() accessContext: AccessContext,
-		name: string, username: string, email: string, password: string
+		name: string,
+		username: string,
+		email: string,
+		password: string
 	): Promise<User> {
 		checkArgument(isNotEmpty(name), UserNameValidationException);
 		checkArgument(isNotEmpty(username), UserUserNameValidationException);
@@ -130,12 +121,12 @@ export class UserManager extends BaseManager {
 		UserManager.checkPassword(password);
 
 		const identityWithEmail = await this.localIdentityRepository.findOne({ email });
-		if(!identityWithEmail) {
+		if (!identityWithEmail) {
 			throw new LocalIdentityUserExistsWithEmailException(email);
 		}
 
 		const identityWithUsername = await this.localIdentityRepository.findOne({ username });
-		if(!identityWithUsername) {
+		if (!identityWithUsername) {
 			throw new LocalIdentityUserExistsWithUsernameException(username);
 		}
 
@@ -182,20 +173,14 @@ export class UserManager extends BaseManager {
 
 	@Transactional()
 	@AuthorizeGuard(IsAdmin())
-	public async suspendUser(
-		@AuthContext() _accessContext: AccessContext,
-		@AuthUser() user: User
-	): Promise<void> {
+	public async suspendUser(@AuthContext() _accessContext: AccessContext, @AuthUser() user: User): Promise<void> {
 		user.isSuspended = true;
 		await this.userRepository.save(user);
 	}
 
 	@Transactional()
 	@AuthorizeGuard(IsAdmin())
-	public async unsuspendUser(
-		@AuthContext() _accessContext: AccessContext,
-		@AuthUser() user: User
-	): Promise<void> {
+	public async unsuspendUser(@AuthContext() _accessContext: AccessContext, @AuthUser() user: User): Promise<void> {
 		user.isSuspended = false;
 		await this.userRepository.save(user);
 	}
@@ -204,7 +189,7 @@ export class UserManager extends BaseManager {
 	public async getAllClubMemberships(
 		@AuthContext() _accessContext: AccessContext,
 		@AuthUser() user: User
-	): Promise<{ memberships: ClubMembership[], count: number}> {
+	): Promise<{ memberships: ClubMembership[]; count: number }> {
 		const memberships = await this.membershipRepository.find({ user });
 
 		return {
@@ -220,19 +205,18 @@ export class UserManager extends BaseManager {
 		pageSize: number,
 		offset: number,
 		settings?: {
-			isManaged?: boolean
+			isManaged?: boolean;
 		}
-	): Promise<{ memberships: ClubMembership[], count: number}> {
+	): Promise<{ memberships: ClubMembership[]; count: number }> {
 		checkPagination(pageSize, offset);
 
 		let memberships = await this.membershipRepository.find({ user });
 
-		if(settings?.isManaged === true) {
-			memberships = memberships
-				.filter(e => e.clubRole === ClubRole.CLUB_MANAGER);
+		if (settings?.isManaged === true) {
+			memberships = memberships.filter((e) => e.clubRole === ClubRole.CLUB_MANAGER);
 		}
 		return {
-			memberships: memberships.slice(offset * pageSize, (offset * pageSize) + pageSize),
+			memberships: memberships.slice(offset * pageSize, offset * pageSize + pageSize),
 			count: memberships.length
 		};
 	}
@@ -248,8 +232,7 @@ export class UserManager extends BaseManager {
 	private static checkPassword(password: string): void {
 		checkArgument(
 			// eslint-disable-next-line no-magic-numbers
-			minLength(password, 8)
-			&& matches(password, /(?:(?:.*\d)|(?:.*\W+))(?![.\n])(?:.*[A-Z])(?:.*[a-z]).*$/ug),
+			minLength(password, 8) && matches(password, /(?:(?:.*\d)|(?:.*\W+))(?![.\n])(?:.*[A-Z])(?:.*[a-z]).*$/gu),
 			UserPasswordValidationException,
 			{
 				version: 1,

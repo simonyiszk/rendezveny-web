@@ -21,7 +21,7 @@ export class EventRegistrationDTO {
 	})
 	public didAttend: boolean = false;
 
-	@Field(_ => EventRegistrationFormAnswersDTO, {
+	@Field((_) => EventRegistrationFormAnswersDTO, {
 		description: 'The answers for the registration form'
 	})
 	public formAnswer?: EventRegistrationFormAnswersDTO;

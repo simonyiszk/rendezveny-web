@@ -13,25 +13,27 @@ export class Tag {
 	@Column()
 	public name!: string;
 
-	@ManyToMany(_ => Event, event => event.tags)
+	@ManyToMany(
+		(_) => Event,
+		(event) => event.tags
+	)
 	@JoinTable()
 	public events!: Event[];
 
-	@ManyToMany(_ => FormQuestionTemplate, formQuestionTemplate => formQuestionTemplate.tags)
+	@ManyToMany(
+		(_) => FormQuestionTemplate,
+		(formQuestionTemplate) => formQuestionTemplate.tags
+	)
 	@JoinTable()
 	public formQuestionTemplates!: FormQuestionTemplate[];
 
-	public constructor(params?: {
-		name: string,
-		events?: Event[],
-		formQuestionTemplates?: FormQuestionTemplate[]
-	}) {
-		if(params) {
+	public constructor(params?: { name: string; events?: Event[]; formQuestionTemplates?: FormQuestionTemplate[] }) {
+		if (params) {
 			this.name = params.name;
-			if(params.events) {
+			if (params.events) {
 				this.events = params.events;
 			}
-			if(params.formQuestionTemplates) {
+			if (params.formQuestionTemplates) {
 				this.formQuestionTemplates = params.formQuestionTemplates;
 			}
 		}

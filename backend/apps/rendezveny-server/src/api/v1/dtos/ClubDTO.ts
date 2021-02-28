@@ -22,7 +22,7 @@ export class ClubDTO {
 	})
 	public externalId: number = 0;
 
-	@Field(_ => PaginatedMembershipDTO, {
+	@Field((_) => PaginatedMembershipDTO, {
 		description: 'The club memberships of the club'
 	})
 	public clubMemberships?: PaginatedMembershipDTO;

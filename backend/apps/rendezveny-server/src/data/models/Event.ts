@@ -19,7 +19,7 @@ export class Event extends BaseEntity<Event> {
 	@Column()
 	public uniqueName!: string;
 
-	@Column("text")
+	@Column('text')
 	public description!: string;
 
 	@Column({ type: 'varchar', nullable: true })
@@ -49,54 +49,76 @@ export class Event extends BaseEntity<Event> {
 	@Column()
 	public isClosedEvent!: boolean;
 
-	@ManyToMany(_ => Club, club => club.hostedEvents)
+	@ManyToMany(
+		(_) => Club,
+		(club) => club.hostedEvents
+	)
 	@JoinTable()
 	public hostingClubs!: Club[];
 
-	@ManyToMany(_ => Tag, tag => tag.events)
+	@ManyToMany(
+		(_) => Tag,
+		(tag) => tag.events
+	)
 	public tags!: Tag[];
 
-	@OneToMany(_ => Registration, registration => registration.event, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => Registration,
+		(registration) => registration.event,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public registrations!: Registration[];
 
-	@OneToMany(_ => Organizer, organizer => organizer.event, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => Organizer,
+		(organizer) => organizer.event,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public organizers!: Organizer[];
 
-	@OneToMany(_ => FormQuestion, formQuestion => formQuestion.event, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => FormQuestion,
+		(formQuestion) => formQuestion.event,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public formQuestions!: FormQuestion[];
 
-	@OneToOne(_ => HRTable, hrTable => hrTable.event, {
-		onDelete: 'CASCADE',
-		nullable: true
-	})
+	@OneToOne(
+		(_) => HRTable,
+		(hrTable) => hrTable.event,
+		{
+			onDelete: 'CASCADE',
+			nullable: true
+		}
+	)
 	public hrTable!: HRTable | null;
 
 	public constructor(params?: {
-		name: string,
-		uniqueName: string,
-		description: string,
-		place?: string,
-		capacity?: number,
-		start?: Date,
-		end?: Date,
-		isDateOrTime?: boolean
-		registrationStart?: Date,
-		registrationEnd?: Date,
-		registrationAllowed?: boolean,
-		isClosedEvent?: boolean,
-		hostingClubs?: Club[],
-		tags?: Tag[],
-		formQuestions?: FormQuestion[],
-		hrTable?: HRTable
+		name: string;
+		uniqueName: string;
+		description: string;
+		place?: string;
+		capacity?: number;
+		start?: Date;
+		end?: Date;
+		isDateOrTime?: boolean;
+		registrationStart?: Date;
+		registrationEnd?: Date;
+		registrationAllowed?: boolean;
+		isClosedEvent?: boolean;
+		hostingClubs?: Club[];
+		tags?: Tag[];
+		formQuestions?: FormQuestion[];
+		hrTable?: HRTable;
 	}) {
 		super();
-		if(params) {
+		if (params) {
 			this.name = params.name;
 			this.uniqueName = params.uniqueName;
 			this.description = params.description;
@@ -109,13 +131,13 @@ export class Event extends BaseEntity<Event> {
 			this.registrationEnd = params.registrationEnd ?? null;
 			this.registrationAllowed = params.registrationAllowed ?? null;
 			this.isClosedEvent = params.isClosedEvent ?? false;
-			if(params.hostingClubs) {
+			if (params.hostingClubs) {
 				this.hostingClubs = params.hostingClubs;
 			}
-			if(params.tags) {
+			if (params.tags) {
 				this.tags = params.tags;
 			}
-			if(params.formQuestions) {
+			if (params.formQuestions) {
 				this.formQuestions = params.formQuestions;
 			}
 			this.hrTable = params.hrTable ?? null;
