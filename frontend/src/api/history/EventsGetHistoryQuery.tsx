@@ -12,6 +12,7 @@ export const eventGetHistoryQuery = gql`
         end
         place
         selfRelation2 {
+          userId
           email
           organizer {
             isChiefOrganizer
