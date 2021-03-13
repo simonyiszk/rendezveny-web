@@ -1,6 +1,6 @@
 import { RouteComponentProps, Router } from '@reach/router';
 import { navigate } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { useEventGetAllQuery } from '../api/index/EventsGetAllQuery';
 import LinkButton from '../components/control/LinkButton';
@@ -16,7 +16,6 @@ import MembersPage from '../pages-dynamic/manage/members';
 import EditMemberRegPage from '../pages-dynamic/manage/members/editreg';
 import ShowMemberRegPage from '../pages-dynamic/manage/members/showreg';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
-import { isAdmin, isClubManager } from '../utils/token/TokenContainer';
 
 export default function ManagePage(): JSX.Element {
   return (
