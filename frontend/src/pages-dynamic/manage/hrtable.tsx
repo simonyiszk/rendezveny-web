@@ -248,7 +248,7 @@ export default function HRTablePage({
               to={`/manage/${
                 event?.uniqueName ??
                 getCurrentEventData?.events_getOne.uniqueName
-              }/hrtable/new`}
+              }/hrtable/edit`}
               state={{
                 event: event ?? getCurrentEventData?.events_getOne,
               }}
@@ -279,7 +279,7 @@ export default function HRTablePage({
             text="Szerkesztés"
             to={`/manage/${
               event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }/hrtable/new`}
+            }/hrtable/edit`}
             state={{
               event: event ?? getCurrentEventData?.events_getOne,
               hrTable,

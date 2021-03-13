@@ -10,7 +10,7 @@ import Loading from '../components/util/Loading';
 import DetailsPage from '../pages-dynamic/manage/details';
 import FormeditorPage from '../pages-dynamic/manage/formeditor';
 import HRTablePage from '../pages-dynamic/manage/hrtable';
-import HRTableNewPage from '../pages-dynamic/manage/hrtable/new';
+import HRTableEditPage from '../pages-dynamic/manage/hrtable/edit';
 import EventManagePage from '../pages-dynamic/manage/manage';
 import MembersPage from '../pages-dynamic/manage/members';
 import EditMemberRegPage from '../pages-dynamic/manage/members/editreg';
@@ -25,7 +25,7 @@ export default function ManagePage(): JSX.Element {
       <ShowMemberRegPage path="/:uniqueName/members/showreg" />
       <MembersPage path="/:uniqueName/members" />
       <DetailsPage path="/:uniqueName/details" />
-      <HRTableNewPage path="/:uniqueName/hrtable/new" />
+      <HRTableEditPage path="/:uniqueName/hrtable/edit" />
       <HRTablePage path="/:uniqueName/hrtable" />
       <FormeditorPage path="/:uniqueName/formeditor" />
       <EventManagePage path="/:uniqueName" />

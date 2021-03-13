@@ -39,7 +39,7 @@ interface Props extends RouteComponentProps {
   location?: PageProps<null, null, PageState>['location'];
 }
 
-export default function HRTableNewPage({ location }: Props): JSX.Element {
+export default function HRTableEditPage({ location }: Props): JSX.Element {
   const state =
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
@@ -383,6 +383,6 @@ export default function HRTableNewPage({ location }: Props): JSX.Element {
     </Layout>
   );
 }
-HRTableNewPage.defaultProps = {
+HRTableEditPage.defaultProps = {
   location: undefined,
 };
