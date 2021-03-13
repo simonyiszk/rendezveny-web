@@ -35,13 +35,7 @@ export default function ManagePage(): JSX.Element {
 }
 
 function ManageBrowsePage(_props: RouteComponentProps): JSX.Element {
-  const [accessAdminCM, setAccessAdminCM] = useState(false);
-
   const { called, loading, error, data } = useEventGetAllQuery();
-
-  useEffect(() => {
-    setAccessAdminCM(isAdmin() || isClubManager());
-  }, []);
 
   if (called && loading) {
     return <Loading />;
@@ -56,7 +50,7 @@ function ManageBrowsePage(_props: RouteComponentProps): JSX.Element {
 
   return (
     <Layout>
-      <ProtectedComponent access={accessAdminCM}>
+      <ProtectedComponent accessText={['admin', 'manager']}>
         <LinkButton
           text="Rendezvény létrehozása"
           width={['100%', null, '15rem']}

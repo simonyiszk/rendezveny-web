@@ -29,7 +29,6 @@ import {
 } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import useToastService from '../../utils/services/ToastService';
-import { isChiefOrganizer } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -49,8 +48,6 @@ export default function HRTablePage({
   const { event } = state as PageState;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const [accessChief, setAccessChief] = useState(false);
 
   const [hrTable, setHRTable] = useState<HRTable>();
   const [organizer, setOrganizer] = useState<EventOrganizer>();
@@ -124,7 +121,6 @@ export default function HRTablePage({
   useEffect(() => {
     if (event) getEventTokenMutationID(event.id);
     else if (uniqueName) getEventTokenMutationUN(uniqueName);
-    setAccessChief(isChiefOrganizer());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
@@ -240,7 +236,7 @@ export default function HRTablePage({
         <Heading fontSize="3xl" textAlign="center">
           Nincs elérhető HR tábla
         </Heading>
-        <ProtectedComponent access={accessChief}>
+        <ProtectedComponent accessText={['chief']}>
           <Flex justifyContent="center" mt={4}>
             <LinkButton
               width={['100%', null, '45%']}
@@ -262,7 +258,7 @@ export default function HRTablePage({
   const emptySegmentCount = getEmptySegmentCount();
   return (
     <Layout>
-      <ProtectedComponent access={accessChief}>
+      <ProtectedComponent accessText={['chief']}>
         <Flex
           justifyContent={['center', null, 'space-between']}
           flexDir={['column', null, 'row']}

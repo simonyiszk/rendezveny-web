@@ -18,12 +18,7 @@ import ManagePageButton from '../../components/util/ManagePageButton';
 import { Event } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import useToastService from '../../utils/services/ToastService';
-import {
-  isAdmin,
-  isChiefOrganizer,
-  isClubManagerOf,
-  isOrganizer,
-} from '../../utils/token/TokenContainer';
+import { isClubManagerOf } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -44,8 +39,7 @@ export default function EventPage({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [accessOrg, setAccessOrg] = useState(false);
-  const [accessChiefCMAdmin, setAccessChiefCMAdmin] = useState(false);
+  const [accessManagerOfHosting, setAccessManagerOfHosting] = useState(false);
 
   const [
     getCurrentEvent,
@@ -56,11 +50,8 @@ export default function EventPage({
       data: getCurrentEventData,
     },
   ] = useEventGetInformationQuery((queryData) => {
-    setAccessOrg(isOrganizer());
-    setAccessChiefCMAdmin(
-      isChiefOrganizer() ||
-        isClubManagerOf(queryData.events_getOne.hostingClubs) ||
-        isAdmin(),
+    setAccessManagerOfHosting(
+      isClubManagerOf(queryData.events_getOne.hostingClubs),
     );
   });
 
@@ -69,10 +60,7 @@ export default function EventPage({
     getEventTokenMutationID,
     { error: eventTokenMutationErrorID },
   ] = useEventTokenMutationID(client, () => {
-    setAccessOrg(isOrganizer());
-    setAccessChiefCMAdmin(
-      isChiefOrganizer() || isClubManagerOf(event.hostingClubs) || isAdmin(),
-    );
+    setAccessManagerOfHosting(isClubManagerOf(event.hostingClubs));
   });
   const [
     getEventTokenMutationUN,
@@ -128,30 +116,34 @@ export default function EventPage({
       </Heading>
       <Flex flexDir="column" alignItems="center">
         <ManagePageButton
-          access={accessOrg}
+          accessText={['organizer']}
           text="Résztvevők kezelése"
           toPostfix="members"
           event={event ?? getCurrentEventData?.events_getOne}
         />
         <ManagePageButton
-          access={accessChiefCMAdmin}
+          access={accessManagerOfHosting}
+          accessText={['admin', 'chief']}
           text="Rendezvény kezelése"
           toPostfix="details"
           event={event ?? getCurrentEventData?.events_getOne}
         />
         <ManagePageButton
-          access={accessOrg}
+          accessText={['organizer']}
           text="HR tábla"
           toPostfix="hrtable"
           event={event ?? getCurrentEventData?.events_getOne}
         />
         <ManagePageButton
-          access={accessOrg}
+          accessText={['organizer']}
           text="Regisztrációs form"
           toPostfix="formeditor"
           event={event ?? getCurrentEventData?.events_getOne}
         />
-        <ProtectedComponent access={accessChiefCMAdmin}>
+        <ProtectedComponent
+          access={accessManagerOfHosting}
+          accessText={['admin', 'chief']}
+        >
           <Button
             text="Esemény törlése"
             width={['100%', null, '30rem']}

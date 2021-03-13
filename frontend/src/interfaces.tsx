@@ -248,3 +248,4 @@ export interface OrganizerWorkingHours {
   organizer: User;
   hours: number;
 }
+export type AccessTexts = 'admin' | 'manager' | 'chief' | 'organizer';
