@@ -10,6 +10,7 @@ export interface Event {
   registrationStart: string;
   registrationEnd: string;
   registrationForm: EventRegistrationForm;
+  registrationFormAnswers: FormQuestionAnswers;
   isClosedEvent: boolean;
   uniqueName: string;
   registrationAllowed: boolean;
@@ -133,6 +134,16 @@ export interface EventRegistrationFormAnswersInput {
 export interface EventRegistrationFormAnswerInput {
   answer: string;
   id: string;
+}
+
+// FORM QUESTION ANSWER
+export interface FormQuestionAnswers {
+  answers: FormQuestionAnswer[];
+}
+export interface FormQuestionAnswer {
+  formQuestionId: string;
+  registrationId: string;
+  answer: EventRegistrationFormAnswerMetadata;
 }
 
 // CLUB
