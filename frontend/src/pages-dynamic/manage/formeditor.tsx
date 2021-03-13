@@ -208,23 +208,8 @@ export default function FormeditorPage({
     if (!withIndex) setNewId(newId + 1);
     if (question.metadata.type === 'text') {
       setNewQuestionType(EventQuestionType.TEXT);
-    } else if (
-      question.metadata.type === 'multiple_choice' &&
-      !(question.metadata as EventRegistrationFormMultipleChoiceQuestion)
-        .multipleAnswers
-    ) {
-      setNewQuestionType(EventQuestionType.RADIOBUTTON);
-      setNewQuestionOptions(
-        (question.metadata as EventRegistrationFormMultipleChoiceQuestion).options
-          .map((o) => o.text)
-          .join('\n'),
-      );
-    } else if (
-      question.metadata.type === 'multiple_choice' &&
-      (question.metadata as EventRegistrationFormMultipleChoiceQuestion)
-        .multipleAnswers
-    ) {
-      setNewQuestionType(EventQuestionType.CHECKBOX);
+    } else if (question.metadata.type === 'multiple_choice') {
+      setNewQuestionType(EventQuestionType.MULTIPLE_CHOICE);
       setNewQuestionOptions(
         (question.metadata as EventRegistrationFormMultipleChoiceQuestion).options
           .map((o) => o.text)
@@ -247,6 +232,15 @@ export default function FormeditorPage({
     setNewQuestion({
       ...newQuestion,
       isRequired: v,
+    } as EventRegistrationFormQuestion);
+  };
+  const setNewQuestionMultipleChoice = (v: boolean): void => {
+    setNewQuestion({
+      ...newQuestion,
+      metadata: {
+        ...newQuestion?.metadata,
+        multipleAnswers: v,
+      },
     } as EventRegistrationFormQuestion);
   };
   const setNewQuestionMaxLength = (v: number): void => {
@@ -433,7 +427,7 @@ export default function FormeditorPage({
                     {newQuestionType === EventQuestionType.INVALID && (
                       <>
                         <Button
-                          width="45%"
+                          width="90%"
                           text="Szöveges válasz"
                           mb={4}
                           onClick={(): void => {
@@ -451,37 +445,19 @@ export default function FormeditorPage({
                           }}
                         />
                         <Button
-                          width="45%"
-                          text="Radio buttons"
+                          width="90%"
+                          text="Feleletválasztó"
                           mb={4}
                           onClick={(): void => {
-                            setNewQuestionType(EventQuestionType.RADIOBUTTON);
+                            setNewQuestionType(
+                              EventQuestionType.MULTIPLE_CHOICE,
+                            );
                             setNewQuestion({
                               id: 'pseudo'.concat(newId.toString()),
                               isRequired: true,
                               question: '',
                               metadata: {
                                 multipleAnswers: false,
-                                options: [] as EventRegistrationFormMultipleChoiceOption[],
-                                type: 'multiple_choice',
-                              } as EventRegistrationFormMultipleChoiceQuestion,
-                            } as EventRegistrationFormQuestion);
-                            setNewQuestionOptions('');
-                            setNewId(newId + 1);
-                          }}
-                        />
-                        <Button
-                          width="45%"
-                          text="Checkbox"
-                          mb={4}
-                          onClick={(): void => {
-                            setNewQuestionType(EventQuestionType.CHECKBOX);
-                            setNewQuestion({
-                              id: 'pseudo'.concat(newId.toString()),
-                              isRequired: true,
-                              question: '',
-                              metadata: {
-                                multipleAnswers: true,
                                 options: [] as EventRegistrationFormMultipleChoiceOption[],
                                 type: 'multiple_choice',
                               } as EventRegistrationFormMultipleChoiceQuestion,
@@ -524,47 +500,61 @@ export default function FormeditorPage({
                             />
                           </Box>
                         )}
-                        {newQuestionType === EventQuestionType.RADIOBUTTON && (
-                          <Box>
-                            <Box>Lehetőségek</Box>
-                            <Textarea
-                              value={newQuestionOptions}
-                              onChange={(e: React.FormEvent): void => {
-                                setNewQuestionOptions(
-                                  (e.target as HTMLInputElement).value,
-                                );
-                              }}
-                            />
-                          </Box>
+                        {newQuestionType ===
+                          EventQuestionType.MULTIPLE_CHOICE && (
+                          <>
+                            <Box>
+                              <Box>Lehetőségek</Box>
+                              <Textarea
+                                value={newQuestionOptions}
+                                onChange={(e: React.FormEvent): void => {
+                                  setNewQuestionOptions(
+                                    (e.target as HTMLInputElement).value,
+                                  );
+                                }}
+                              />
+                            </Box>
+                            <Box>
+                              <Box>Több lehetőség választása</Box>
+                              <RadioGroup
+                                justifyContent="space-between"
+                                value={
+                                  (newQuestion?.metadata as EventRegistrationFormMultipleChoiceQuestion)
+                                    .multipleAnswers
+                                    ? 'Igen'
+                                    : 'Nem'
+                                }
+                                onChangeCb={(e: string): void => {
+                                  setNewQuestionMultipleChoice(e === 'Igen');
+                                }}
+                              >
+                                <Radio width="45%" value="Nem" mb={2}>
+                                  Nem
+                                </Radio>
+                                <Radio width="45%" value="Igen" mb={2}>
+                                  Igen
+                                </Radio>
+                              </RadioGroup>
+                            </Box>
+                          </>
                         )}
-                        {newQuestionType === EventQuestionType.CHECKBOX && (
-                          <Box>
-                            <Box>Lehetőségek</Box>
-                            <Textarea
-                              value={newQuestionOptions}
-                              onChange={(e: React.FormEvent): void => {
-                                setNewQuestionOptions(
-                                  (e.target as HTMLInputElement).value,
-                                );
-                              }}
-                            />
-                          </Box>
-                        )}
-                        <Box>Kötelező</Box>
-                        <RadioGroup
-                          justifyContent="space-between"
-                          value={newQuestion?.isRequired ? 'Igen' : 'Nem'}
-                          onChangeCb={(e: string): void => {
-                            setNewQuestionRequired(e === 'Igen');
-                          }}
-                        >
-                          <Radio width="40%" value="Nem" mb={2}>
-                            Nem
-                          </Radio>
-                          <Radio width="40%" value="Igen" mb={2}>
-                            Igen
-                          </Radio>
-                        </RadioGroup>
+                        <Box>
+                          <Box>Kötelező</Box>
+                          <RadioGroup
+                            justifyContent="space-between"
+                            value={newQuestion?.isRequired ? 'Igen' : 'Nem'}
+                            onChangeCb={(e: string): void => {
+                              setNewQuestionRequired(e === 'Igen');
+                            }}
+                          >
+                            <Radio width="45%" value="Nem" mb={2}>
+                              Nem
+                            </Radio>
+                            <Radio width="45%" value="Igen" mb={2}>
+                              Igen
+                            </Radio>
+                          </RadioGroup>
+                        </Box>
                       </Box>
                     )}
                   </Flex>

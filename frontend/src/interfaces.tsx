@@ -105,8 +105,7 @@ export interface EventRegistrationFormQuestionInput {
 export enum EventQuestionType {
   INVALID = -1,
   TEXT,
-  RADIOBUTTON,
-  CHECKBOX,
+  MULTIPLE_CHOICE,
 }
 
 // ANSWERS
