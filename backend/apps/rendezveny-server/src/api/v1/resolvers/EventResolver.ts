@@ -30,6 +30,7 @@ import { Event } from '../../../data/models/Event';
 import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 import { FormTemplateManager } from '../../../business/registration/FormTemplateManager';
 import { EventLoginDTO } from '../dtos/EventLoginDTO';
+import { EventRegistrationFormQuestionAnswersDTO } from '../dtos/EventRegistrationFormAnswerDTO';
 
 @Resolver((_: never) => EventDTO)
 @UseInterceptors(LoggingInterceptor)
@@ -499,6 +500,18 @@ export class EventResolver {
 				question: question.question,
 				metadata: question.data as typeof EventRegistrationFormQuestionMetadataDTO
 			}))
+		};
+	}
+
+	@ResolveField(nameof<EventDTO>('registrationFormAnswers'), (_) => EventRegistrationFormQuestionAnswersDTO)
+	@UseFilters(BusinessExceptionFilter)
+	public async getRegistrationFormAnswers(
+		@Parent() eventDTO: EventDTO
+	): Promise<EventRegistrationFormQuestionAnswersDTO> {
+		const event = await this.eventManager.getEventById(eventDTO.id);
+		const form = await this.formManager.getFormAnswers(event);
+		return {
+			answers: form.answers
 		};
 	}
 

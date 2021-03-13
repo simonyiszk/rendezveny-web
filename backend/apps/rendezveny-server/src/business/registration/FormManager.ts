@@ -1,7 +1,7 @@
 import { BaseManager, Manager } from '../utils/BaseManager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from '../../data/models/Event';
-import { FilledInForm, Form, ModifiedForm } from './Form';
+import { FilledInForm, Form, FormAnswers, ModifiedForm } from './Form';
 import { FormQuestion, FormQuestionMetadata, FormQuestionType } from '../../data/models/FormQuestion';
 import { FormQuestionAnswer, FormQuestionAnswerObject } from '../../data/models/FormQuestionAnswer';
 import {
@@ -24,6 +24,7 @@ import {
 	FormQuestionAnswerRepository,
 	FormQuestionRepository
 } from '../../data/repositories/repositories';
+import { In } from 'typeorm';
 
 @Manager()
 export class FormManager extends BaseManager {
@@ -44,6 +45,19 @@ export class FormManager extends BaseManager {
 				question: question.question,
 				isRequired: question.isRequired,
 				data: question.typeMetadata
+			}))
+		};
+	}
+
+	public async getFormAnswers(event: Event): Promise<FormAnswers> {
+		const questions = await this.formQuestionRepository.find({ event });
+		const questionIds = questions.map((q) => q.id);
+		const answers = await this.formAnswerRepository.find({ formQuestionId: In(questionIds) });
+		return {
+			answers: answers.map((answer) => ({
+				formQuestionId: answer.formQuestionId!,
+				registrationId: answer.registrationId!,
+				answer: answer.answer
 			}))
 		};
 	}

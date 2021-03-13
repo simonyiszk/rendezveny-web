@@ -10,6 +10,14 @@ export interface Form {
 	}[];
 }
 
+export interface FormAnswers {
+	answers: {
+		formQuestionId: string;
+		registrationId: string;
+		answer: FormQuestionAnswerObject;
+	}[];
+}
+
 export interface ModifiedForm {
 	questions: {
 		id?: string;

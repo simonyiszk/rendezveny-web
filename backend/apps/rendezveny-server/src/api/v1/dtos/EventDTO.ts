@@ -5,6 +5,7 @@ import { EventRegistrationFormDTO } from './EventRegistrationFormDTO';
 import { HRTableDTO } from './HRTableDTO';
 import { EventRelationDTO } from './EventRelationDTO';
 import { ClubDTO } from './ClubDTO';
+import { EventRegistrationFormQuestionAnswersDTO } from './EventRegistrationFormAnswerDTO';
 
 @ObjectType({
 	description: 'The data of an event'
@@ -108,6 +109,11 @@ export class EventDTO {
 		description: 'The registration form of the event'
 	})
 	public registrationForm?: EventRegistrationFormDTO;
+
+	@Field((_) => EventRegistrationFormQuestionAnswersDTO, {
+		description: 'The registration form of the event'
+	})
+	public registrationFormAnswers?: EventRegistrationFormQuestionAnswersDTO;
 
 	@Field((_) => HRTableDTO, {
 		description: 'The HRTable of the event',

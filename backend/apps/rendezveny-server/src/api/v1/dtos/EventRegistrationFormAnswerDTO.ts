@@ -78,6 +78,36 @@ export class EventRegistrationFormAnswersDTO {
 	public answers?: EventRegistrationFormAnswerDTO[];
 }
 
+@ObjectType({
+	description: 'The answer for one question of the registration form for an event'
+})
+export class EventRegistrationFormQuestionAnswerDTO {
+	@Field({
+		description: 'The id of the question'
+	})
+	public formQuestionId?: string = '';
+
+	@Field({
+		description: 'The id of the registration'
+	})
+	public registrationId?: string = '';
+
+	@Field((_) => EventRegistrationFormAnswerMetadataDTO, {
+		description: 'The metadata of the answer type'
+	})
+	public answer?: typeof EventRegistrationFormAnswerMetadataDTO;
+}
+
+@ObjectType({
+	description: 'The data of the answers for a registration form of an event'
+})
+export class EventRegistrationFormQuestionAnswersDTO {
+	@Field((_) => [EventRegistrationFormQuestionAnswerDTO], {
+		description: 'The answers'
+	})
+	public answers: EventRegistrationFormQuestionAnswerDTO[] = [];
+}
+
 @InputType({
 	description: 'The answer for one question of the registration form for an event'
 })
