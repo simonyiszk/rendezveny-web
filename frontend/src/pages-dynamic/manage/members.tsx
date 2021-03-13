@@ -144,7 +144,6 @@ export default function MembersPage({
       }),
     );
   };
-  console.log(getAggregationData);
 
   return (
     <Layout>
