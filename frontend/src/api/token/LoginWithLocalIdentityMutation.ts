@@ -6,6 +6,7 @@ import {
   useMutation,
 } from '@apollo/client';
 
+import { MutationProps } from '../../interfaces';
 import { resetContext } from '../../utils/token/ApolloClient';
 import {
   setAuthToken,
@@ -31,7 +32,7 @@ export const loginWithLocalIdentityMutation = gql`
 
 export const useLoginMutation = (
   client: ApolloClient<object>,
-  cb?: () => void,
+  { onCompleted, onError, refetchQueries }: MutationProps,
 ): [
   (user: string, password: string) => Promise<FetchResult>,
   MutationResult,
@@ -46,10 +47,12 @@ export const useLoginMutation = (
           data.login_withLocalIdentity.memberships,
         );
         resetContext(client);
-        if (cb) {
-          cb();
+        if (onCompleted) {
+          onCompleted();
         }
       },
+      onError,
+      refetchQueries,
     },
   );
 
