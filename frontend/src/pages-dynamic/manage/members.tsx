@@ -123,7 +123,7 @@ export default function MembersPage({
     getAggregationError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }

@@ -165,7 +165,7 @@ export default function FormeditorPage({
     getTemplatesError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }

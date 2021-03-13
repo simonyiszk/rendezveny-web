@@ -142,7 +142,7 @@ export default function HRTablePage({
     getHRTableError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <Box>Error</Box>;
   }

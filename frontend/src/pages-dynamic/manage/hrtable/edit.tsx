@@ -88,7 +88,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
 
   if (!event || !event.uniqueName) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <Box>Error</Box>;
   }

@@ -74,7 +74,7 @@ export default function EventPage({
   const [getEventDeleteMutation] = useEventDeleteMutation({
     onCompleted: () => {
       makeToast('Sikeres törlés');
-      navigate('/manage');
+      navigate('/');
     },
     onError: (error) => {
       makeToast('Hiba', true, error.message);
@@ -99,7 +99,7 @@ export default function EventPage({
     getCurrentEventError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }

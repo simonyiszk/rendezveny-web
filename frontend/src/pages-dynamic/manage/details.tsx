@@ -217,7 +217,7 @@ export default function DetailsPage({
     getUniquenamesError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }

@@ -67,7 +67,7 @@ export default function CreatePage(): JSX.Element {
   const [getEventCreateMutation] = useEventCreateMutation({
     onCompleted: () => {
       makeToast('Új esemény létrehozva');
-      navigate('/manage');
+      navigate('/');
     },
     onError: (error) => {
       makeToast('Hiba', true, error.message);
