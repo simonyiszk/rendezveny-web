@@ -333,6 +333,7 @@ export default function FormeditorPage({
                   ml={[0, null, 4]}
                   mt={[1, null, 0]}
                   gridTemplateColumns={['repeat(4, 1fr)', null, '1fr 1fr']}
+                  gridTemplateRows={['1frm', null, '3rem 3rem']}
                   columnGap={['1rem', null, 0]}
                 >
                   <Button
