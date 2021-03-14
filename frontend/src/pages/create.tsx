@@ -41,9 +41,11 @@ export default function CreatePage(): JSX.Element {
     { called: getClubsCalled, loading: getClubsLoading, error: getClubsError },
   ] = useClubsGetAllQuery((queryData) => {
     setAllClubs(
-      queryData.clubs_getAll.nodes.map((c) => {
-        return { id: c.id, name: c.name } as Club;
-      }),
+      queryData.clubs_getAll.nodes
+        .map((c) => {
+          return { id: c.id, name: c.name } as Club;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
     );
   });
 

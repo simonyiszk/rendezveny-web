@@ -50,7 +50,9 @@ export default function UserSelectorModal({
     setMembersData({
       ...membersData,
       [queryData.clubs_getOne
-        .id]: queryData.clubs_getOne.clubMemberships.nodes.map((m) => m.user),
+        .id]: queryData.clubs_getOne.clubMemberships.nodes
+        .map((m) => m.user)
+        .sort((a, b) => a.name.localeCompare(b.name)),
     });
   });
 
