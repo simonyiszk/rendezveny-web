@@ -49,10 +49,12 @@ export class EventContext {
 	}
 
 	public getUserId(): string {
-		if (this.eventToken.org === 'none') {
-			throw new Error();
-		} else {
+		if (this.eventToken.org !== 'none') {
 			return this.eventToken.org.uid;
+		} else if (this.eventToken.reg !== 'none') {
+			return this.eventToken.reg.uid;
+		} else {
+			throw new Error();
 		}
 	}
 

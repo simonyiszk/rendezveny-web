@@ -651,26 +651,21 @@ export class EventManager extends BaseManager {
 	): Promise<EventRelation> {
 		await event.loadRelation(this.eventRepository, 'hostingClubs', 'organizers', 'registrations');
 
-		const organizer = eventContext.isOrganizer(event)
-			? (
-					await this.userRepository.findByIds([eventContext.getUserId()], {
-						relations: [nameof<Club>('memberships')]
-					})
-			  )[0]
-			: null;
-
-		const registration = eventContext.isRegistered(event)
-			? (await this.registrationRepository.findByIds([eventContext.getRegistrationId()]))[0]
-			: null;
-
-		if (organizer) {
-			return (await this.returnRelatedUsers(event, [organizer], [], 1)).relations[0];
-		} else if (registration) {
+		if (eventContext.isOrganizer(event)) {
+			const [user] = await this.userRepository.findByIds([eventContext.getUserId()], {
+				relations: [nameof<Club>('memberships')]
+			});
+			return (await this.returnRelatedUsers(event, [user], [], 1)).relations[0];
+		} else if (eventContext.isRegistered(event)) {
+			const [user] = await this.userRepository.findByIds([eventContext.getUserId()], {
+				relations: [nameof<Club>('memberships')]
+			});
+			const [registration] = await this.registrationRepository.findByIds([eventContext.getRegistrationId()]);
 			return (
 				await this.returnRelatedUsers(
 					event,
-					registration.user ? [registration.user] : [],
-					registration.temporaryIdentity ? [registration.temporaryIdentity] : [],
+					[user],
+					registration?.temporaryIdentity ? [registration.temporaryIdentity] : [],
 					1
 				)
 			).relations[0];
