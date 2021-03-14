@@ -84,6 +84,7 @@ export default function UserSelectorModal({
       isOpen={useDisclosureProps.isOpen}
       onClose={useDisclosureProps.onClose}
       scrollBehavior="inside"
+      size="xl"
     >
       <ModalOverlay />
       <ModalContent>
@@ -91,8 +92,7 @@ export default function UserSelectorModal({
         <ModalCloseButton />
         <ModalBody>
           <Tabs
-            isFitted
-            variant="enclosed"
+            orientation="vertical"
             width="100%"
             index={tabIndex}
             onChange={onChangeTab}
