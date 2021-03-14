@@ -75,17 +75,10 @@ export class LoggingInterceptor implements NestInterceptor {
 				type: 'user'
 			};
 		} else if (isEventToken(decodedToken)) {
-			if (decodedToken.reg !== 'none') {
-				return {
-					id: decodedToken.reg.uid,
-					type: 'user'
-				};
-			} else if (decodedToken.org !== 'none') {
-				return {
-					id: decodedToken.org.uid,
-					type: 'user'
-				};
-			}
+			return {
+				id: decodedToken.eid,
+				type: 'user'
+			};
 		}
 
 		throw new Error();
