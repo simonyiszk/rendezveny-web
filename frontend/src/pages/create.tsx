@@ -118,6 +118,7 @@ export default function CreatePage(): JSX.Element {
         uniqueNames={uniqueNames}
         allClubs={allClubs}
         showedClubs={allClubs}
+        managedClubs={managedClubs}
         handleSubmit={handleSubmit}
         withApplication={false}
         initialValues={{

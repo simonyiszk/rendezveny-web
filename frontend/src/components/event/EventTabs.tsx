@@ -47,6 +47,7 @@ interface Props {
   originalUniqueName?: string;
   allClubs: Club[];
   showedClubs: Club[];
+  managedClubs: Club[];
   handleSubmit: (values: EventTabProps) => void;
   withApplication: boolean;
   initialValues: EventTabProps;
@@ -58,6 +59,7 @@ export default function EventTabs({
   originalUniqueName,
   allClubs,
   showedClubs,
+  managedClubs,
   handleSubmit,
   withApplication,
   initialValues,
@@ -123,7 +125,7 @@ export default function EventTabs({
         setChiefOrganizersValid(getChiefOrganizersValid(chiefOrganizers));
         break;
       case 3:
-        setHostingClubsValid(getHostingClubsValid(hostingClubs, []));
+        setHostingClubsValid(getHostingClubsValid(hostingClubs, managedClubs));
         break;
       default:
     }
@@ -570,7 +572,9 @@ export default function EventTabs({
                       isInvalid={hostingClubsValid.length > 0}
                       onChangeCb={(values: Club[]): void => {
                         onChangeClubs(values);
-                        setHostingClubsValid(getHostingClubsValid(values, []));
+                        setHostingClubsValid(
+                          getHostingClubsValid(values, managedClubs),
+                        );
                       }}
                       valueProp="id"
                       labelProp="name"

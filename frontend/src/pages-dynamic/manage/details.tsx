@@ -18,7 +18,7 @@ import {
 import EventTabs from '../../components/event/EventTabs';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
-import { Club, Event, EventTabProps, User } from '../../interfaces';
+import { Club, ClubRole, Event, EventTabProps, User } from '../../interfaces';
 import useToastService from '../../utils/services/ToastService';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
@@ -45,6 +45,7 @@ export default function DetailsPage({
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [originalUniqueName, setOriginalUniqueName] = useState('');
   const [allClubs, setAllClubs] = useState<Club[]>([]);
+  const [managedClubs, setManagedClubs] = useState<Club[]>([]);
   const [ownClubs, setOwnClubs] = useState<Club[]>([]);
   const [initialValues, setInitialValues] = useState<EventTabProps>();
 
@@ -140,7 +141,15 @@ export default function DetailsPage({
         return { id: c.club.id, name: c.club.name } as Club;
       }),
     );
+    setManagedClubs(
+      queryData.users_getSelf.clubMemberships.nodes
+        .filter((c) => c.role === ClubRole[ClubRole.CLUB_MANAGER])
+        .map((c) => {
+          return { id: c.club.id, name: c.club.name } as Club;
+        }),
+    );
   });
+
   const [
     getCurrentEvent,
     {
@@ -256,6 +265,7 @@ export default function DetailsPage({
             ? allClubs
             : allClubs.filter((c) => ownClubs.map((o) => o.id).includes(c.id))
         }
+        managedClubs={managedClubs}
         handleSubmit={handleSubmit}
         withApplication
         initialValues={initialValues}
