@@ -54,6 +54,9 @@ export interface EventRelation {
   organizer: EventOrganizer;
   registration: EventRegistration;
   userId: string;
+  isChiefOrganizer: boolean;
+  isOrganizer: boolean;
+  isRegistered: boolean;
 }
 export interface EventRegistration {
   id: string;

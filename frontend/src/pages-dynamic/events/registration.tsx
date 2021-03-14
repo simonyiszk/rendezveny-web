@@ -52,8 +52,8 @@ export default function RegistrationPage({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [answers, setAnswers] = useState<AnswerState>({});
   const [registered, setRegistered] = useState('');
+  const [answers, setAnswers] = useState<AnswerState>({});
   const [questionCounter, setQuestionCounter] = useState(0);
 
   const [
@@ -85,10 +85,8 @@ export default function RegistrationPage({
         {},
       );
       setAnswers(res);
-      setRegistered(queryData.events_getOne.selfRelation.registration.id);
     } else {
       setAnswers({});
-      setRegistered('');
     }
   });
 
@@ -116,25 +114,37 @@ export default function RegistrationPage({
     },
   ] = useEventGetInformationQuery((queryData) => {
     getEvent({ variables: { id: queryData.events_getOne.id } });
-    getCurrent({
-      variables: { id: queryData.events_getOne.id },
-    });
+    if (registered) {
+      getCurrent({
+        variables: { id: queryData.events_getOne.id },
+      });
+    }
   });
 
   const client = useApolloClient();
   const [
     getEventTokenMutationID,
     { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
+  ] = useEventTokenMutationID(client, (queryData) => {
     getEvent({ variables: { id: event.id } });
-    getCurrent({
-      variables: { id: event.id },
-    });
+    if (queryData.events_getToken.relation.registration) {
+      setRegistered(queryData.events_getToken.relation.registration.id);
+      getCurrent({
+        variables: { id: event.id },
+      });
+    } else {
+      setRegistered('');
+    }
   });
   const [
     getEventTokenMutationUN,
     { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
+  ] = useEventTokenMutationUN(client, (queryData) => {
+    setRegistered(
+      queryData.events_getToken.relation.registration
+        ? queryData.events_getToken.relation.registration.id
+        : '',
+    );
     getCurrentEvent({ variables: { uniqueName } });
   });
 
@@ -148,9 +158,7 @@ export default function RegistrationPage({
       makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
-      getCurrent({
-        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
-      });
+      if (uniqueName) getEventTokenMutationUN(uniqueName);
     },
   });
   const [getModifyFilledInForm] = useModifyFilledInForm({
@@ -161,9 +169,7 @@ export default function RegistrationPage({
       makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
-      getCurrent({
-        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
-      });
+      if (uniqueName) getEventTokenMutationUN(uniqueName);
     },
   });
   const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
@@ -174,9 +180,7 @@ export default function RegistrationPage({
       makeToast('Hiba', true, error.message);
     },
     refetchQueries: () => {
-      getCurrent({
-        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
-      });
+      if (uniqueName) getEventTokenMutationUN(uniqueName);
     },
   });
 
@@ -236,6 +240,10 @@ export default function RegistrationPage({
     };
   };
 
+  /* const registered = getIsRegisteredData
+    ? getIsRegisteredData.events_getOne.selfRelation2.registration?.id
+    : null; */
+
   const handleRegistration = (): void => {
     getRegisterSelfMutation(
       event?.id ?? getCurrentEventData?.events_getOne.id,
@@ -243,10 +251,10 @@ export default function RegistrationPage({
     );
   };
   const handleModify = (): void => {
-    getModifyFilledInForm(registered, generateAnswerDTO());
+    if (registered) getModifyFilledInForm(registered, generateAnswerDTO());
   };
   const handleDelete = (): void => {
-    getRegisterDeleteMutation(registered);
+    if (registered) getRegisterDeleteMutation(registered);
     onClose();
   };
 

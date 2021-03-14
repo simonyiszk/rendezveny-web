@@ -19,6 +19,10 @@ export const eventsGetTokenMutationID = gql`
         userId
         isChiefOrganizer
         isOrganizer
+        isRegistered
+        registration {
+          id
+        }
       }
     }
   }
@@ -64,6 +68,10 @@ export const eventsGetTokenMutationUN = gql`
         userId
         isChiefOrganizer
         isOrganizer
+        isRegistered
+        registration {
+          id
+        }
       }
     }
   }

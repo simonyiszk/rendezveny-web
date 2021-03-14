@@ -36,6 +36,7 @@ export const useEventGetInformationQuery = (
 ): QueryTuple<QueryResult, OperationVariables> => {
   const [getQuery, data] = useLazyQuery<QueryResult>(eventGetInformationQuery, {
     onCompleted: cb,
+    fetchPolicy: 'cache-and-network',
   });
   return [getQuery, data];
 };
