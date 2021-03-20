@@ -13,6 +13,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  Text,
   useDisclosure,
 } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
@@ -27,8 +28,17 @@ import Button from '../../../components/control/Button';
 import LinkButton from '../../../components/control/LinkButton';
 import HRTableComp from '../../../components/hrtable/HRTableComp';
 import { Layout } from '../../../components/layout/Layout';
-import Calendar, { roundTime } from '../../../components/util/Calendar';
+import Calendar, {
+  ceilTime,
+  nextTime,
+  roundTime,
+} from '../../../components/util/Calendar';
 import { Event, HRSegment, HRTable, HRTask } from '../../../interfaces';
+import {
+  getEndValid,
+  getNameValid,
+  getStartValid,
+} from '../../../utils/services/HRTaskValidation';
 import useToastService from '../../../utils/services/ToastService';
 
 interface PageState {
@@ -37,6 +47,9 @@ interface PageState {
 }
 interface Props extends RouteComponentProps {
   location?: PageProps<null, null, PageState>['location'];
+}
+interface HRSegmentErrors {
+  [key: string]: string[];
 }
 
 export default function HRTableEditPage({ location }: Props): JSX.Element {
@@ -49,6 +62,9 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
 
   const [newId, setNewId] = useState(0);
   const [newTask, setNewTask] = useState<HRTask>();
+  const [isNameValid, setNameValid] = useState<string[]>([]);
+  const [isStartValid, setStartValid] = useState<HRSegmentErrors>({});
+  const [isEndValid, setEndValid] = useState<HRSegmentErrors>({});
 
   const [tasks, setTasks] = useState<HRTask[]>(
     (hrTable?.tasks ?? []).map((t) => {
@@ -93,11 +109,18 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
     return <Box>Error</Box>;
   }
 
+  const resetValidStates = (): void => {
+    setNameValid([]);
+    setStartValid([]);
+    setEndValid([]);
+  };
   const openModalLoadTask = (task: HRTask): void => {
+    resetValidStates();
     setNewTask(task);
     onOpen();
   };
   const openModalNewTask = (): void => {
+    resetValidStates();
     setNewTask({
       id: 'pseudo'.concat(newId.toString()),
       name: '',
@@ -119,8 +142,8 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
         {
           id: 'pseudo'.concat(newId.toString()),
           isRequired: true,
-          start: new Date(event.start),
-          end: new Date(event.start),
+          start: ceilTime(new Date(event.start), 15),
+          end: nextTime(ceilTime(new Date(event.start), 15), 15),
           capacity: 1,
           isLocked: false,
           organizers: [],
@@ -163,12 +186,12 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
       isLocked: false,
     } as HRTask;
 
-    if (modifiedTask.segments.some((s) => s.start >= s.end)) {
-      makeToast(
-        'Hiba',
-        true,
-        'A szegmens kezdetének előbb kell lennie, mint a végének',
-      );
+    if (
+      isNameValid.length > 0 ||
+      Object.values(isStartValid).some((v) => v.length > 0) ||
+      Object.values(isEndValid).some((v) => v.length > 0)
+    ) {
+      makeToast('Hiba', true);
     } else {
       const index = tasks.findIndex((t) => t.id === newTask?.id);
       if (index === -1) {
@@ -278,13 +301,25 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
                 rowGap={['0', null, '1rem']}
               >
                 <Box>Név</Box>
-                <Input
-                  mb={['1rem', null, '0']}
-                  value={newTask?.name}
-                  onChange={(e: React.FormEvent): void =>
-                    setNewTaskName((e.target as HTMLInputElement).value)
-                  }
-                />
+                <Box>
+                  <Input
+                    mb={['1rem', null, '0']}
+                    value={newTask?.name}
+                    isInvalid={isNameValid.length > 0}
+                    onChange={(e: React.FormEvent): void => {
+                      const v = (e.target as HTMLInputElement).value;
+                      setNewTaskName(v);
+                      setNameValid(getNameValid(v));
+                    }}
+                  />
+                  <Box>
+                    {isNameValid.map((t) => (
+                      <Text key={t} color="red.500">
+                        {t}
+                      </Text>
+                    ))}
+                  </Box>
+                </Box>
                 <Box gridColumn="1 / -1">Idősávok</Box>
               </Grid>
               {(newTask?.segments || []).map((s) => (
@@ -297,23 +332,75 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
                 >
                   <Label>Kezdés</Label>
                   <Box>
-                    <Calendar
-                      name="segmentStart"
-                      selected={getNewSegmentProp(s.id, 'start')}
-                      onChange={(date: Date): void => {
-                        setNewSegmentProp(s.id, 'start', roundTime(date, 15));
-                      }}
-                    />
+                    <Flex
+                      alignItems="center"
+                      px={4}
+                      borderRadius="0.25rem"
+                      border="2px solid"
+                      borderColor={isStartValid ? 'transparent' : 'red.500'}
+                    >
+                      <Calendar
+                        name="segmentStart"
+                        selected={getNewSegmentProp(s.id, 'start')}
+                        onChange={(date: Date): void => {
+                          const newDate = roundTime(date, 15);
+                          setNewSegmentProp(s.id, 'start', newDate);
+                          setStartValid({
+                            ...isStartValid,
+                            [s.id]: getStartValid(newDate),
+                          });
+                          setEndValid({
+                            ...isEndValid,
+                            [s.id]: getEndValid(
+                              getNewSegmentProp(s.id, 'end'),
+                              newDate,
+                            ),
+                          });
+                        }}
+                      />
+                    </Flex>
+                    <Box>
+                      {isStartValid[s.id] &&
+                        isStartValid[s.id].map((t) => (
+                          <Text key={t} color="red.500">
+                            {t}
+                          </Text>
+                        ))}
+                    </Box>
                   </Box>
                   <Label>Vége</Label>
                   <Box>
-                    <Calendar
-                      name="segmentEnd"
-                      selected={getNewSegmentProp(s.id, 'end')}
-                      onChange={(date: Date): void => {
-                        setNewSegmentProp(s.id, 'end', roundTime(date, 15));
-                      }}
-                    />
+                    <Flex
+                      alignItems="center"
+                      px={4}
+                      borderRadius="0.25rem"
+                      border="2px solid"
+                      borderColor={isEndValid ? 'transparent' : 'red.500'}
+                    >
+                      <Calendar
+                        name="segmentEnd"
+                        selected={getNewSegmentProp(s.id, 'end')}
+                        onChange={(date: Date): void => {
+                          const newDate = roundTime(date, 15);
+                          setNewSegmentProp(s.id, 'end', newDate);
+                          setEndValid({
+                            ...isEndValid,
+                            [s.id]: getEndValid(
+                              newDate,
+                              getNewSegmentProp(s.id, 'start'),
+                            ),
+                          });
+                        }}
+                      />
+                    </Flex>
+                    <Box>
+                      {isEndValid[s.id] &&
+                        isEndValid[s.id].map((t) => (
+                          <Text key={t} color="red.500">
+                            {t}
+                          </Text>
+                        ))}
+                    </Box>
                   </Box>
                   <Label>Kötezelő</Label>
                   <Select
