@@ -10,6 +10,7 @@ import { useEventGetUniquenamesQuery } from '../api/index/EventsGetUniquenamesQu
 import { useProfileGetNameQuery } from '../api/profile/UserGetSelfQuery';
 import EventTabs from '../components/event/EventTabs';
 import { Layout } from '../components/layout/Layout';
+import { ceilTime, nextTime } from '../components/util/Calendar';
 import Loading from '../components/util/Loading';
 import { Club, EventTabProps } from '../interfaces';
 import useToastService from '../utils/services/ToastService';
@@ -112,6 +113,9 @@ export default function CreatePage(): JSX.Element {
     );
   };
 
+  const oneHourLater = ceilTime(new Date(), 60);
+  const twoHourLater = nextTime(oneHourLater, 60);
+
   return (
     <Layout>
       <EventTabs
@@ -124,10 +128,10 @@ export default function CreatePage(): JSX.Element {
         initialValues={{
           name: '',
           description: '<p><br></p>',
-          start: new Date(),
-          end: new Date(),
-          regStart: new Date(),
-          regEnd: new Date(),
+          start: oneHourLater,
+          end: twoHourLater,
+          regStart: oneHourLater,
+          regEnd: twoHourLater,
           place: '',
           organizers: [],
           chiefOrganizers: getSelfNameData

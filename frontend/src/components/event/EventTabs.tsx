@@ -35,7 +35,7 @@ import Button from '../control/Button';
 import Multiselect from '../control/Multiselect';
 import Multiselectpopup from '../control/Multiselectpopup';
 import UserSelectorModal from '../userselector/UserSelectorModal';
-import Calendar from '../util/Calendar';
+import Calendar, { roundTime } from '../util/Calendar';
 import Label from '../util/Label';
 
 const ReactQuill =
@@ -309,8 +309,9 @@ export default function EventTabs({
                         name="start"
                         selected={start}
                         onChange={(date: Date): void => {
-                          setStart(date);
-                          setStartValid(getStartValid(date));
+                          const newDate = roundTime(date, 5);
+                          setStart(newDate);
+                          setStartValid(getStartValid(newDate));
                         }}
                       />
                     </Flex>
@@ -335,8 +336,9 @@ export default function EventTabs({
                         name="end"
                         selected={end}
                         onChange={(date: Date): void => {
-                          setEnd(date);
-                          setEndValid(getEndValid(date, start));
+                          const newDate = roundTime(date, 5);
+                          setEnd(newDate);
+                          setEndValid(getEndValid(newDate, start));
                         }}
                       />
                     </Flex>
@@ -363,8 +365,9 @@ export default function EventTabs({
                         name="regStart"
                         selected={regStart}
                         onChange={(date: Date): void => {
-                          setRegStart(date);
-                          setRegStartValid(getRegStartValid(date, start));
+                          const newDate = roundTime(date, 5);
+                          setRegStart(newDate);
+                          setRegStartValid(getRegStartValid(newDate, start));
                         }}
                       />
                     </Flex>
@@ -391,8 +394,9 @@ export default function EventTabs({
                         name="regEnd"
                         selected={regEnd}
                         onChange={(date: Date): void => {
-                          setRegEnd(date);
-                          setRegEndValid(getRegEndValid(date, regStart));
+                          const newDate = roundTime(date, 5);
+                          setRegEnd(newDate);
+                          setRegEndValid(getRegEndValid(newDate, regStart));
                         }}
                       />
                     </Flex>

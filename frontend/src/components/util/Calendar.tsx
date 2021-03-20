@@ -60,3 +60,11 @@ export function roundTime(dateTime: Date, minuteInterval: number): Date {
   const coeff = 1000 * 60 * minuteInterval;
   return new Date(Math.round(dateTime.getTime() / coeff) * coeff);
 }
+export function ceilTime(dateTime: Date, minuteInterval: number): Date {
+  const coeff = 1000 * 60 * minuteInterval;
+  return new Date(Math.ceil(dateTime.getTime() / coeff) * coeff);
+}
+export function nextTime(dateTime: Date, minuteInterval: number): Date {
+  const coeff = 1000 * 60 * minuteInterval;
+  return new Date(Math.round(dateTime.getTime() / coeff) * coeff + coeff);
+}
