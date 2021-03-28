@@ -19,6 +19,7 @@ import {
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
+import BeforeUnloadComponent from 'react-beforeunload-component';
 
 import {
   useCreateHRTableMutation,
@@ -65,6 +66,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
   const [isNameValid, setNameValid] = useState<string[]>([]);
   const [isStartValid, setStartValid] = useState<HRSegmentErrors>({});
   const [isEndValid, setEndValid] = useState<HRSegmentErrors>({});
+  const [isModified, setIsModified] = useState(false);
 
   const [tasks, setTasks] = useState<HRTask[]>(
     (hrTable?.tasks ?? []).map((t) => {
@@ -88,6 +90,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
   const [getModifyHRTableMutation] = useModifyHRTableMutation({
     onCompleted: () => {
       makeToast('Sikeres mentés');
+      setIsModified(false);
     },
     onError: (error) => {
       makeToast('Hiba', true, error.message);
@@ -111,8 +114,8 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
 
   const resetValidStates = (): void => {
     setNameValid([]);
-    setStartValid([]);
-    setEndValid([]);
+    setStartValid({});
+    setEndValid({});
   };
   const openModalLoadTask = (task: HRTask): void => {
     resetValidStates();
@@ -204,6 +207,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
           }),
         );
       }
+      setIsModified(true);
       onClose();
     }
   };
@@ -214,6 +218,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
     movedTasks[idx] = movedTasks[idx - 1];
     movedTasks[idx - 1] = tmp;
     setTasks(movedTasks);
+    setIsModified(true);
   };
   const moveDown = (task: HRTask): void => {
     const movedTasks = [...tasks];
@@ -222,9 +227,11 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
     movedTasks[idx] = movedTasks[idx + 1];
     movedTasks[idx + 1] = tmp;
     setTasks(movedTasks);
+    setIsModified(true);
   };
   const handleDeleteTask = (taskId: string): void => {
     setTasks(tasks.filter((t) => t.id !== taskId));
+    setIsModified(true);
     onClose();
   };
 
@@ -256,218 +263,220 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
   };
 
   return (
-    <Layout>
-      <LinkButton
-        width={['100%', null, '45%']}
-        text="Vissza"
-        to={`/manage/${event?.uniqueName}/hrtable`}
-        state={{ event }}
-      />
-      <Heading fontSize="3xl" mt={4}>
-        HR Tábla szerkesztése
-      </Heading>
-      <HRTableComp
-        hrtasks={tasks}
-        hredit={{ hrEdit: openModalLoadTask, moveUp, moveDown }}
-        ownSegmentIds={[]}
-      />
-      <Flex
-        justifyContent={['center', null, 'space-between']}
-        flexDir={['column', null, 'row']}
-        mt={4}
-      >
-        <Button
+    <BeforeUnloadComponent blockRoute={isModified}>
+      <Layout>
+        <LinkButton
           width={['100%', null, '45%']}
-          mb={[4, null, 0]}
-          text="Új feladat"
-          onClick={openModalNewTask}
+          text="Vissza"
+          to={`/manage/${event?.uniqueName}/hrtable`}
+          state={{ event }}
         />
-        <Button
-          width={['100%', null, '45%']}
-          text="Mentés"
-          onClick={handleSubmit}
+        <Heading fontSize="3xl" mt={4}>
+          HR Tábla szerkesztése
+        </Heading>
+        <HRTableComp
+          hrtasks={tasks}
+          hredit={{ hrEdit: openModalLoadTask, moveUp, moveDown }}
+          ownSegmentIds={[]}
         />
-      </Flex>
+        <Flex
+          justifyContent={['center', null, 'space-between']}
+          flexDir={['column', null, 'row']}
+          mt={4}
+        >
+          <Button
+            width={['100%', null, '45%']}
+            mb={[4, null, 0]}
+            text="Új feladat"
+            onClick={openModalNewTask}
+          />
+          <Button
+            width={['100%', null, '45%']}
+            text="Mentés"
+            onClick={handleSubmit}
+          />
+        </Flex>
 
-      <Modal isOpen={isOpen} onClose={onClose} scrollBehavior="inside">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Feladat szerkesztése</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Box as="form" minWidth="50%">
-              <Grid
-                gridTemplateColumns={['1fr', null, '1fr 1fr']}
-                rowGap={['0', null, '1rem']}
-              >
-                <Box>Név</Box>
-                <Box>
-                  <Input
-                    mb={['1rem', null, '0']}
-                    value={newTask?.name}
-                    isInvalid={isNameValid.length > 0}
-                    onChange={(e: React.FormEvent): void => {
-                      const v = (e.target as HTMLInputElement).value;
-                      setNewTaskName(v);
-                      setNameValid(getNameValid(v));
-                    }}
-                  />
-                  <Box>
-                    {isNameValid.map((t) => (
-                      <Text key={t} color="red.500">
-                        {t}
-                      </Text>
-                    ))}
-                  </Box>
-                </Box>
-                <Box gridColumn="1 / -1">Idősávok</Box>
-              </Grid>
-              {(newTask?.segments || []).map((s) => (
+        <Modal isOpen={isOpen} onClose={onClose} scrollBehavior="inside">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Feladat szerkesztése</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Box as="form" minWidth="50%">
                 <Grid
                   gridTemplateColumns={['1fr', null, '1fr 1fr']}
                   rowGap={['0', null, '1rem']}
-                  mt={['0', null, '1rem']}
-                  borderTop="solid 1px black"
-                  key={s.id}
                 >
-                  <Label>Kezdés</Label>
+                  <Box>Név</Box>
                   <Box>
-                    <Flex
-                      alignItems="center"
-                      px={4}
-                      borderRadius="0.25rem"
-                      border="2px solid"
-                      borderColor={isStartValid ? 'transparent' : 'red.500'}
-                    >
-                      <Calendar
-                        name="segmentStart"
-                        selected={getNewSegmentProp(s.id, 'start')}
-                        onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 15);
-                          setNewSegmentProp(s.id, 'start', newDate);
-                          setStartValid({
-                            ...isStartValid,
-                            [s.id]: getStartValid(newDate),
-                          });
-                          setEndValid({
-                            ...isEndValid,
-                            [s.id]: getEndValid(
-                              getNewSegmentProp(s.id, 'end'),
-                              newDate,
-                            ),
-                          });
-                        }}
-                      />
-                    </Flex>
+                    <Input
+                      mb={['1rem', null, '0']}
+                      value={newTask?.name}
+                      isInvalid={isNameValid.length > 0}
+                      onChange={(e: React.FormEvent): void => {
+                        const v = (e.target as HTMLInputElement).value;
+                        setNewTaskName(v);
+                        setNameValid(getNameValid(v));
+                      }}
+                    />
                     <Box>
-                      {isStartValid[s.id] &&
-                        isStartValid[s.id].map((t) => (
-                          <Text key={t} color="red.500">
-                            {t}
-                          </Text>
-                        ))}
+                      {isNameValid.map((t) => (
+                        <Text key={t} color="red.500">
+                          {t}
+                        </Text>
+                      ))}
                     </Box>
                   </Box>
-                  <Label>Vége</Label>
-                  <Box>
-                    <Flex
-                      alignItems="center"
-                      px={4}
-                      borderRadius="0.25rem"
-                      border="2px solid"
-                      borderColor={isEndValid ? 'transparent' : 'red.500'}
-                    >
-                      <Calendar
-                        name="segmentEnd"
-                        selected={getNewSegmentProp(s.id, 'end')}
-                        onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 15);
-                          setNewSegmentProp(s.id, 'end', newDate);
-                          setEndValid({
-                            ...isEndValid,
-                            [s.id]: getEndValid(
-                              newDate,
-                              getNewSegmentProp(s.id, 'start'),
-                            ),
-                          });
-                        }}
-                      />
-                    </Flex>
-                    <Box>
-                      {isEndValid[s.id] &&
-                        isEndValid[s.id].map((t) => (
-                          <Text key={t} color="red.500">
-                            {t}
-                          </Text>
-                        ))}
-                    </Box>
-                  </Box>
-                  <Label>Kötezelő</Label>
-                  <Select
-                    name="segmentRequired"
-                    value={
-                      getNewSegmentProp(s.id, 'isRequired') ? 'Igen' : 'Nem'
-                    }
-                    onChange={(e: React.FormEvent): void =>
-                      setNewSegmentProp(
-                        s.id,
-                        'isRequired',
-                        (e.target as HTMLInputElement).value === 'Igen',
-                      )
-                    }
-                  >
-                    <option value="Igen">Igen</option>
-                    <option value="Nem">Nem</option>
-                  </Select>
-                  <Button
-                    gridColumn={['1', null, '2']}
-                    my={['1rem', null, 0]}
-                    width="30%"
-                    justifySelf="end"
-                    text={<CloseIcon />}
-                    onClick={(): void => handleDeleteNewSegment(s.id)}
-                    backgroundColor="red.500"
-                  />
+                  <Box gridColumn="1 / -1">Idősávok</Box>
                 </Grid>
-              ))}
-            </Box>
-          </ModalBody>
+                {(newTask?.segments || []).map((s) => (
+                  <Grid
+                    gridTemplateColumns={['1fr', null, '1fr 1fr']}
+                    rowGap={['0', null, '1rem']}
+                    mt={['0', null, '1rem']}
+                    borderTop="solid 1px black"
+                    key={s.id}
+                  >
+                    <Label>Kezdés</Label>
+                    <Box>
+                      <Flex
+                        alignItems="center"
+                        px={4}
+                        borderRadius="0.25rem"
+                        border="2px solid"
+                        borderColor={isStartValid ? 'transparent' : 'red.500'}
+                      >
+                        <Calendar
+                          name="segmentStart"
+                          selected={getNewSegmentProp(s.id, 'start')}
+                          onChange={(date: Date): void => {
+                            const newDate = roundTime(date, 15);
+                            setNewSegmentProp(s.id, 'start', newDate);
+                            setStartValid({
+                              ...isStartValid,
+                              [s.id]: getStartValid(newDate),
+                            });
+                            setEndValid({
+                              ...isEndValid,
+                              [s.id]: getEndValid(
+                                getNewSegmentProp(s.id, 'end'),
+                                newDate,
+                              ),
+                            });
+                          }}
+                        />
+                      </Flex>
+                      <Box>
+                        {isStartValid[s.id] &&
+                          isStartValid[s.id].map((t) => (
+                            <Text key={t} color="red.500">
+                              {t}
+                            </Text>
+                          ))}
+                      </Box>
+                    </Box>
+                    <Label>Vége</Label>
+                    <Box>
+                      <Flex
+                        alignItems="center"
+                        px={4}
+                        borderRadius="0.25rem"
+                        border="2px solid"
+                        borderColor={isEndValid ? 'transparent' : 'red.500'}
+                      >
+                        <Calendar
+                          name="segmentEnd"
+                          selected={getNewSegmentProp(s.id, 'end')}
+                          onChange={(date: Date): void => {
+                            const newDate = roundTime(date, 15);
+                            setNewSegmentProp(s.id, 'end', newDate);
+                            setEndValid({
+                              ...isEndValid,
+                              [s.id]: getEndValid(
+                                newDate,
+                                getNewSegmentProp(s.id, 'start'),
+                              ),
+                            });
+                          }}
+                        />
+                      </Flex>
+                      <Box>
+                        {isEndValid[s.id] &&
+                          isEndValid[s.id].map((t) => (
+                            <Text key={t} color="red.500">
+                              {t}
+                            </Text>
+                          ))}
+                      </Box>
+                    </Box>
+                    <Label>Kötezelő</Label>
+                    <Select
+                      name="segmentRequired"
+                      value={
+                        getNewSegmentProp(s.id, 'isRequired') ? 'Igen' : 'Nem'
+                      }
+                      onChange={(e: React.FormEvent): void =>
+                        setNewSegmentProp(
+                          s.id,
+                          'isRequired',
+                          (e.target as HTMLInputElement).value === 'Igen',
+                        )
+                      }
+                    >
+                      <option value="Igen">Igen</option>
+                      <option value="Nem">Nem</option>
+                    </Select>
+                    <Button
+                      gridColumn={['1', null, '2']}
+                      my={['1rem', null, 0]}
+                      width="30%"
+                      justifySelf="end"
+                      text={<CloseIcon />}
+                      onClick={(): void => handleDeleteNewSegment(s.id)}
+                      backgroundColor="red.500"
+                    />
+                  </Grid>
+                ))}
+              </Box>
+            </ModalBody>
 
-          <ModalFooter>
-            <Flex width="100%" flexDirection="column">
-              <Flex justifyContent="center" width="100%" mb={4}>
-                <Button
-                  width={['100%', null, '45%']}
-                  text="Új idősáv"
-                  onClick={handleAddNewSegment}
-                />
+            <ModalFooter>
+              <Flex width="100%" flexDirection="column">
+                <Flex justifyContent="center" width="100%" mb={4}>
+                  <Button
+                    width={['100%', null, '45%']}
+                    text="Új idősáv"
+                    onClick={handleAddNewSegment}
+                  />
+                </Flex>
+                <Flex
+                  justifyContent={['center', null, 'space-between']}
+                  flexDir={['column', null, 'row']}
+                  width="100%"
+                >
+                  <Button
+                    width={['100%', null, '45%']}
+                    order={[1, null, 0]}
+                    text="Törlés"
+                    backgroundColor="red.500"
+                    mt={[4, null, 0]}
+                    onClick={(): void => {
+                      handleDeleteTask(newTask?.id);
+                    }}
+                  />
+                  <Button
+                    width={['100%', null, '45%']}
+                    text="Mentés"
+                    onClick={handleNewTask}
+                  />
+                </Flex>
               </Flex>
-              <Flex
-                justifyContent={['center', null, 'space-between']}
-                flexDir={['column', null, 'row']}
-                width="100%"
-              >
-                <Button
-                  width={['100%', null, '45%']}
-                  order={[1, null, 0]}
-                  text="Törlés"
-                  backgroundColor="red.500"
-                  mt={[4, null, 0]}
-                  onClick={(): void => {
-                    handleDeleteTask(newTask?.id);
-                  }}
-                />
-                <Button
-                  width={['100%', null, '45%']}
-                  text="Mentés"
-                  onClick={handleNewTask}
-                />
-              </Flex>
-            </Flex>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </Layout>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </Layout>
+    </BeforeUnloadComponent>
   );
 }
 HRTableEditPage.defaultProps = {
