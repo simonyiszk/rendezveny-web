@@ -52,7 +52,7 @@ export default function HRTaskComp({
             <Button
               width={['2.5rem']}
               px="0.5rem"
-              text={<SettingsIcon />}
+              text={<SettingsIcon boxSize={4} />}
               backgroundColor="white"
               cursor="pointer"
               mr={2}
