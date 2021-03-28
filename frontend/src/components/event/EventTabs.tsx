@@ -1,6 +1,10 @@
 import 'react-quill/dist/quill.snow.css';
 
-import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
+import {
+  ArrowBackIcon,
+  ArrowForwardIcon,
+  QuestionIcon,
+} from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -13,6 +17,7 @@ import {
   TabPanels,
   Tabs,
   Text,
+  Tooltip,
   useDisclosure,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
@@ -236,7 +241,10 @@ export default function EventTabs({
                     </Box>
                   </Box>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény meghivó linkje
+                    Esemény meghivó linkje{' '}
+                    <Tooltip label="Ez fog megjelenni az esemény URL-jében.">
+                      <QuestionIcon />
+                    </Tooltip>
                   </Label>
                   <Box>
                     <Input
@@ -431,7 +439,10 @@ export default function EventTabs({
                     </Box>
                   </Box>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény létszám korlátja
+                    Esemény létszám korlátja{' '}
+                    <Tooltip label="Maximálisan hány fő regisztrálhat. Hagyd üresen, ha korlátlan eseményt szeretnél.">
+                      <QuestionIcon />
+                    </Tooltip>
                   </Label>
                   <Box>
                     <Input
@@ -460,14 +471,17 @@ export default function EventTabs({
                   {withApplication && (
                     <>
                       <Label minHeight={['0', null, '2rem']}>
-                        Jelentkezés engedélyezve
+                        Jelentkezés letiltva{' '}
+                        <Tooltip label="A regisztrációs időszak ellenére le van-e tiltva a jelentkezés.">
+                          <QuestionIcon />
+                        </Tooltip>
                       </Label>
                       <Select
                         name="application"
-                        value={application ? 'Igen' : 'Nem'}
+                        value={application ? 'Nem' : 'Igen'}
                         onChange={(e: React.FormEvent): void => {
                           setApplication(
-                            (e.target as HTMLInputElement).value === 'Igen',
+                            (e.target as HTMLInputElement).value === 'Nem',
                           );
                         }}
                       >
@@ -592,7 +606,13 @@ export default function EventTabs({
                     </Box>
                   </Flex>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény látogathatósága
+                    Esemény látogathatósága{' '}
+                    <Tooltip
+                      label={`Nyílt: publikus esemény\nZárt: csak a szervező körök tagjai érhetik el`}
+                      whiteSpace="pre"
+                    >
+                      <QuestionIcon />
+                    </Tooltip>
                   </Label>
                   <Select
                     name="isClosed"
