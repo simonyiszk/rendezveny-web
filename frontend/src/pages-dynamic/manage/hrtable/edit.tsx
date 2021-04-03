@@ -330,7 +330,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
                   </Box>
                   <Box gridColumn="1 / -1">Idősávok</Box>
                 </Grid>
-                {(newTask?.segments || []).map((s) => (
+                {(newTask?.segments ?? []).map((s) => (
                   <Grid
                     gridTemplateColumns={['1fr', null, '1fr 1fr']}
                     rowGap={['0', null, '1rem']}

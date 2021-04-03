@@ -173,7 +173,7 @@ export default function EventShowPage({
           Résztvevők száma:
         </Box>
         <Box mr={1}>{`${
-          (event ?? getCurrentEventData?.events_getOne)?.alreadyRegistered || 0
+          (event ?? getCurrentEventData?.events_getOne)?.alreadyRegistered ?? 0
         }`}</Box>
         {(event ?? getCurrentEventData?.events_getOne)?.capacity > 0 && (
           <Box>{`/ ${

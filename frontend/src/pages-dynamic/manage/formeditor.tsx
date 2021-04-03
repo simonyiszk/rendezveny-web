@@ -502,7 +502,7 @@ export default function FormeditorPage({
                                     parseInt(
                                       (e.target as HTMLInputElement).value,
                                       10,
-                                    ) || 0,
+                                    ) ?? 0,
                                   )
                                 }
                               />
