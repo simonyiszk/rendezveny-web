@@ -667,6 +667,7 @@ export class EventManager extends BaseManager {
 				await this.returnRelatedUsers(
 					event,
 					[user],
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 					registration?.temporaryIdentity ? [registration.temporaryIdentity] : [],
 					1
 				)
