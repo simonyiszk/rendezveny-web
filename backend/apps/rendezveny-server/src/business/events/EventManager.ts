@@ -128,12 +128,14 @@ export class EventManager extends BaseManager {
 		if (settings?.canRegisterToUpcoming === true) {
 			events = events
 				.filter((e) => !e.end || e.end.getTime() >= now.getTime())
-				.filter((e) => !e.registrations.some((r) => r.userId === user?.id));
+				.filter((e) => !e.registrations.some((r) => r.userId === user?.id))
+				.filter((e) => !e.isClosedEvent || e.hostingClubs.some((club) => accessContext.isMemberOfClub(club)));
 		}
 		if (settings?.canRegisterToPast === true) {
 			events = events
 				.filter((e) => !e.end || e.end.getTime() < now.getTime())
-				.filter((e) => !e.registrations.some((r) => r.userId === user?.id));
+				.filter((e) => !e.registrations.some((r) => r.userId === user?.id))
+				.filter((e) => !e.isClosedEvent || e.hostingClubs.some((club) => accessContext.isMemberOfClub(club)));
 		}
 
 		return {
