@@ -12,6 +12,7 @@ import { Membership } from '../../interfaces';
 export const clubsGetOtherMembersQuery = gql`
   query clubsGetOtherMembersQuery {
     users_getSelf {
+      id
       clubMemberships(isManaged: true) {
         nodes {
           club {
