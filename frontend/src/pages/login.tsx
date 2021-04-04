@@ -6,16 +6,25 @@ import React, { useState } from 'react';
 import { useLoginMutation } from '../api/token/LoginWithLocalIdentityMutation';
 import Button from '../components/control/Button';
 import { Layout } from '../components/layout/Layout';
+import useToastService from '../utils/services/ToastService';
 
 export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const client = useApolloClient();
-  const [loginMutation] = useLoginMutation(client, () => {
-    if (typeof window !== 'undefined') {
-      navigate('/');
-    }
+  const makeToast = useToastService();
+
+  const [loginMutation] = useLoginMutation(client, {
+    onCompleted: () => {
+      if (typeof window !== 'undefined') {
+        navigate('/');
+      }
+    },
+    onError: (error) => {
+      makeToast('Hiba', true, error.message);
+    },
+    refetchQueries: () => {},
   });
 
   const handleSubmit = (e: React.FormEvent): void => {

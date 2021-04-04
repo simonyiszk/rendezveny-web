@@ -1,0 +1,24 @@
+name: Frontend CI
+
+on:
+  push:
+    paths: 
+      - frontend/**
+  pull_request:
+    paths: 
+      - frontend/**
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./frontend
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: npm install
+      working-directory: ${{env.working-directory}}
+    - run: npm run lint
+      working-directory: ${{env.working-directory}}
+    - run: npm run build
+      working-directory: ${{env.working-directory}}

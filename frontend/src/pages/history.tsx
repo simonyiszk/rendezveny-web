@@ -11,11 +11,19 @@ export default function HistoryPage(): JSX.Element {
   const [allEvent, setAllEvent] = useState<HistoryYears>({});
 
   const getEvents = useEventGetHistoryQuery((queryData) => {
-    const history = queryData.events_getAll.nodes.reduce((acc, curr) => {
+    const history = [
+      ...queryData.registeredEvents.nodes,
+      ...queryData.organizedEvents.nodes,
+    ].reduce((acc, curr) => {
       const key = new Date(curr.start).getFullYear();
       (acc[key] = acc[key] || []).push(curr);
       return acc;
     }, {} as HistoryYears);
+    Object.entries(history).forEach(([key, value]) => {
+      history[key] = value.sort(
+        (a, b) => new Date(b.start).getTime() - new Date(a.start).getTime(),
+      );
+    });
     setAllEvent(history);
   });
 

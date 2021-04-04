@@ -10,6 +10,7 @@ import { useEventGetOrganizersQuery } from '../../api/details/EventGetOrganizers
 import { useEventInformationMutation } from '../../api/details/EventInformationMutation';
 import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import { useEventGetUniquenamesQuery } from '../../api/index/EventsGetUniquenamesQuery';
+import { useProfileGetSelfQueryLazy } from '../../api/profile/UserGetSelfQuery';
 import {
   useEventTokenMutationID,
   useEventTokenMutationUN,
@@ -17,7 +18,7 @@ import {
 import EventTabs from '../../components/event/EventTabs';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
-import { Club, Event, EventTabProps, User } from '../../interfaces';
+import { Club, ClubRole, Event, EventTabProps, User } from '../../interfaces';
 import useToastService from '../../utils/services/ToastService';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
@@ -40,10 +41,12 @@ export default function DetailsPage({
 
   const [accessCMAdmin, setAccessCMAdmin] = useState(false);
 
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [, setAllUsers] = useState<User[]>([]);
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [originalUniqueName, setOriginalUniqueName] = useState('');
   const [allClubs, setAllClubs] = useState<Club[]>([]);
+  const [managedClubs, setManagedClubs] = useState<Club[]>([]);
+  const [ownClubs, setOwnClubs] = useState<Club[]>([]);
   const [initialValues, setInitialValues] = useState<EventTabProps>();
 
   const [
@@ -90,11 +93,11 @@ export default function DetailsPage({
       end: new Date(queryData.events_getOne.end),
       regStart: new Date(queryData.events_getOne.registrationStart),
       regEnd: new Date(queryData.events_getOne.registrationEnd),
-      place: queryData.events_getOne.place || '',
-      isClosed: queryData.events_getOne.isClosedEvent || true,
+      place: queryData.events_getOne.place ?? '',
+      isClosed: queryData.events_getOne.isClosedEvent ?? true,
       capacity: `${queryData.events_getOne.capacity || ''}`,
-      reglink: queryData.events_getOne.uniqueName || '',
-      application: queryData.events_getOne.registrationAllowed || true,
+      reglink: queryData.events_getOne.uniqueName ?? '',
+      application: queryData.events_getOne.registrationAllowed ?? true,
       organizers: resultOrganizers,
       chiefOrganizers: resultChiefOrganizers,
       hostingClubs: resultOrganizerClubs,
@@ -117,9 +120,33 @@ export default function DetailsPage({
     { called: getClubsCalled, loading: getClubsLoading, error: getClubsError },
   ] = useClubsGetAllQuery((queryData) => {
     setAllClubs(
-      queryData.clubs_getAll.nodes.map((c) => {
-        return { id: c.id, name: c.name } as Club;
+      queryData.clubs_getAll.nodes
+        .map((c) => {
+          return { id: c.id, name: c.name } as Club;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    );
+  });
+
+  const [
+    getOwnClubs,
+    {
+      called: getOwnClubsCalled,
+      loading: getOwnClubsLoading,
+      error: getOwnClubsError,
+    },
+  ] = useProfileGetSelfQueryLazy((queryData) => {
+    setOwnClubs(
+      queryData.users_getSelf.clubMemberships.nodes.map((c) => {
+        return { id: c.club.id, name: c.club.name } as Club;
       }),
+    );
+    setManagedClubs(
+      queryData.users_getSelf.clubMemberships.nodes
+        .filter((c) => c.role === ClubRole[ClubRole.CLUB_MANAGER])
+        .map((c) => {
+          return { id: c.club.id, name: c.club.name } as Club;
+        }),
     );
   });
 
@@ -134,6 +161,7 @@ export default function DetailsPage({
   ] = useEventGetInformationQuery((queryData) => {
     getOrganizers({ variables: { id: queryData.events_getOne.id } });
     getClubs();
+    getOwnClubs();
     getUniquenames();
     setAccessCMAdmin(
       isClubManagerOf(queryData.events_getOne.hostingClubs) || isAdmin(),
@@ -148,6 +176,7 @@ export default function DetailsPage({
   ] = useEventTokenMutationID(client, () => {
     getOrganizers({ variables: { id: event.id } });
     getClubs();
+    getOwnClubs();
     getUniquenames();
     setAccessCMAdmin(isClubManagerOf(event.hostingClubs) || isAdmin());
     setOriginalUniqueName(event.uniqueName);
@@ -180,6 +209,7 @@ export default function DetailsPage({
   if (
     (getOrganizersCalled && getOrganizersLoading) ||
     (getClubsCalled && getClubsLoading) ||
+    (getOwnClubsCalled && getOwnClubsLoading) ||
     (getCurrentEventCalled && getCurrentEventLoading) ||
     (getUniquenamesCalled && getUniquenamesLoading) ||
     !initialValues
@@ -194,10 +224,11 @@ export default function DetailsPage({
     getOrganizersError ||
     getCurrentEventError ||
     getClubsError ||
+    getOwnClubsError ||
     getUniquenamesError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }
@@ -226,10 +257,15 @@ export default function DetailsPage({
     <Layout>
       <EventTabs
         accessCMAdmin={accessCMAdmin}
-        allUsers={allUsers}
         uniqueNames={uniqueNames}
         originalUniqueName={originalUniqueName}
         allClubs={allClubs}
+        showedClubs={
+          accessCMAdmin
+            ? allClubs
+            : allClubs.filter((c) => ownClubs.map((o) => o.id).includes(c.id))
+        }
+        managedClubs={managedClubs}
         handleSubmit={handleSubmit}
         withApplication
         initialValues={initialValues}

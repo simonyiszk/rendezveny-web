@@ -1,6 +1,6 @@
 import { Club, ClubRole, Membership, UserRole } from '../../interfaces';
 
-const btoa = (str: string): string => Buffer.from(str).toString('base64');
+// const btoa = (str: string): string => Buffer.from(str).toString('base64');
 
 const authToken = 'SIMONYI_RENDEZVENY_AUTH_TOKEN';
 const eventToken = 'SIMONYI_RENDEZVENY_EVENT_TOKEN';

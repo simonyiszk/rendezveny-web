@@ -7,17 +7,24 @@ import { useClubsGetAllQuery } from '../api/details/ClubsGetAllQuery';
 import { useClubsGetOtherMembersQuery } from '../api/details/ClubsGetOtherMembersQuery';
 import { useEventCreateMutation } from '../api/details/EventInformationMutation';
 import { useEventGetUniquenamesQuery } from '../api/index/EventsGetUniquenamesQuery';
+import { useProfileGetNameQuery } from '../api/profile/UserGetSelfQuery';
 import EventTabs from '../components/event/EventTabs';
 import { Layout } from '../components/layout/Layout';
+import { ceilTime, nextTime } from '../components/util/Calendar';
 import Loading from '../components/util/Loading';
-import { Club, EventTabProps, User } from '../interfaces';
+import { Club, EventTabProps } from '../interfaces';
 import useToastService from '../utils/services/ToastService';
 
 export default function CreatePage(): JSX.Element {
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [uniqueNames, setUniqueNames] = useState<string[]>([]);
   const [allClubs, setAllClubs] = useState<Club[]>([]);
   const [managedClubs, setManagedClubs] = useState<Club[]>([]);
+
+  const {
+    called: getSelfNameCalled,
+    loading: getSelfNameLoading,
+    data: getSelfNameData,
+  } = useProfileGetNameQuery();
 
   const [
     getUniquenames,
@@ -35,9 +42,11 @@ export default function CreatePage(): JSX.Element {
     { called: getClubsCalled, loading: getClubsLoading, error: getClubsError },
   ] = useClubsGetAllQuery((queryData) => {
     setAllClubs(
-      queryData.clubs_getAll.nodes.map((c) => {
-        return { id: c.id, name: c.name } as Club;
-      }),
+      queryData.clubs_getAll.nodes
+        .map((c) => {
+          return { id: c.id, name: c.name } as Club;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
     );
   });
 
@@ -46,26 +55,11 @@ export default function CreatePage(): JSX.Element {
     loading: getOtherMembersLoading,
     error: getOtherMembersError,
   } = useClubsGetOtherMembersQuery((queryData) => {
-    const resultAllUser = queryData.users_getSelf.clubMemberships.nodes
-      .reduce((acc, curr) => {
-        const resultClubMembers = curr.club.clubMemberships.nodes.map((m) => {
-          return {
-            id: m.user.id,
-            name: m.user.name,
-          } as User;
-        });
-        return [...acc, ...resultClubMembers];
-      }, [] as User[])
-      .filter(
-        (user, index, self) =>
-          self.findIndex((t) => t.id === user.id) === index,
-      );
     const resultManagedClubs = queryData.users_getSelf.clubMemberships.nodes.map(
       (m) => {
         return { id: m.club.id, name: m.club.name } as Club;
       },
     );
-    setAllUsers(resultAllUser);
     getClubs();
     getUniquenames();
     setManagedClubs(resultManagedClubs);
@@ -76,7 +70,7 @@ export default function CreatePage(): JSX.Element {
   const [getEventCreateMutation] = useEventCreateMutation({
     onCompleted: () => {
       makeToast('Új esemény létrehozva');
-      navigate('/manage');
+      navigate('/');
     },
     onError: (error) => {
       makeToast('Hiba', true, error.message);
@@ -87,7 +81,8 @@ export default function CreatePage(): JSX.Element {
   if (
     (getOtherMembersCalled && getOtherMembersLoading) ||
     (getClubsCalled && getClubsLoading) ||
-    (getUniquenamesCalled && getUniquenamesLoading)
+    (getUniquenamesCalled && getUniquenamesLoading) ||
+    (getSelfNameCalled && getSelfNameLoading)
   ) {
     return <Loading />;
   }
@@ -118,24 +113,30 @@ export default function CreatePage(): JSX.Element {
     );
   };
 
+  const oneHourLater = ceilTime(new Date(), 60);
+  const twoHourLater = nextTime(oneHourLater, 60);
+
   return (
     <Layout>
       <EventTabs
-        allUsers={allUsers}
         uniqueNames={uniqueNames}
         allClubs={allClubs}
+        showedClubs={allClubs}
+        managedClubs={managedClubs}
         handleSubmit={handleSubmit}
         withApplication={false}
         initialValues={{
           name: '',
           description: '<p><br></p>',
-          start: new Date(),
-          end: new Date(),
-          regStart: new Date(),
-          regEnd: new Date(),
+          start: oneHourLater,
+          end: twoHourLater,
+          regStart: oneHourLater,
+          regEnd: twoHourLater,
           place: '',
           organizers: [],
-          chiefOrganizers: [],
+          chiefOrganizers: getSelfNameData
+            ? [getSelfNameData.users_getSelf]
+            : [],
           isClosed: true,
           capacity: '',
           reglink: '',

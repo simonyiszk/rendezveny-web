@@ -8,7 +8,7 @@ interface Props extends BoxProps {
   text: string;
 }
 
-export default function Button({
+export default function LinkButton({
   to,
   state,
   text,
@@ -34,3 +34,6 @@ export default function Button({
     </Flex>
   );
 }
+LinkButton.defaultProps = {
+  state: {},
+};

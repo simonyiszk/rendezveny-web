@@ -3,7 +3,7 @@ import React from 'react';
 
 interface Props extends BoxProps {
   onClick: () => void;
-  text: string;
+  text: string | JSX.Element;
 }
 
 export default function Button({

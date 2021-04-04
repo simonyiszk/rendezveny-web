@@ -10,6 +10,7 @@ export interface Event {
   registrationStart: string;
   registrationEnd: string;
   registrationForm: EventRegistrationForm;
+  registrationFormAnswers: FormQuestionAnswers;
   isClosedEvent: boolean;
   uniqueName: string;
   registrationAllowed: boolean;
@@ -53,6 +54,9 @@ export interface EventRelation {
   organizer: EventOrganizer;
   registration: EventRegistration;
   userId: string;
+  isChiefOrganizer: boolean;
+  isOrganizer: boolean;
+  isRegistered: boolean;
 }
 export interface EventRegistration {
   id: string;
@@ -104,8 +108,7 @@ export interface EventRegistrationFormQuestionInput {
 export enum EventQuestionType {
   INVALID = -1,
   TEXT,
-  RADIOBUTTON,
-  CHECKBOX,
+  MULTIPLE_CHOICE,
 }
 
 // ANSWERS
@@ -133,6 +136,16 @@ export interface EventRegistrationFormAnswersInput {
 export interface EventRegistrationFormAnswerInput {
   answer: string;
   id: string;
+}
+
+// FORM QUESTION ANSWER
+export interface FormQuestionAnswers {
+  answers: FormQuestionAnswer[];
+}
+export interface FormQuestionAnswer {
+  formQuestionId: string;
+  registrationId: string;
+  answer: EventRegistrationFormAnswerMetadata;
 }
 
 // CLUB
@@ -233,3 +246,8 @@ export interface EventTabProps {
   chiefOrganizers: User[];
   hostingClubs: Club[];
 }
+export interface OrganizerWorkingHours {
+  organizer: User;
+  hours: number;
+}
+export type AccessTexts = 'admin' | 'manager' | 'chief' | 'organizer';

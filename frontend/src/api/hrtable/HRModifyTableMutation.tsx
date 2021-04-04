@@ -48,6 +48,7 @@ export const modifyHRTableMutation = gql`
           isRequired
           organizers {
             email
+            userId
           }
         }
       }

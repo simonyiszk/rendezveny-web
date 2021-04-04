@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { Event } from '../../interfaces';
+import { AccessTexts, Event } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import LinkButton from '../control/LinkButton';
 
 interface Props {
   text: string;
-  access: boolean;
+  access?: boolean;
+  accessText?: AccessTexts[];
   toPostfix: string;
   event: Event | undefined;
 }
@@ -14,11 +15,12 @@ interface Props {
 export default function ManagePageButton({
   text,
   access,
+  accessText,
   toPostfix,
   event,
 }: Props): JSX.Element {
   return (
-    <ProtectedComponent access={access}>
+    <ProtectedComponent access={access} accessText={accessText}>
       <LinkButton
         text={text}
         width={['100%', null, '30rem']}
@@ -29,3 +31,7 @@ export default function ManagePageButton({
     </ProtectedComponent>
   );
 }
+ManagePageButton.defaultProps = {
+  access: undefined,
+  accessText: [],
+};

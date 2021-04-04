@@ -4,7 +4,7 @@ import { Event } from '../../interfaces';
 
 export const eventGetHistoryQuery = gql`
   query eventsGetHistory {
-    events_getAll(isRegisteredPast: true) {
+    organizedEvents: events_getAll(isOrganizerPast: true) {
       nodes {
         id
         name
@@ -12,6 +12,27 @@ export const eventGetHistoryQuery = gql`
         end
         place
         selfRelation2 {
+          userId
+          email
+          organizer {
+            isChiefOrganizer
+          }
+          registration {
+            id
+            didAttend
+          }
+        }
+      }
+    }
+    registeredEvents: events_getAll(isRegisteredPast: true) {
+      nodes {
+        id
+        name
+        start
+        end
+        place
+        selfRelation2 {
+          userId
           email
           organizer {
             isChiefOrganizer
@@ -26,7 +47,10 @@ export const eventGetHistoryQuery = gql`
   }
 `;
 interface QueryResultL {
-  events_getAll: {
+  organizedEvents: {
+    nodes: Event[];
+  };
+  registeredEvents: {
     nodes: Event[];
   };
 }

@@ -1,8 +1,10 @@
 import { useApolloClient } from '@apollo/client';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 
+import { useFormAggregationQuery } from '../../api/form/FormAggregationQuery';
 import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import { useEventGetMembersQuery } from '../../api/registration/EventMembersQuery';
 import { useSetAttendMutation } from '../../api/registration/RegistrationMutation';
@@ -11,6 +13,7 @@ import {
   useEventTokenMutationUN,
 } from '../../api/token/EventsGetTokenMutation';
 import { Layout } from '../../components/layout/Layout';
+import FormAggregation from '../../components/sections/FormAggregation';
 import MemberSection from '../../components/sections/MemberSection';
 import Loading from '../../components/util/Loading';
 import { Event, EventRelation } from '../../interfaces';
@@ -36,6 +39,16 @@ export default function MembersPage({
   const [registeredUsers, setRegisteredUsers] = useState<EventRelation[]>([]);
 
   const [
+    getFormAggregations,
+    {
+      called: getAggregationCalled,
+      loading: getAggregationLoading,
+      error: getAggregationError,
+      data: getAggregationData,
+    },
+  ] = useFormAggregationQuery();
+
+  const [
     getEventRegs,
     {
       called: getEventCalled,
@@ -57,6 +70,7 @@ export default function MembersPage({
     },
   ] = useEventGetInformationQuery((queryData) => {
     getEventRegs({ variables: { id: queryData.events_getOne.id } });
+    getFormAggregations({ variables: { id: queryData.events_getOne.id } });
   });
 
   const client = useApolloClient();
@@ -65,6 +79,7 @@ export default function MembersPage({
     { error: eventTokenMutationErrorID },
   ] = useEventTokenMutationID(client, () => {
     getEventRegs({ variables: { id: event.id } });
+    getFormAggregations({ variables: { id: event.id } });
   });
   const [
     getEventTokenMutationUN,
@@ -93,7 +108,8 @@ export default function MembersPage({
 
   if (
     (getCurrentEventCalled && getCurrentEventLoading) ||
-    (getEventCalled && getEventLoading)
+    (getEventCalled && getEventLoading) ||
+    (getAggregationCalled && getAggregationLoading)
   ) {
     return <Loading />;
   }
@@ -103,10 +119,11 @@ export default function MembersPage({
     eventTokenMutationErrorID ||
     eventTokenMutationErrorUN ||
     getCurrentEventError ||
-    getEventError
+    getEventError ||
+    getAggregationError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <div>Error</div>;
   }
@@ -130,17 +147,40 @@ export default function MembersPage({
 
   return (
     <Layout>
-      <MemberSection
-        text="Résztvevők"
-        listOfMembers={registeredUsers}
-        eventL={
-          {
-            ...(event ?? getCurrentEventData?.events_getOne),
-            registrationForm: getEventData?.events_getOne.registrationForm,
-          } as Event
-        }
-        setAttendCb={handleSetAttend}
-      />
+      <Tabs isFitted variant="enclosed" width="100%">
+        <TabList mb="1em">
+          <Tab>Résztvevők</Tab>
+          <Tab>Eredmények</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <MemberSection
+              text="Résztvevők"
+              listOfMembers={registeredUsers}
+              eventL={
+                {
+                  ...(event ?? getCurrentEventData?.events_getOne),
+                  registrationForm:
+                    getEventData?.events_getOne.registrationForm,
+                } as Event
+              }
+              setAttendCb={handleSetAttend}
+            />
+          </TabPanel>
+          <TabPanel>
+            <FormAggregation
+              questions={
+                getAggregationData?.events_getOne.registrationForm.questions ??
+                []
+              }
+              answers={
+                getAggregationData?.events_getOne.registrationFormAnswers
+                  .answers ?? []
+              }
+            />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </Layout>
   );
 }

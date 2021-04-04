@@ -31,12 +31,17 @@ export default function QuestionListElement({
         textAlign={['center', null, 'left']}
       >
         {question.question}
+        {question.isRequired && (
+          <Box as="span" color="red.500" ml={1}>
+            *
+          </Box>
+        )}
       </Box>
       {question.metadata.type === 'text' && (
         <Input
           isDisabled={isDisabled}
           mb={['1rem', null, '0']}
-          value={getAnswer(question.id) || ''}
+          value={getAnswer(question.id) ?? ''}
           onChange={(e: React.FormEvent): void => {
             if (setAnswer)
               setAnswer(question.id, (e.target as HTMLInputElement).value);
@@ -49,7 +54,7 @@ export default function QuestionListElement({
           <CheckboxGroup
             isDisabled={isDisabled}
             flexDir="column"
-            value={(getAnswer(question.id) as string[]) || []}
+            value={(getAnswer(question.id) as string[]) ?? []}
             onChangeCb={(e: string[]): void => {
               if (setAnswer) setAnswer(question.id, e);
             }}

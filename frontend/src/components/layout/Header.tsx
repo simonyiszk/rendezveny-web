@@ -69,15 +69,17 @@ export default function Header(): JSX.Element {
               >
                 Történet
               </MenuItem>
-              <MenuDivider />
-              <MenuItem
-                isDisabled={!isLoggedin()}
-                _hover={{ bg: 'simonyi' }}
-                as={Link}
-                to="/manage"
-              >
-                Kezelés
-              </MenuItem>
+              <ProtectedComponent accessText={['admin', 'manager']}>
+                <MenuDivider />
+                <MenuItem
+                  isDisabled={!isLoggedin()}
+                  _hover={{ bg: 'simonyi' }}
+                  as={Link}
+                  to="/create"
+                >
+                  Létrehozás
+                </MenuItem>
+              </ProtectedComponent>
             </MenuList>
           </Menu>
         </Flex>
@@ -93,7 +95,7 @@ export default function Header(): JSX.Element {
               >
                 Profil
               </MenuItem>
-              <ProtectedComponent access={['admin']}>
+              <ProtectedComponent accessText={['admin']}>
                 <MenuItem
                   isDisabled={!isLoggedin()}
                   _hover={{ bg: 'simonyi' }}

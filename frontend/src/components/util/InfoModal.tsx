@@ -1,6 +1,7 @@
 import {
   Flex,
   Modal,
+  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
@@ -15,16 +16,14 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  onAccept: () => void;
-  onReject: () => void;
+  children: React.ReactNode;
 }
 
-export default function BinaryModal({
+export default function InfoModal({
   isOpen,
   onClose,
   title,
-  onAccept,
-  onReject,
+  children,
 }: Props): JSX.Element {
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -32,16 +31,15 @@ export default function BinaryModal({
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
         <ModalCloseButton />
+        <ModalBody>{children}</ModalBody>
         <ModalFooter>
           <Flex width="100%" flexDirection="column">
-            <Flex justifyContent="space-between" width="100%">
+            <Flex justifyContent="center" width="100%">
               <Button
-                width="45%"
-                text="Nem"
-                backgroundColor="gray.300"
-                onClick={onReject}
+                width={['100%', null, '45%']}
+                text="Bezárás"
+                onClick={onClose}
               />
-              <Button width="45%" text="Igen" onClick={onAccept} />
             </Flex>
           </Flex>
         </ModalFooter>

@@ -78,7 +78,7 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
 
   if (!event || !user || getRegistrationError) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <Box>Error</Box>;
   }

@@ -5,7 +5,7 @@ import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Heading } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
@@ -16,6 +16,11 @@ import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
 import { Event } from '../../interfaces';
+import {
+  isAdmin,
+  isClubManagerOf,
+  isOrganizer,
+} from '../../utils/token/TokenContainer';
 
 const ReactQuill =
   typeof window === 'object' ? require('react-quill') : (): boolean => false;
@@ -37,6 +42,8 @@ export default function EventShowPage({
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
 
+  const [access, setAccess] = useState(false);
+
   const [
     getCurrentEvent,
     {
@@ -45,13 +52,23 @@ export default function EventShowPage({
       error: getCurrentEventError,
       data: getCurrentEventData,
     },
-  ] = useEventGetInformationQuery();
+  ] = useEventGetInformationQuery((queryData) => {
+    setAccess(
+      isOrganizer() ||
+        isClubManagerOf(queryData.events_getOne.hostingClubs) ||
+        isAdmin(),
+    );
+  });
 
   const client = useApolloClient();
   const [
     getEventTokenMutationID,
     { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client);
+  ] = useEventTokenMutationID(client, () => {
+    setAccess(
+      isOrganizer() || isClubManagerOf(event.hostingClubs) || isAdmin(),
+    );
+  });
   const [
     getEventTokenMutationUN,
     { error: eventTokenMutationErrorUN },
@@ -156,7 +173,7 @@ export default function EventShowPage({
           Résztvevők száma:
         </Box>
         <Box mr={1}>{`${
-          (event ?? getCurrentEventData?.events_getOne)?.alreadyRegistered || 0
+          (event ?? getCurrentEventData?.events_getOne)?.alreadyRegistered ?? 0
         }`}</Box>
         {(event ?? getCurrentEventData?.events_getOne)?.capacity > 0 && (
           <Box>{`/ ${
@@ -181,10 +198,26 @@ export default function EventShowPage({
           />
         </Box>
       )}
-      <Flex justifyContent="center" mt={4}>
+      <Flex
+        justifyContent={access ? ['center', null, 'space-between'] : 'center'}
+        flexDir={['column', null, 'row']}
+        mt={4}
+      >
+        {access && (
+          <LinkButton
+            text="Szerkesztés"
+            width={['100%', null, '45%']}
+            order={[1, null, 0]}
+            to={`/manage/${
+              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+            }`}
+            mt={[4, null, 0]}
+            state={{ event: null }}
+          />
+        )}
         <LinkButton
           text="Regisztráció"
-          width={['100%', null, '15rem']}
+          width={['100%', null, '45%']}
           to={`/events/${
             event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
           }/registration`}

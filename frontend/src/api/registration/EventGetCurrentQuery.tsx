@@ -48,3 +48,30 @@ export const useEventGetCurrentQuery = (
   });
   return [getQuery, data];
 };
+
+export const eventIsRegisteredQuery = gql`
+  query eventIsRegistered($id: String!) {
+    events_getOne(id: $id) {
+      id
+      selfRelation2 {
+        userId
+        email
+        registration {
+          id
+        }
+      }
+    }
+  }
+`;
+interface QueryResult {
+  events_getOne: Event;
+}
+export const useEventIsRegisteredQuery = (
+  cb: (data: QueryResult) => void,
+): QueryTuple<QueryResult, OperationVariables> => {
+  const [getQuery, data] = useLazyQuery<QueryResult>(eventIsRegisteredQuery, {
+    onCompleted: cb,
+    fetchPolicy: 'cache-and-network',
+  });
+  return [getQuery, data];
+};

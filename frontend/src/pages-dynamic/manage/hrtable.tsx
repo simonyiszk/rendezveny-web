@@ -1,5 +1,5 @@
 import { useApolloClient } from '@apollo/client';
-import { Box, Flex, Heading } from '@chakra-ui/react';
+import { Box, Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
@@ -19,11 +19,16 @@ import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import HRTableComp from '../../components/hrtable/HRTableComp';
 import { Layout } from '../../components/layout/Layout';
+import InfoModal from '../../components/util/InfoModal';
 import Loading from '../../components/util/Loading';
-import { Event, EventOrganizer, HRTable } from '../../interfaces';
+import {
+  Event,
+  EventOrganizer,
+  HRTable,
+  OrganizerWorkingHours,
+} from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import useToastService from '../../utils/services/ToastService';
-import { isChiefOrganizer } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -42,7 +47,7 @@ export default function HRTablePage({
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
 
-  const [accessChief, setAccessChief] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [hrTable, setHRTable] = useState<HRTable>();
   const [organizer, setOrganizer] = useState<EventOrganizer>();
@@ -116,7 +121,6 @@ export default function HRTablePage({
   useEffect(() => {
     if (event) getEventTokenMutationID(event.id);
     else if (uniqueName) getEventTokenMutationUN(uniqueName);
-    setAccessChief(isChiefOrganizer());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
@@ -138,24 +142,10 @@ export default function HRTablePage({
     getHRTableError
   ) {
     if (typeof window !== 'undefined') {
-      navigate('/manage');
+      navigate('/');
     }
     return <Box>Error</Box>;
   }
-
-  /* if (getHRTableCalled && !getHRTableData?.events_getOne.hrTable) {
-    if (typeof window !== 'undefined') {
-      navigate(
-        `/manage/${
-          event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-        }/hrtable/new`,
-        {
-          state: { event: event ?? getCurrentEventData?.events_getOne },
-        },
-      );
-    }
-    return <div>Loading.</div>;
-  } */
 
   const signUpCb = (segmentId: string): void => {
     if (signUps.includes(segmentId))
@@ -186,13 +176,67 @@ export default function HRTablePage({
     }
   };
 
+  const getEmptySegmentCount = (): [number, number] => {
+    return (hrTable?.tasks ?? []).reduce(
+      (acc, curr) => {
+        const res = curr.segments.reduce(
+          (acc2, curr2) => {
+            const remainingSlotCount = curr2.capacity - curr2.organizers.length;
+            if (curr2.isRequired)
+              return [acc2[0] + remainingSlotCount, acc2[1]];
+            return [acc2[0], acc2[1] + remainingSlotCount];
+          },
+          [0, 0],
+        );
+        return [acc[0] + res[0], acc[1] + res[1]];
+      },
+      [0, 0],
+    );
+  };
+
+  const getHoursByUsers = (): OrganizerWorkingHours[] => {
+    const owhObject = (hrTable?.tasks ?? [])
+      .reduce((accTask, currTask) => {
+        const res = currTask.segments
+          .filter((s) => s.organizers.length > 0)
+          .reduce((accSegment, currSegment) => {
+            const organizerMinutes = currSegment.organizers.map((o) => {
+              return {
+                organizer: { id: o.userId, name: o.name },
+                hours:
+                  Math.round(
+                    (new Date(currSegment.end).getTime() -
+                      new Date(currSegment.start).getTime()) /
+                      1000 /
+                      60,
+                  ) / 60,
+              } as OrganizerWorkingHours;
+            });
+            return [...accSegment, ...organizerMinutes];
+          }, [] as OrganizerWorkingHours[]);
+        return [...accTask, ...res];
+      }, [] as OrganizerWorkingHours[])
+      .reduce((accOwh, currOwh) => {
+        return {
+          ...accOwh,
+          [currOwh.organizer.id]: {
+            organizer: currOwh.organizer,
+            hours: (accOwh[currOwh.organizer.id]?.hours ?? 0) + currOwh.hours,
+          },
+        };
+      }, {} as Record<string, OrganizerWorkingHours>);
+    return (Object.values(owhObject) as OrganizerWorkingHours[]).sort(
+      (a, b) => b.hours - a.hours,
+    );
+  };
+
   if (getHRTableCalled && !getHRTableData?.events_getOne.hrTable) {
     return (
       <Layout>
         <Heading fontSize="3xl" textAlign="center">
           Nincs elérhető HR tábla
         </Heading>
-        <ProtectedComponent access={accessChief}>
+        <ProtectedComponent accessText={['chief']}>
           <Flex justifyContent="center" mt={4}>
             <LinkButton
               width={['100%', null, '45%']}
@@ -200,7 +244,7 @@ export default function HRTablePage({
               to={`/manage/${
                 event?.uniqueName ??
                 getCurrentEventData?.events_getOne.uniqueName
-              }/hrtable/new`}
+              }/hrtable/edit`}
               state={{
                 event: event ?? getCurrentEventData?.events_getOne,
               }}
@@ -211,20 +255,33 @@ export default function HRTablePage({
     );
   }
 
+  const emptySegmentCount = getEmptySegmentCount();
   return (
     <Layout>
-      <ProtectedComponent access={accessChief}>
-        <LinkButton
-          width={['100%', null, '45%']}
-          text="Szerkesztés"
-          to={`/manage/${
-            event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-          }/hrtable/new`}
-          state={{
-            event: event ?? getCurrentEventData?.events_getOne,
-            hrTable,
-          }}
-        />
+      <ProtectedComponent accessText={['chief']}>
+        <Flex
+          justifyContent={['center', null, 'space-between']}
+          flexDir={['column', null, 'row']}
+          mt={4}
+        >
+          <Button
+            width={['100%', null, '45%']}
+            mb={[4, null, 0]}
+            text="Statisztika"
+            onClick={onOpen}
+          />
+          <LinkButton
+            width={['100%', null, '45%']}
+            text="Szerkesztés"
+            to={`/manage/${
+              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+            }/hrtable/edit`}
+            state={{
+              event: event ?? getCurrentEventData?.events_getOne,
+              hrTable,
+            }}
+          />
+        </Flex>
       </ProtectedComponent>
       <Heading fontSize="3xl" mt={4}>
         HR Tábla
@@ -242,17 +299,36 @@ export default function HRTablePage({
       >
         <Button
           width={['100%', null, '45%']}
-          text="Mentés"
-          onClick={handleSubmit}
-        />
-        <Button
-          width={['100%', null, '45%']}
+          order={[1, null, 0]}
           text="Mégse"
-          backgroundColor="red.500"
+          backgroundColor="gray.300"
           mt={[4, null, 0]}
           onClick={handleCancel}
         />
+        <Button
+          width={['100%', null, '45%']}
+          text="Mentés"
+          onClick={handleSubmit}
+        />
       </Flex>
+
+      <InfoModal isOpen={isOpen} onClose={onClose} title="Statisztika">
+        <Box>
+          <Box mb={4}>
+            <Box fontWeight="bold">Üres helyek</Box>
+            <Box>Kötelező: {emptySegmentCount[0]}</Box>
+            <Box>Opcionális: {emptySegmentCount[1]}</Box>
+          </Box>
+          <Box>
+            <Box fontWeight="bold">Feltöltött helyek</Box>
+            {getHoursByUsers().map((wh) => (
+              <Box key={wh.organizer.id}>
+                {wh.organizer.name} - {wh.hours} óra
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </InfoModal>
     </Layout>
   );
 }

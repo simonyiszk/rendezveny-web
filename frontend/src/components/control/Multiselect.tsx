@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Box, BoxProps, Flex } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
@@ -21,7 +22,6 @@ export default function Multiselect<T>({
   valueProp,
   onChangeCb,
   isInvalid,
-  ...props
 }: Props<T>): JSX.Element {
   const [isOpen, setOpen] = useState(false);
 
@@ -88,11 +88,11 @@ export default function Multiselect<T>({
         cursor="pointer"
         height="100%"
         alignItems="center"
-        onClick={(e): void => {
+        onClick={(_e): void => {
           setOpen(!isOpen);
         }}
       >
-        V
+        <ChevronDownIcon />
       </Flex>
       <Flex
         position="absolute"
