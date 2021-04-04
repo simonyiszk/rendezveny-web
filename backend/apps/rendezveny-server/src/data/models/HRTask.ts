@@ -28,33 +28,41 @@ export class HRTask extends BaseEntity<HRTask> {
 	@Column()
 	public readonly hrTableId!: string;
 
-	@ManyToOne(_ => HRTable, hrTable => hrTable.hrTasks, { onDelete: 'CASCADE' })
+	@ManyToOne(
+		(_) => HRTable,
+		(hrTable) => hrTable.hrTasks,
+		{ onDelete: 'CASCADE' }
+	)
 	@JoinColumn({ name: nameof<HRTask>('hrTableId') })
 	public hrTable!: HRTable;
 
-	@OneToMany(_ => HRSegment, hrSegment => hrSegment.hrTask, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => HRSegment,
+		(hrSegment) => hrSegment.hrTask,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public hrSegments!: HRSegment[];
 
 	public constructor(params?: {
-		name: string,
-		start: Date,
-		end: Date,
-		order: number,
-		isLocked: boolean,
-		hrTable: HRTable,
-		hrSegments?: HRSegment[]
+		name: string;
+		start: Date;
+		end: Date;
+		order: number;
+		isLocked: boolean;
+		hrTable: HRTable;
+		hrSegments?: HRSegment[];
 	}) {
 		super();
-		if(params) {
+		if (params) {
 			this.name = params.name;
 			this.start = params.start;
 			this.end = params.end;
 			this.order = params.order;
 			this.isLocked = params.isLocked;
 			this.hrTable = params.hrTable;
-			if(params.hrSegments) {
+			if (params.hrSegments) {
 				this.hrSegments = params.hrSegments;
 			}
 		}

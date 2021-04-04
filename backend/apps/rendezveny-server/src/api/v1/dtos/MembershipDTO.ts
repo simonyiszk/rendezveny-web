@@ -8,17 +8,17 @@ import { PaginatedDTO } from '../utils/PaginatedDTO';
 	description: 'The data of a club membership'
 })
 export class MembershipDTO {
-	@Field(_ => ClubDTO, {
+	@Field((_) => ClubDTO, {
 		description: 'The club the user belongs to'
 	})
 	public club!: ClubDTO;
 
-	@Field(_ => UserDTO, {
+	@Field((_) => UserDTO, {
 		description: 'The user that belongs to the club'
 	})
 	public user!: UserDTO;
 
-	@Field(_ => ClubRole, {
+	@Field((_) => ClubRole, {
 		description: 'The role of the user in the club'
 	})
 	public role!: ClubRole;

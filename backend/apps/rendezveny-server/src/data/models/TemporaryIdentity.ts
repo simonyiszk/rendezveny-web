@@ -13,20 +13,20 @@ export class TemporaryIdentity {
 	@Column({ type: 'varchar', nullable: true })
 	public name!: string | null;
 
-	@OneToOne(_ => Registration, registration => registration.temporaryIdentity, {
-		onDelete: 'SET NULL'
-	})
+	@OneToOne(
+		(_) => Registration,
+		(registration) => registration.temporaryIdentity,
+		{
+			onDelete: 'SET NULL'
+		}
+	)
 	public registration!: Registration;
 
-	public constructor(params?: {
-		email: string,
-		name: string,
-		registration?: Registration
-	}) {
-		if(params) {
+	public constructor(params?: { email: string; name: string; registration?: Registration }) {
+		if (params) {
 			this.email = params.email;
 			this.name = params.name;
-			if(params.registration) {
+			if (params.registration) {
 				this.registration = params.registration;
 			}
 		}

@@ -12,13 +12,9 @@ export = {
 	database: database,
 
 	synchronize: false,
-	entities: [
-		'src/data/models/**/*.ts'
-	],
-	migrations: [
-		'src/data/migrations/*.ts'
-	],
+	entities: ['src/data/models/**/*.ts'],
+	migrations: ['src/data/migrations/*.ts'],
 	cli: {
 		migrationsDir: 'src/data/migrations'
 	}
-}
+};

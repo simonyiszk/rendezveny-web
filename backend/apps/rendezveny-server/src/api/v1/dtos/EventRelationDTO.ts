@@ -44,13 +44,13 @@ export class EventRelationDTO {
 	})
 	public isChiefOrganizer: boolean = false;
 
-	@Field(_ => EventRegistrationDTO, {
+	@Field((_) => EventRegistrationDTO, {
 		description: 'Describes the registration (if any)',
 		nullable: true
 	})
 	public registration?: EventRegistrationDTO;
 
-	@Field(_ => EventOrganizerDTO, {
+	@Field((_) => EventOrganizerDTO, {
 		description: 'Describes the organizer (if any)',
 		nullable: true
 	})
@@ -61,4 +61,3 @@ export class EventRelationDTO {
 	description: 'Paginated data of event relations'
 })
 export class PaginatedEventRelationDTO extends PaginatedDTO(EventRelationDTO) {}
-

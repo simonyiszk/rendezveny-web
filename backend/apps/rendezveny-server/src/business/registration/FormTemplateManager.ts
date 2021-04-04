@@ -17,19 +17,15 @@ export class FormTemplateManager extends BaseManager {
 		super();
 	}
 
-	@AuthorizeGuard(IsAdmin())
-	public async getAllTemplates(
-		@AuthContext() _accessContext: AccessContext
-	): Promise<{ templates: FormQuestionTemplate[], count: number}> {
+	public async getAllTemplates(): Promise<{ templates: FormQuestionTemplate[]; count: number }> {
 		const [templates, count] = await this.templateRepository.findAndCount();
 		return { templates, count };
 	}
 
-	@AuthorizeGuard(IsManager(), IsAdmin())
 	public async getAllTemplatesPaginated(
-		@AuthContext() _accessContext: AccessContext,
-		pageSize: number, offset: number
-	): Promise<{ templates: FormQuestionTemplate[], count: number}> {
+		pageSize: number,
+		offset: number
+	): Promise<{ templates: FormQuestionTemplate[]; count: number }> {
 		checkPagination(pageSize, offset);
 
 		const [templates, count] = await this.templateRepository.findAndCount({
@@ -43,13 +39,14 @@ export class FormTemplateManager extends BaseManager {
 	@AuthorizeGuard(IsManager(), IsAdmin())
 	public async findTemplatesPaginated(
 		@AuthContext() _accessContext: AccessContext,
-		pageSize: number, offset: number,
+		pageSize: number,
+		offset: number,
 		criteria: { tags?: [Tag] }
-	): Promise<{ templates: FormQuestionTemplate[], count: number}> {
+	): Promise<{ templates: FormQuestionTemplate[]; count: number }> {
 		checkPagination(pageSize, offset);
 
 		let whereCriteria = {};
-		if(criteria.tags) {
+		if (criteria.tags) {
 			whereCriteria = {
 				...whereCriteria,
 				tags: In(criteria.tags)
@@ -65,4 +62,3 @@ export class FormTemplateManager extends BaseManager {
 		return { templates, count };
 	}
 }
-

@@ -10,12 +10,14 @@ import {
 	HRSegmentRepository,
 	HRTableRepository,
 	HRTaskRepository,
-	LocalIdentityRepository, LogRepository,
+	LocalIdentityRepository,
+	LogRepository,
 	OrganizerRepository,
 	RefreshTokenRepository,
 	RegistrationRepository,
 	TagRepository,
-	TemporaryIdentityRepository, UserRepository
+	TemporaryIdentityRepository,
+	UserRepository
 } from './repositories/repositories';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthSCHIdentity } from './models/AuthSCHIdentity';
@@ -43,11 +45,8 @@ import { AuthSCHIdentity } from './models/AuthSCHIdentity';
 			UserRepository
 		])
 	],
-	providers: [
-	],
-	exports: [
-		TypeOrmModule
-	]
+	providers: [],
+	exports: [TypeOrmModule]
 })
 export class DataModule {
 	public static forRoot(): DynamicModule[] {
@@ -55,17 +54,17 @@ export class DataModule {
 			TypeOrmModule.forRootAsync({
 				imports: [ConfigModule],
 				inject: [ConfigService],
-				useFactory: async(configService: ConfigService) => ({
-						type: 'mysql',
-						host: configService.get('database.host'),
-						port: configService.get('database.port'),
-						username: configService.get('database.username'),
-						password: configService.get('database.password'),
-						database: configService.get('database.database'),
+				useFactory: async (configService: ConfigService) => ({
+					type: 'mysql',
+					host: configService.get('database.host'),
+					port: configService.get('database.port'),
+					username: configService.get('database.username'),
+					password: configService.get('database.password'),
+					database: configService.get('database.database'),
 
-						autoLoadEntities: true,
-						logging: ['warn', 'error']
-					})
+					autoLoadEntities: true,
+					logging: ['warn', 'error']
+				})
 			})
 		];
 	}

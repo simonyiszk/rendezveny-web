@@ -7,7 +7,7 @@ describe('AppController (e2e)', () => {
 	const SUCCESS = 200;
 	let app: INestApplication;
 
-	beforeEach(async() => {
+	beforeEach(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule]
 		}).compile();
@@ -16,10 +16,13 @@ describe('AppController (e2e)', () => {
 		await app.init();
 	});
 
-	it('/ (POST)', async() => request(app.getHttpServer())
-		.post('/api/v1')
-		.send({ operationName: 'IntrospectionQuery',
-			variables: {},
-			query: 'query IntrospectionQuery { __schema { queryType { name } }' })
-		.expect(SUCCESS));
+	it('/ (POST)', async () =>
+		request(app.getHttpServer())
+			.post('/api/v1')
+			.send({
+				operationName: 'IntrospectionQuery',
+				variables: {},
+				query: 'query IntrospectionQuery { __schema { queryType { name } }'
+			})
+			.expect(SUCCESS));
 });

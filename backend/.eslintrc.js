@@ -17,6 +17,7 @@ module.exports = {
 		node: true,
 		jest: true
 	},
+	ignorePatterns: ['apps/rendezveny-server/src/data/migrations/*.ts'],
 	rules: {
 		// JS practices
 		curly: ['error', 'multi-line'],
@@ -73,7 +74,7 @@ module.exports = {
 
 		// ES2015 practices
 		'arrow-body-style': ['error', 'as-needed'],
-		'arrow-parens': ['error', 'as-needed', { requireForBlockBody: true }],
+		'arrow-parens': ['error', 'always'],
 		'arrow-spacing': ['error', { before: true, after: true }],
 		'generator-star-spacing': ['error', { before: true, after: false }],
 		'no-confusing-arrow': 'error',
@@ -143,7 +144,7 @@ module.exports = {
 		'array-bracket-spacing': ['error', 'never'],
 		'array-element-newline': ['error', 'consistent'],
 		'block-spacing': 'error',
-		'brace-style': ['error', 'stroustrup'],
+		'brace-style': ['error', '1tbs'],
 		'capitalized-comments': ['error'],
 		'comma-dangle': ['error', 'never'],
 		'comma-spacing': 'error',
@@ -152,7 +153,7 @@ module.exports = {
 		'func-call-spacing': ['error', 'never'],
 		'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
 		'function-call-argument-newline': ['error', 'consistent'],
-		'function-paren-newline': ['error', 'consistent'],
+		// 'function-paren-newline': ['error', 'consistent'],
 
 		/*
 		 *'indent': ['error', 'tab', {
@@ -161,13 +162,7 @@ module.exports = {
 		 */
 		'jsx-quotes': ['error', 'prefer-double'],
 		'key-spacing': 'error',
-		'keyword-spacing': ['error', { overrides: {
-				if: { after: false },
-				for: { after: false },
-				while: { after: false },
-				switch: { after: false }
-			} }],
-		'line-comment-position': ['error', { position: 'beside' }],
+		'keyword-spacing': 'error',
 		'lines-around-comment': ['error', { beforeBlockComment: true, allowBlockStart: true }],
 		'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
 		'max-depth': ['error', 4],
@@ -186,7 +181,7 @@ module.exports = {
 		'new-parens': 'error',
 		'newline-per-chained-call': ['error', { ignoreChainWithDepth: 4 }],
 		'no-continue': 'error',
-		'no-mixed-operators': 'error',
+		// 'no-mixed-operators': 'error',
 		'no-mixed-spaces-and-tabs': ['error', 'smart-tabs'],
 		'no-multi-assign': 'error',
 		'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }],
@@ -201,17 +196,17 @@ module.exports = {
 		'object-curly-spacing': ['error', 'always'],
 		'object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
 		'one-var': ['error', 'never'],
-		'operator-linebreak': ['error', 'before'],
+		// 'operator-linebreak': ['error', 'after'],
 		'padded-blocks': ['error', 'never'],
 		'prefer-exponentiation-operator': 'error',
 		'prefer-object-spread': 'error',
 		'quote-props': ['error', 'as-needed'],
-		quotes: ['error', 'single'],
+		quotes: ['error', 'single', { "avoidEscape": true }],
 		semi: ['error', 'always'],
 		'semi-spacing': 'error',
 		'semi-style': ['error', 'last'],
 		'space-before-blocks': 'error',
-		'space-before-function-paren': ['error', 'never'],
+		// 'space-before-function-paren': ['error', 'never'],
 		'space-in-parens': ['error', 'never'],
 		'space-infix-ops': 'error',
 		'space-unary-ops': 'error',

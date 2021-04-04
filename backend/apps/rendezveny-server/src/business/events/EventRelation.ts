@@ -21,7 +21,10 @@ export class EventRelation {
 	private readonly organizer?: Organizer;
 
 	public constructor(
-		user: User | TemporaryIdentity, relation: EventRelationType, registration?: Registration, organizer?: Organizer
+		user: User | TemporaryIdentity,
+		relation: EventRelationType,
+		registration?: Registration,
+		organizer?: Organizer
 	) {
 		this.user = user;
 		this.relation = relation;

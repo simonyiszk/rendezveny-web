@@ -18,21 +18,24 @@ export class FormQuestionTemplate extends BaseEntity<FormQuestionTemplate> {
 	@Column({ type: 'json' })
 	public typeMetadata!: FormQuestionMetadata;
 
-	@ManyToMany(_ => Tag, tag => tag.formQuestionTemplates)
+	@ManyToMany(
+		(_) => Tag,
+		(tag) => tag.formQuestionTemplates
+	)
 	public tags!: Tag[];
 
 	public constructor(params?: {
-		question: string,
-		type: FormQuestionType,
-		typeMetadata: FormQuestionMetadata,
-		tags?: Tag[]
+		question: string;
+		type: FormQuestionType;
+		typeMetadata: FormQuestionMetadata;
+		tags?: Tag[];
 	}) {
 		super();
-		if(params) {
+		if (params) {
 			this.question = params.question;
 			this.type = params.type;
 			this.typeMetadata = params.typeMetadata;
-			if(params.tags) {
+			if (params.tags) {
 				this.tags = params.tags;
 			}
 		}

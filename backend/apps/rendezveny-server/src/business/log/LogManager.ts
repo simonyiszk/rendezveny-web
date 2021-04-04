@@ -14,14 +14,14 @@ export class LogManager {
 	public constructor(
 		private readonly jwtService: JwtService,
 		@InjectRepository(LogRepository) private readonly logRepository: LogRepository
-	) {
-	}
+	) {}
 
 	@AuthorizeGuard(IsAdmin())
 	public async getAllLogPaginated(
 		@AuthContext() _accessContext: AccessContext,
-		pageSize: number, offset: number
-	): Promise<{ logs: Log[], count: number}> {
+		pageSize: number,
+		offset: number
+	): Promise<{ logs: Log[]; count: number }> {
 		checkPagination(pageSize, offset);
 
 		const [logs, count] = await this.logRepository.findAndCount({
@@ -36,7 +36,10 @@ export class LogManager {
 	}
 
 	public async saveLog(
-		issuer: Record<string, unknown>, query: string, args: Record<string, unknown>, result: LogType
+		issuer: Record<string, unknown>,
+		query: string,
+		args: Record<string, unknown>,
+		result: LogType
 	): Promise<void> {
 		const log = new Log({
 			issuer: issuer,

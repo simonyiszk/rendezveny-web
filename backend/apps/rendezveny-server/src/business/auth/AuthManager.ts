@@ -48,26 +48,29 @@ export class AuthManager {
 
 	@Transactional()
 	public async loginWithLocalIdentity(
-		username: string, password: string
-	): Promise<{ refresh: string, access: string, user: User }> {
+		username: string,
+		password: string
+	): Promise<{ refresh: string; access: string; user: User }> {
 		checkArgument(isNotEmpty(username), AuthUserNameValidationException);
 		checkArgument(isNotEmpty(password), AuthPasswordValidationException);
 
-		const localIdentity = await this.localIdentityRepository.findOne({ username }, {
-			relations: [
-				nameof<LocalIdentity>('user')
-			]
-		});
+		const localIdentity = await this.localIdentityRepository.findOne(
+			{ username },
+			{
+				relations: [nameof<LocalIdentity>('user')]
+			}
+		);
 
-		if(localIdentity) {
+		if (localIdentity) {
 			const { hashedPassword } = await this.cryptoService.hashPassword(
-				password, localIdentity.passwordVersion, localIdentity.salt
+				password,
+				localIdentity.passwordVersion,
+				localIdentity.salt
 			);
 
-			if(localIdentity.user.isSuspended) {
+			if (localIdentity.user.isSuspended) {
 				throw new AuthUserSuspendedException();
-			}
-			else if(localIdentity.password === hashedPassword) {
+			} else if (localIdentity.password === hashedPassword) {
 				return this.returnTokens(localIdentity.user);
 			}
 		}
@@ -78,19 +81,17 @@ export class AuthManager {
 	@Transactional()
 	public async loginWithAuthSCHIdentity(
 		authorizationCode: string
-	): Promise<{ refresh: string, access: string, user: User }> {
+	): Promise<{ refresh: string; access: string; user: User }> {
 		const accessToken = await this.getAccessToken(authorizationCode);
-		const {
-			internalId, displayName, email, userClubMemberships
-		} = await this.getAuthSCHProfile(accessToken);
+		const { internalId, displayName, email, userClubMemberships } = await this.getAuthSCHProfile(accessToken);
 
 		const authSCHIdentity = await this.authSCHIdentityRepository.findOne({ externalId: internalId });
 
 		let user: User;
-		if(authSCHIdentity) {
+		if (authSCHIdentity) {
 			// eslint-disable-next-line prefer-destructuring
 			user = authSCHIdentity.user;
-			if(user.isSuspended) {
+			if (user.isSuspended) {
 				throw new AuthUserSuspendedException();
 			}
 
@@ -99,8 +100,7 @@ export class AuthManager {
 
 			user.name = displayName;
 			await this.userRepository.save(user);
-		}
-		else {
+		} else {
 			const newAuthSCHIdentity = new AuthSCHIdentity({
 				externalId: internalId,
 				email: email
@@ -120,23 +120,26 @@ export class AuthManager {
 		await this.clubMembershipRepository.delete({ user });
 		const clubs = await this.clubRepository.find();
 		const newClubMemberships: ClubMembership[] = [];
-		for(const userClubMembership of userClubMemberships) {
+		for (const userClubMembership of userClubMemberships) {
 			const clubId = userClubMembership.id as number;
-			const club = clubs.find(c => c.externalId === clubId);
-			if(club) {
-				if(userClubMembership.title?.includes('körvezető') === true) {
-					newClubMemberships.push(new ClubMembership({
-						user: user,
-						club: club,
-						clubRole: ClubRole.CLUB_MANAGER
-					}));
-				}
-				else {
-					newClubMemberships.push(new ClubMembership({
-						user: user,
-						club: club,
-						clubRole: ClubRole.MEMBER
-					}));
+			const club = clubs.find((c) => c.externalId === clubId);
+			if (club) {
+				if (userClubMembership.title?.includes('körvezető') === true) {
+					newClubMemberships.push(
+						new ClubMembership({
+							user: user,
+							club: club,
+							clubRole: ClubRole.CLUB_MANAGER
+						})
+					);
+				} else {
+					newClubMemberships.push(
+						new ClubMembership({
+							user: user,
+							club: club,
+							clubRole: ClubRole.MEMBER
+						})
+					);
 				}
 			}
 		}
@@ -146,38 +149,41 @@ export class AuthManager {
 	}
 
 	@Transactional()
-	public async loginWithRefreshToken(
-		refreshContext: RefreshContext
-	): Promise<{ access: string, user: User }> {
+	public async loginWithRefreshToken(refreshContext: RefreshContext): Promise<{ access: string; user: User }> {
 		const token = await this.refreshTokenRepository.findOne({ id: refreshContext.getTokenId() });
-		if(!token || token.user.id !== refreshContext.getUserId()) {
+		if (!token || token.user.id !== refreshContext.getUserId()) {
 			throw new AuthInvalidTokenException();
 		}
 
-		const user = await this.userRepository.findOne({ id: refreshContext.getUserId() }, {
-			relations: [
-				`${nameof<User>('memberships')}`,
-				`${nameof<User>('memberships')}.${nameof<ClubMembership>('club')}`
-			]
-		});
-
-		if(user) {
-			if(user.isSuspended) {
-				throw new AuthUserSuspendedException();
+		const user = await this.userRepository.findOne(
+			{ id: refreshContext.getUserId() },
+			{
+				relations: [
+					`${nameof<User>('memberships')}`,
+					`${nameof<User>('memberships')}.${nameof<ClubMembership>('club')}`
+				]
 			}
-			else {
+		);
+
+		if (user) {
+			if (user.isSuspended) {
+				throw new AuthUserSuspendedException();
+			} else {
 				return {
-					access: await this.jwtService.signAsync({
-						typ: 'access',
-						uid: user.id,
-						rol: user.role,
-						clb: user.memberships.map(m => ({
-							cid: m.club.id,
-							rol: m.clubRole
-						}))
-					} as AccessToken, {
-						expiresIn: this.configService.get('token.accessValidity')
-					}),
+					access: await this.jwtService.signAsync(
+						{
+							typ: 'access',
+							uid: user.id,
+							rol: user.role,
+							clb: user.memberships.map((m) => ({
+								cid: m.club.id,
+								rol: m.clubRole
+							}))
+						} as AccessToken,
+						{
+							expiresIn: this.configService.get('token.accessValidity')
+						}
+					),
 					user: user
 				};
 			}
@@ -187,16 +193,12 @@ export class AuthManager {
 	}
 
 	@Transactional()
-	public async logout(
-		refreshContext: RefreshContext
-	): Promise<void> {
+	public async logout(refreshContext: RefreshContext): Promise<void> {
 		await this.refreshTokenRepository.delete({ id: refreshContext.getTokenId() });
 	}
 
-	private async returnTokens(user: User): Promise<{ refresh: string, access: string, user: User }> {
-		const tokenEntity = await this.refreshTokenRepository.save(
-			new RefreshTokenEntity({ user })
-		);
+	private async returnTokens(user: User): Promise<{ refresh: string; access: string; user: User }> {
+		const tokenEntity = await this.refreshTokenRepository.save(new RefreshTokenEntity({ user }));
 
 		const refreshPayload = {
 			typ: 'refresh',
@@ -216,22 +218,23 @@ export class AuthManager {
 
 	private async getAccessToken(authorizationCode: string): Promise<string> {
 		try {
-			const tokenResponse = await this.httpService.post(
-				'https://auth.sch.bme.hu/oauth2/token',
-				`grant_type=authorization_code&code=${authorizationCode}`,
-				{
-					auth: {
-						username: this.configService.get('authsch.clientId')!,
-						password: this.configService.get('authsch.secretKey')!
+			const tokenResponse = await this.httpService
+				.post(
+					'https://auth.sch.bme.hu/oauth2/token',
+					`grant_type=authorization_code&code=${authorizationCode}`,
+					{
+						auth: {
+							username: this.configService.get('authsch.clientId')!,
+							password: this.configService.get('authsch.secretKey')!
+						}
 					}
-				}
-			).toPromise();
+				)
+				.toPromise();
 
-			if(typeof tokenResponse.data.access_token === 'string') {
+			if (typeof tokenResponse.data.access_token === 'string') {
 				return tokenResponse.data.access_token;
 			}
-		}
-		catch (_) {
+		} catch (_) {
 			throw new AuthInvalidAuthorizationCodeException();
 		}
 		throw new AuthInvalidAuthorizationCodeException();
@@ -240,21 +243,22 @@ export class AuthManager {
 	private async getAuthSCHProfile(
 		accessToken: string
 	): Promise<{
-		internalId: string,
-		displayName: string,
-		email: string,
+		internalId: string;
+		displayName: string;
+		email: string;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		userClubMemberships: any[]
+		userClubMemberships: any[];
 	}> {
 		try {
-			const profileInfo = await this.httpService.get(
-				`https://auth.sch.bme.hu/api/profile/?access_token=${accessToken}`
-			).toPromise();
+			const profileInfo = await this.httpService
+				.get(`https://auth.sch.bme.hu/api/profile/?access_token=${accessToken}`)
+				.toPromise();
 
-			if(typeof profileInfo.data.internal_id === 'string'
-				&& typeof profileInfo.data.displayName === 'string'
-				&& typeof profileInfo.data.mail === 'string'
-				&& Array.isArray(profileInfo.data.eduPersonEntitlement ?? [])
+			if (
+				typeof profileInfo.data.internal_id === 'string' &&
+				typeof profileInfo.data.displayName === 'string' &&
+				typeof profileInfo.data.mail === 'string' &&
+				Array.isArray(profileInfo.data.eduPersonEntitlement ?? [])
 			) {
 				return {
 					internalId: profileInfo.data.internal_id,
@@ -263,8 +267,7 @@ export class AuthManager {
 					userClubMemberships: profileInfo.data.eduPersonEntitlement ?? []
 				};
 			}
-		}
-		catch (_) {
+		} catch (_) {
 			throw new AuthInvalidAuthorizationCodeException();
 		}
 		throw new AuthInvalidAuthorizationCodeException();

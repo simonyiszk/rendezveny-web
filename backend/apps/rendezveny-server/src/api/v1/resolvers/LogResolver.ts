@@ -12,12 +12,9 @@ import { Log, LogType } from '../../../data/models/Log';
 @Resolver((_: never) => LogDTO)
 @UseInterceptors(LoggingInterceptor)
 export class LogResolver {
-	public constructor(
-		private readonly logManager: LogManager
-	) {
-	}
+	public constructor(private readonly logManager: LogManager) {}
 
-	@Query(_ => PaginatedLogDTO, {
+	@Query((_) => PaginatedLogDTO, {
 		name: 'logs_getAll',
 		description: 'Gets all the logs'
 	})
@@ -26,14 +23,12 @@ export class LogResolver {
 	public async getLogs(
 		@AccessCtx() accessContext: AccessContext,
 		@PageSize() pageSize: number,
-		@Offset() offset: number,
+		@Offset() offset: number
 	): Promise<PaginatedLogDTO> {
-		const { logs, count } = await this.logManager.getAllLogPaginated(
-			accessContext, pageSize, offset,
-		);
+		const { logs, count } = await this.logManager.getAllLogPaginated(accessContext, pageSize, offset);
 
 		return {
-			nodes: logs.map(log => LogResolver.logToDTO(log)),
+			nodes: logs.map((log) => LogResolver.logToDTO(log)),
 			totalCount: count,
 			pageSize: pageSize,
 			offset: offset
@@ -55,7 +50,7 @@ export class LogResolver {
 	}
 
 	private static parseIssuerType(type: string): IssuerType {
-		switch(type) {
+		switch (type) {
 			case 'public':
 				return IssuerType.PUBLIC;
 			case 'user':
@@ -66,7 +61,7 @@ export class LogResolver {
 	}
 
 	private static parseResultType(type: LogType): ResultType {
-		switch(type) {
+		switch (type) {
 			case LogType.SUCCESS:
 				return ResultType.SUCCESS;
 			case LogType.UNAUTHORIZED:

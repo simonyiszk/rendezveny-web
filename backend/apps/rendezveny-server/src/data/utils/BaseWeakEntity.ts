@@ -1,2 +1,1 @@
-export abstract class BaseWeakEntity<T> {
-}
+export abstract class BaseWeakEntity<T> {}

@@ -22,7 +22,7 @@ export class AuthRefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh'
 
 	public async validate(payload: Token): Promise<RefreshToken> {
 		checkArgument(isRefreshToken(payload), AuthInvalidTokenException);
-		return payload as unknown as RefreshToken;
+		return (payload as unknown) as RefreshToken;
 	}
 }
 

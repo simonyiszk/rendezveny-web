@@ -5,6 +5,7 @@ import { EventRegistrationFormDTO } from './EventRegistrationFormDTO';
 import { HRTableDTO } from './HRTableDTO';
 import { EventRelationDTO } from './EventRelationDTO';
 import { ClubDTO } from './ClubDTO';
+import { EventRegistrationFormQuestionAnswersDTO } from './EventRegistrationFormAnswerDTO';
 
 @ObjectType({
 	description: 'The data of an event'
@@ -84,38 +85,43 @@ export class EventDTO {
 	})
 	public isClosedEvent: boolean = false;
 
-	@Field(_ => [EventRelationDTO], {
+	@Field((_) => [EventRelationDTO], {
 		description: 'The users in relation with the event'
 	})
 	public relations?: EventRelationDTO[];
 
-	@Field(_ => [ClubDTO], {
+	@Field((_) => [ClubDTO], {
 		description: 'The hosting clubs of the event'
 	})
 	public hostingClubs?: ClubDTO[];
 
-	@Field(_ => EventRelationDTO, {
-		description: 'The current user\'s relation with the event (event token)'
+	@Field((_) => EventRelationDTO, {
+		description: "The current user's relation with the event (event token)"
 	})
 	public selfRelation?: EventRelationDTO;
 
-	@Field(_ => EventRelationDTO, {
-		description: 'The current user\'s relation with the event (access token)'
+	@Field((_) => EventRelationDTO, {
+		description: "The current user's relation with the event (access token)"
 	})
 	public selfRelation2?: EventRelationDTO;
 
-	@Field(_ => EventRegistrationFormDTO, {
+	@Field((_) => EventRegistrationFormDTO, {
 		description: 'The registration form of the event'
 	})
 	public registrationForm?: EventRegistrationFormDTO;
 
-	@Field(_ => HRTableDTO, {
+	@Field((_) => EventRegistrationFormQuestionAnswersDTO, {
+		description: 'The registration form of the event'
+	})
+	public registrationFormAnswers?: EventRegistrationFormQuestionAnswersDTO;
+
+	@Field((_) => HRTableDTO, {
 		description: 'The HRTable of the event',
 		nullable: true
 	})
 	public hrTable?: HRTableDTO;
 
-	@Field(_ => Number, {
+	@Field((_) => Number, {
 		description: 'Number of already registered users',
 		nullable: true
 	})

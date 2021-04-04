@@ -36,7 +36,7 @@ export class HRSegmentDTO {
 	})
 	public isLocked: boolean = false;
 
-	@Field(_ => [EventRelationDTO], {
+	@Field((_) => [EventRelationDTO], {
 		description: 'The organizers assigned to this segment'
 	})
 	public organizers?: EventRelationDTO[];
@@ -71,7 +71,7 @@ export class HRTaskDTO {
 	})
 	public isLocked: boolean = false;
 
-	@Field(_ => [HRSegmentDTO], {
+	@Field((_) => [HRSegmentDTO], {
 		description: 'The segments of the task'
 	})
 	public segments?: HRSegmentDTO[];
@@ -91,7 +91,7 @@ export class HRTableDTO {
 	})
 	public isLocked: boolean = false;
 
-	@Field(_ => [HRTaskDTO], {
+	@Field((_) => [HRTaskDTO], {
 		description: 'The tasks of the table'
 	})
 	public tasks?: HRTaskDTO[];
@@ -163,7 +163,7 @@ export class HRTaskInput {
 	})
 	public isLocked: boolean = false;
 
-	@Field(_ => [HRSegmentInput], {
+	@Field((_) => [HRSegmentInput], {
 		description: 'The segments of the task'
 	})
 	public segments!: HRSegmentInput[];
@@ -184,7 +184,7 @@ export class HRTableInput {
 	})
 	public isLocked: boolean = false;
 
-	@Field(_ => [HRTaskInput], {
+	@Field((_) => [HRTaskInput], {
 		description: 'The tasks of the table'
 	})
 	public tasks!: HRTaskInput[];

@@ -16,26 +16,38 @@ export class Registration extends BaseEntity<Registration> {
 	@Column()
 	public readonly eventId?: string;
 
-	@ManyToOne(_ => Event, event => event.registrations, { eager: true, onDelete: 'CASCADE' })
+	@ManyToOne(
+		(_) => Event,
+		(event) => event.registrations,
+		{ eager: true, onDelete: 'CASCADE' }
+	)
 	@JoinColumn({ name: nameof<Registration>('eventId') })
 	public event!: Event;
 
 	@Column()
 	public readonly userId?: string;
 
-	@ManyToOne(_ => User, user => user.registrations, {
-		eager: true,
-		nullable: true,
-		onDelete: 'CASCADE'
-	})
+	@ManyToOne(
+		(_) => User,
+		(user) => user.registrations,
+		{
+			eager: true,
+			nullable: true,
+			onDelete: 'CASCADE'
+		}
+	)
 	@JoinColumn({ name: nameof<Registration>('userId') })
 	public user!: User | null;
 
-	@OneToOne(_ => TemporaryIdentity, temporaryIdentity => temporaryIdentity.registration, {
-		onDelete: 'CASCADE',
-		nullable: true,
-		eager: true
-	})
+	@OneToOne(
+		(_) => TemporaryIdentity,
+		(temporaryIdentity) => temporaryIdentity.registration,
+		{
+			onDelete: 'CASCADE',
+			nullable: true,
+			eager: true
+		}
+	)
 	@JoinColumn()
 	public temporaryIdentity!: TemporaryIdentity | null;
 
@@ -48,35 +60,42 @@ export class Registration extends BaseEntity<Registration> {
 	@Column({ type: 'enum', enum: RegistrationNotificationSettings })
 	public notificationSettings!: RegistrationNotificationSettings;
 
-	@OneToMany(_ => FormQuestionAnswer, answer => answer.registration, {
-		onDelete: 'CASCADE'
-	})
+	@OneToMany(
+		(_) => FormQuestionAnswer,
+		(answer) => answer.registration,
+		{
+			onDelete: 'CASCADE'
+		}
+	)
 	public formAnswers!: FormQuestionAnswer[];
 
-	public constructor(params?: (
-		{ user?: User, temporaryIdentity: TemporaryIdentity } | { user: User, temporaryIdentity?: TemporaryIdentity }
-	) & {
-		event: Event,
-		registrationDate: Date,
-		attendDate?: Date,
-		notificationSettings: RegistrationNotificationSettings,
-		formAnswers?: FormQuestionAnswer[]
-	}) {
+	public constructor(
+		params?: (
+			| { user?: User; temporaryIdentity: TemporaryIdentity }
+			| { user: User; temporaryIdentity?: TemporaryIdentity }
+		) & {
+			event: Event;
+			registrationDate: Date;
+			attendDate?: Date;
+			notificationSettings: RegistrationNotificationSettings;
+			formAnswers?: FormQuestionAnswer[];
+		}
+	) {
 		super();
-		if(params) {
+		if (params) {
 			this.event = params.event;
-			if(params.user) {
+			if (params.user) {
 				this.user = params.user;
 			}
-			if(params.temporaryIdentity) {
+			if (params.temporaryIdentity) {
 				this.temporaryIdentity = params.temporaryIdentity;
 			}
 			this.registrationDate = params.registrationDate;
-			if(params.attendDate) {
+			if (params.attendDate) {
 				this.attendDate = params.attendDate;
 			}
 			this.notificationSettings = params.notificationSettings;
-			if(params.formAnswers) {
+			if (params.formAnswers) {
 				this.formAnswers = params.formAnswers;
 			}
 		}

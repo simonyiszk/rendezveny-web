@@ -16,12 +16,12 @@ export class LoginDTO {
 	})
 	public access: string = '';
 
-	@Field(_ => UserRole, {
+	@Field((_) => UserRole, {
 		description: 'The role of the user'
 	})
 	public role!: UserRole;
 
-	@Field(_ => [MembershipDTO], {
+	@Field((_) => [MembershipDTO], {
 		description: 'The memberships of the user'
 	})
 	public memberships!: MembershipDTO[];

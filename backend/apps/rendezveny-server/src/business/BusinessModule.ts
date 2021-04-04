@@ -27,7 +27,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
-			useFactory: async(configService: ConfigService) => ({
+			useFactory: async (configService: ConfigService) => ({
 				secret: configService.get('token.secret')
 			})
 		}),
@@ -68,8 +68,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 })
 export class BusinessModule {
 	public static forRoot(): DynamicModule[] {
-		return [
-			ScheduleModule.forRoot()
-		];
+		return [ScheduleModule.forRoot()];
 	}
 }

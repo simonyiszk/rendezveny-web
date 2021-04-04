@@ -31,7 +31,7 @@ export class OrganizerManager extends BaseManager {
 	public constructor(
 		@InjectRepository(OrganizerRepository) private readonly organizerRepository: OrganizerRepository,
 		@InjectRepository(HRSegmentRepository) private readonly hrSegmentRepository: HRSegmentRepository,
-		@InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+		@InjectRepository(UserRepository) private readonly userRepository: UserRepository
 	) {
 		super();
 	}
@@ -44,10 +44,9 @@ export class OrganizerManager extends BaseManager {
 	): Promise<Organizer> {
 		const organizer = await this.organizerRepository.findOne({ id, event }, {});
 
-		if(!organizer) {
+		if (!organizer) {
 			return this.getOrganizerFail(id);
-		}
-		else {
+		} else {
 			return this.getOrganizer(eventContext, event, organizer);
 		}
 	}
@@ -61,9 +60,7 @@ export class OrganizerManager extends BaseManager {
 		return organizer;
 	}
 
-	private async getOrganizerFail(
-		id: string
-	): Promise<Organizer> {
+	private async getOrganizerFail(id: string): Promise<Organizer> {
 		throw new OrganizerDoesNotExistsException(id);
 	}
 
@@ -86,12 +83,12 @@ export class OrganizerManager extends BaseManager {
 		isChief: boolean
 	): Promise<Organizer> {
 		const user = await this.userRepository.findOne({ id: userId });
-		if(!user) {
+		if (!user) {
 			throw new UserDoesNotExistsException(userId);
 		}
 
 		const organizer = await this.organizerRepository.findOne({ event, user });
-		if(organizer) {
+		if (organizer) {
 			throw new OrganizerAlreadyIsAnOrganizerException();
 		}
 
@@ -142,15 +139,15 @@ export class OrganizerManager extends BaseManager {
 		const hrSegment = await this.hrSegmentRepository.findOne(hrSegmentId, {
 			relations: [nameof<HRSegment>('organizers')]
 		});
-		if(!hrSegment) {
+		if (!hrSegment) {
 			throw new HRSegmentDoesNotExistsException();
 		}
 
-		if(hrSegment.organizers.some(o => o.id === organizer.id)) {
+		if (hrSegment.organizers.some((o) => o.id === organizer.id)) {
 			throw new HRSegmentOrganizerAlreadyRegisteredException();
 		}
 
-		if(hrSegment.capacity <= hrSegment.organizers.length) {
+		if (hrSegment.capacity <= hrSegment.organizers.length) {
 			throw new HRSegmentIsFullException();
 		}
 
@@ -173,12 +170,12 @@ export class OrganizerManager extends BaseManager {
 		const hrSegment = await this.hrSegmentRepository.findOne(hrSegmentId, {
 			relations: [nameof<HRSegment>('organizers')]
 		});
-		if(!hrSegment) {
+		if (!hrSegment) {
 			throw new HRSegmentDoesNotExistsException();
 		}
 
-		hrSegment.organizers = hrSegment.organizers.filter(o => o.id !== organizer.id);
-		organizer.hrSegments = organizer.hrSegments.filter(s => s.id !== hrSegmentId);
+		hrSegment.organizers = hrSegment.organizers.filter((o) => o.id !== organizer.id);
+		organizer.hrSegments = organizer.hrSegments.filter((s) => s.id !== hrSegmentId);
 
 		await this.hrSegmentRepository.save(hrSegment);
 		await this.organizerRepository.save(organizer);

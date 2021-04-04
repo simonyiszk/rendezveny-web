@@ -14,11 +14,9 @@ import { LoggingInterceptor } from '../../../business/log/LoggingInterceptor';
 @Resolver()
 @UseInterceptors(LoggingInterceptor)
 export class LoginResolver {
-	public constructor(
-		private readonly authManager: AuthManager
-	) {}
+	public constructor(private readonly authManager: AuthManager) {}
 
-	@Mutation(_ => LoginDTO, {
+	@Mutation((_) => LoginDTO, {
 		name: 'login_withLocalIdentity',
 		description: 'Logs the user in with username and password'
 	})
@@ -33,7 +31,7 @@ export class LoginResolver {
 			access: access,
 			refresh: refresh,
 			role: LoginResolver.transformUserRule(user.role),
-			memberships: user.memberships.map(membership => ({
+			memberships: user.memberships.map((membership) => ({
 				club: membership.club,
 				user: membership.user,
 				role: MembershipResolver.transformClubRole(membership.clubRole)
@@ -41,7 +39,7 @@ export class LoginResolver {
 		};
 	}
 
-	@Mutation(_ => LoginDTO, {
+	@Mutation((_) => LoginDTO, {
 		name: 'login_withAuthSCHIdentity',
 		description: 'Logs the user in with AuthSCH'
 	})
@@ -50,14 +48,15 @@ export class LoginResolver {
 	public async loginWithAuthSCHIdentity(
 		@Args('authorizationCode', {
 			description: 'The Oauth2 authorization code'
-		}) authorizationCode: string
+		})
+		authorizationCode: string
 	): Promise<LoginDTO> {
 		const { access, refresh, user } = await this.authManager.loginWithAuthSCHIdentity(authorizationCode);
 		return {
 			access: access,
 			refresh: refresh,
 			role: LoginResolver.transformUserRule(user.role),
-			memberships: user.memberships.map(membership => ({
+			memberships: user.memberships.map((membership) => ({
 				club: membership.club,
 				user: membership.user,
 				role: MembershipResolver.transformClubRole(membership.clubRole)
@@ -65,21 +64,19 @@ export class LoginResolver {
 		};
 	}
 
-	@Mutation(_ => GraphQLString, {
+	@Mutation((_) => GraphQLString, {
 		name: 'login_withRefreshToken',
 		description: 'Logs the user in with a refresh token'
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthRefreshGuard)
 	@Transactional()
-	public async loginWithRefreshToken(
-		@RefreshCtx() refreshContext: RefreshContext
-	): Promise<LoginDTO> {
+	public async loginWithRefreshToken(@RefreshCtx() refreshContext: RefreshContext): Promise<LoginDTO> {
 		const { access, user } = await this.authManager.loginWithRefreshToken(refreshContext);
 		return {
 			access: access,
 			role: LoginResolver.transformUserRule(user.role),
-			memberships: user.memberships.map(membership => ({
+			memberships: user.memberships.map((membership) => ({
 				club: membership.club,
 				user: membership.user,
 				role: MembershipResolver.transformClubRole(membership.clubRole)
@@ -87,22 +84,20 @@ export class LoginResolver {
 		};
 	}
 
-	@Mutation(_ => GraphQLBoolean, {
+	@Mutation((_) => GraphQLBoolean, {
 		name: 'login_logout',
 		description: 'Logs the user out'
 	})
 	@UseFilters(BusinessExceptionFilter)
 	@UseGuards(AuthRefreshGuard)
 	@Transactional()
-	public async logout(
-		@RefreshCtx() refreshContext: RefreshContext
-	): Promise<boolean> {
+	public async logout(@RefreshCtx() refreshContext: RefreshContext): Promise<boolean> {
 		await this.authManager.logout(refreshContext);
 		return true;
 	}
 
 	public static transformUserRule(role: UserRole): UserRoleDTO {
-		switch(role) {
+		switch (role) {
 			case UserRole.USER:
 				return UserRoleDTO.USER;
 			case UserRole.ADMIN:
