@@ -1,35 +1,38 @@
-import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, Input } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React, { useState } from 'react';
+import { useMutation } from 'urql';
 
-import { useLoginMutation } from '../api/token/LoginWithLocalIdentityMutation';
+import { loginWithLocalIdentityMutation } from '../api/token/LoginWithLocalIdentityMutation';
 import Button from '../components/control/Button';
 import { Layout } from '../components/layout/Layout';
 import useToastService from '../utils/services/ToastService';
+import { setAuthToken, setRoleAndClubs } from '../utils/token/TokenContainer';
 
 export default function LoginPage(): JSX.Element {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const client = useApolloClient();
   const makeToast = useToastService();
 
-  const [loginMutation] = useLoginMutation(client, {
-    onCompleted: () => {
-      if (typeof window !== 'undefined') {
-        navigate('/');
-      }
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [_, loginMutation] = useMutation(loginWithLocalIdentityMutation);
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
-    loginMutation(username, password);
+    loginMutation({ username, password }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        setAuthToken(res.data.login_withLocalIdentity.access);
+        setRoleAndClubs(
+          res.data.login_withLocalIdentity.role,
+          res.data.login_withLocalIdentity.memberships,
+        );
+        if (typeof window !== 'undefined') {
+          navigate('/');
+        }
+      }
+    });
   };
 
   return (

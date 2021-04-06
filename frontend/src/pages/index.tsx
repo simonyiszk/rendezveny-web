@@ -1,16 +1,19 @@
 import { Box } from '@chakra-ui/react';
 import { Link, navigate } from 'gatsby';
 import React from 'react';
+import { useQuery } from 'urql';
 
-import { useEventGetAllQuery } from '../api/index/EventsGetAllQuery';
+import { eventGetAllQuery } from '../api/index/EventsGetAllQuery';
 import { Layout } from '../components/layout/Layout';
 import EventSection from '../components/sections/EventSection';
 import Loading from '../components/util/Loading';
 
 export default function IndexPage(): JSX.Element {
-  const { called, loading, error, data } = useEventGetAllQuery();
+  const [{ data, fetching, error }] = useQuery({
+    query: eventGetAllQuery,
+  });
 
-  if (called && loading) {
+  if (fetching) {
     return <Loading />;
   }
 
