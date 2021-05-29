@@ -14,9 +14,10 @@ import {
   Tabs,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
+import { useClient } from 'urql';
 
-import { useClubsGetClubMembersQuery } from '../../api/details/ClubsGetOtherMembersQuery';
-import { Club, User } from '../../interfaces';
+import { clubsGetClubMembersQuery } from '../../api/details/ClubsGetOtherMembersQuery';
+import { Club, ClubGetOneResult, User } from '../../interfaces';
 import UserSelector from './UserSelector';
 
 interface Props {
@@ -42,23 +43,32 @@ export default function UserSelectorModal({
   users,
   setUsers,
 }: Props): JSX.Element {
+  const client = useClient();
+
   const initialTabIndex = 0;
   const [tabIndex, setTabIndex] = useState(initialTabIndex);
+
   const [membersData, setMembersData] = useState<MembersData>({});
 
-  const [getClubMembers] = useClubsGetClubMembersQuery((queryData) => {
-    setMembersData({
-      ...membersData,
-      [queryData.clubs_getOne
-        .id]: queryData.clubs_getOne.clubMemberships.nodes
-        .map((m) => m.user)
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    });
-  });
-
   useEffect(() => {
-    if (clubs.length > 0)
-      getClubMembers({ variables: { id: clubs[initialTabIndex].id } });
+    if (clubs.length > 0) {
+      client
+        .query<ClubGetOneResult>(clubsGetClubMembersQuery, {
+          id: clubs[initialTabIndex].id,
+        })
+        .toPromise()
+        .then((result) => {
+          if (result.data && !result.error) {
+            setMembersData({
+              ...membersData,
+              [result.data.clubs_getOne
+                .id]: result.data.clubs_getOne.clubMemberships.nodes
+                .map((m) => m.user)
+                .sort((a, b) => a.name.localeCompare(b.name)),
+            });
+          }
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -66,7 +76,22 @@ export default function UserSelectorModal({
     setTabIndex(tabidx);
     const currentClubIndex = clubs[tabidx].id;
     if (!membersData[currentClubIndex]) {
-      getClubMembers({ variables: { id: currentClubIndex } });
+      client
+        .query<ClubGetOneResult>(clubsGetClubMembersQuery, {
+          id: currentClubIndex,
+        })
+        .toPromise()
+        .then((result) => {
+          if (result.data && !result.error) {
+            setMembersData({
+              ...membersData,
+              [result.data.clubs_getOne
+                .id]: result.data.clubs_getOne.clubMemberships.nodes
+                .map((m) => m.user)
+                .sort((a, b) => a.name.localeCompare(b.name)),
+            });
+          }
+        });
     }
   };
 

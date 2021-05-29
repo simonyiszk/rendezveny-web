@@ -1,11 +1,5 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
-
-import { Event } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const eventGetInformationQuery = gql`
   query e_eventGetInformation($uniqueName: String!) {
@@ -28,15 +22,3 @@ export const eventGetInformationQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  events_getOne: Event;
-}
-export const useEventGetInformationQuery = (
-  cb?: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetInformationQuery, {
-    onCompleted: cb,
-    fetchPolicy: 'cache-and-network',
-  });
-  return [getQuery, data];
-};

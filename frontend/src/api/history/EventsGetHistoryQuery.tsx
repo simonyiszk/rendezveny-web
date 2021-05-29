@@ -1,6 +1,5 @@
-import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
-
-import { Event } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const eventGetHistoryQuery = gql`
   query eventsGetHistory {
@@ -46,19 +45,3 @@ export const eventGetHistoryQuery = gql`
     }
   }
 `;
-interface QueryResultL {
-  organizedEvents: {
-    nodes: Event[];
-  };
-  registeredEvents: {
-    nodes: Event[];
-  };
-}
-export const useEventGetHistoryQuery = (
-  cb: (data: QueryResultL) => void,
-): QueryResult<QueryResultL, OperationVariables> => {
-  const getQuery = useQuery<QueryResultL>(eventGetHistoryQuery, {
-    onCompleted: cb,
-  });
-  return getQuery;
-};

@@ -1,6 +1,5 @@
-import { FetchResult, gql, MutationResult, useMutation } from '@apollo/client';
-
-import { EventRegistrationFormInput, MutationProps } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const modifyFormMutation = gql`
   mutation e_modifyFormMutation(
@@ -30,31 +29,3 @@ export const modifyFormMutation = gql`
     }
   }
 `;
-
-export const useModifyFormMutation = ({
-  onCompleted,
-  onError,
-  refetchQueries,
-}: MutationProps): [
-  (id: string, form: EventRegistrationFormInput) => Promise<FetchResult>,
-  MutationResult,
-] => {
-  const [mutation, mutationResults] = useMutation(modifyFormMutation, {
-    onCompleted,
-    onError,
-    refetchQueries,
-  });
-
-  const getMutation = (
-    id: string,
-    form: EventRegistrationFormInput,
-  ): Promise<FetchResult> => {
-    return mutation({
-      variables: {
-        id,
-        form,
-      },
-    });
-  };
-  return [getMutation, mutationResults];
-};

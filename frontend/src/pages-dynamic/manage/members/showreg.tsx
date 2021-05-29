@@ -1,9 +1,10 @@
 import { Box, Flex, Grid } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from 'urql';
 
-import { useRegistrationGetOneQuery } from '../../../api/registration/EventMembersQuery';
+import { registrationGetOneQuery } from '../../../api/registration/EventMembersQuery';
 import LinkButton from '../../../components/control/LinkButton';
 import QuestionListElement from '../../../components/form/QuestionListElement';
 import { Layout } from '../../../components/layout/Layout';
@@ -13,6 +14,7 @@ import {
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormTextAnswer,
   EventRelation,
+  RegistrationGetOneResult,
 } from '../../../interfaces';
 
 interface PageState {
@@ -33,46 +35,43 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event, user } = state as PageState;
 
-  const [answers, setAnswers] = useState<AnswerState>({});
-
   const [
-    getRegistration,
     {
-      loading: getRegistrationLoading,
-      called: getRegistrationCalled,
+      data: getRegistrationData,
+      fetching: getRegistrationFetch,
       error: getRegistrationError,
     },
-  ] = useRegistrationGetOneQuery((queryData) => {
-    if (queryData.registration_getOne) {
-      const res = queryData.registration_getOne.formAnswer.answers.reduce(
-        (acc, curr) => {
-          if (curr.answer.type === 'multiple_choice') {
-            return {
-              ...acc,
-              [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
-                .options,
-            };
-          }
-          if (curr.answer.type === 'text') {
-            return {
-              ...acc,
-              [curr.id]: (curr.answer as EventRegistrationFormTextAnswer).text,
-            };
-          }
-          return acc;
-        },
-        {},
-      );
-      setAnswers(res);
-    }
+  ] = useQuery<RegistrationGetOneResult>({
+    query: registrationGetOneQuery,
+    variables: { id: user.registration.id },
+    pause: user === undefined,
   });
 
-  useEffect(() => {
-    if (user) getRegistration({ variables: { id: user.registration.id } });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.userId]);
+  const answers =
+    getRegistrationData && getRegistrationData.registration_getOne
+      ? getRegistrationData.registration_getOne.formAnswer.answers.reduce(
+          (acc, curr) => {
+            if (curr.answer.type === 'multiple_choice') {
+              return {
+                ...acc,
+                [curr.id]: (curr.answer as EventRegistrationFormMultipleChoiceAnswer)
+                  .options,
+              };
+            }
+            if (curr.answer.type === 'text') {
+              return {
+                ...acc,
+                [curr.id]: (curr.answer as EventRegistrationFormTextAnswer)
+                  .text,
+              };
+            }
+            return acc;
+          },
+          {},
+        )
+      : {};
 
-  if (getRegistrationCalled && getRegistrationLoading) {
+  if (getRegistrationFetch) {
     return <Loading />;
   }
 

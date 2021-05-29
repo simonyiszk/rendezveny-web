@@ -1,11 +1,5 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
-
-import { Event } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const eventGetUniquenamesQuery = gql`
   query eventsGetUniquenames {
@@ -17,16 +11,3 @@ export const eventGetUniquenamesQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  events_getAll: {
-    nodes: Event[];
-  };
-}
-export const useEventGetUniquenamesQuery = (
-  cb?: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetUniquenamesQuery, {
-    onCompleted: cb,
-  });
-  return [getQuery, data];
-};

@@ -1,22 +1,23 @@
-import { useApolloClient } from '@apollo/client';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useFormAggregationQuery } from '../../api/form/FormAggregationQuery';
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
-import { useEventGetMembersQuery } from '../../api/registration/EventMembersQuery';
-import { useSetAttendMutation } from '../../api/registration/RegistrationMutation';
+import { formAggregationQuery } from '../../api/form/FormAggregationQuery';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventGetMembersQuery } from '../../api/registration/EventMembersQuery';
+import { setAttendMutation } from '../../api/registration/RegistrationMutation';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import { Layout } from '../../components/layout/Layout';
 import FormAggregation from '../../components/sections/FormAggregation';
 import MemberSection from '../../components/sections/MemberSection';
 import Loading from '../../components/util/Loading';
-import { Event, EventRelation } from '../../interfaces';
+import { Event, EventGetOneResult, EventRelation } from '../../interfaces';
 import useToastService from '../../utils/services/ToastService';
 
 interface PageState {
@@ -36,91 +37,99 @@ export default function MembersPage({
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
 
-  const [registeredUsers, setRegisteredUsers] = useState<EventRelation[]>([]);
-
   const [
-    getFormAggregations,
-    {
-      called: getAggregationCalled,
-      loading: getAggregationLoading,
-      error: getAggregationError,
-      data: getAggregationData,
-    },
-  ] = useFormAggregationQuery();
-
-  const [
-    getEventRegs,
-    {
-      called: getEventCalled,
-      loading: getEventLoading,
-      error: getEventError,
-      data: getEventData,
-    },
-  ] = useEventGetMembersQuery((queryData) => {
-    setRegisteredUsers(queryData.events_getOne.relations.nodes);
-  });
-
-  const [
-    getCurrentEvent,
-    {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    getEventRegs({ variables: { id: queryData.events_getOne.id } });
-    getFormAggregations({ variables: { id: queryData.events_getOne.id } });
-  });
-
-  const client = useApolloClient();
-  const [
+    { fetching: eventTokenIDFetch, error: eventTokenIDError },
     getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
-    getEventRegs({ variables: { id: event.id } });
-    getFormAggregations({ variables: { id: event.id } });
+  ] = useMutation(eventsGetTokenMutationID);
+  const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
+    getEventTokenMutationUN,
+  ] = useMutation(eventsGetTokenMutationUN);
+
+  const [
+    {
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
+  });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+
+  const [
+    {
+      data: getAggregationData,
+      fetching: getAggregationFetch,
+      error: getAggregationError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: formAggregationQuery,
+    variables: { id: eventData?.id },
+    requestPolicy: 'cache-and-network',
+    pause: eventData === undefined,
   });
   const [
-    getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
-    getCurrentEvent({ variables: { uniqueName } });
+    { data: getRegsData, fetching: getRegsFetch, error: getRegsError },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetMembersQuery,
+    variables: { id: eventData?.id },
+    requestPolicy: 'cache-and-network',
+    pause: eventData === undefined,
   });
+
+  const [registeredUsers, setRegisteredUsers] = useState<EventRelation[]>(
+    getRegsData?.events_getOne.relations.nodes ?? [],
+  );
+  useEffect(() => {
+    if (getRegsData)
+      setRegisteredUsers(getRegsData?.events_getOne.relations.nodes);
+  }, [getRegsData]);
 
   const makeToast = useToastService();
 
-  const [getSetAttendMutation] = useSetAttendMutation({
-    onCompleted: () => {
-      makeToast('Sikeres belépés');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getSetAttendMutation] = useMutation(setAttendMutation);
 
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
   if (
-    (getCurrentEventCalled && getCurrentEventLoading) ||
-    (getEventCalled && getEventLoading) ||
-    (getAggregationCalled && getAggregationLoading)
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    getCurrentEventFetch ||
+    (!event && !getCurrentEventData) ||
+    getAggregationFetch ||
+    getRegsFetch
   ) {
     return <Loading />;
   }
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
+    eventTokenIDError ||
+    eventTokenUNError ||
     getCurrentEventError ||
-    getEventError ||
-    getAggregationError
+    getAggregationError ||
+    getRegsError
   ) {
     if (typeof window !== 'undefined') {
       navigate('/');
@@ -129,20 +138,31 @@ export default function MembersPage({
   }
 
   const handleSetAttend = (user: EventRelation): void => {
-    getSetAttendMutation(user.registration.id, !user.registration.didAttend);
-    setRegisteredUsers(
-      registeredUsers.map((u) => {
-        if (u.userId !== user.userId) return u;
-        const newUser = {
-          ...u,
-          registration: {
-            ...u.registration,
-            didAttend: !u.registration.didAttend,
-          },
-        };
-        return newUser;
-      }),
-    );
+    getSetAttendMutation({
+      id: user.registration.id,
+      attended: !user.registration.didAttend,
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast(
+          `Sikeres ${!user.registration.didAttend ? 'belépés' : 'kilépés'}`,
+        );
+        setRegisteredUsers(
+          registeredUsers.map((u) => {
+            if (u.userId !== user.userId) return u;
+            const newUser = {
+              ...u,
+              registration: {
+                ...u.registration,
+                didAttend: !u.registration.didAttend,
+              },
+            };
+            return newUser;
+          }),
+        );
+      }
+    });
   };
 
   return (
@@ -160,8 +180,7 @@ export default function MembersPage({
               eventL={
                 {
                   ...(event ?? getCurrentEventData?.events_getOne),
-                  registrationForm:
-                    getEventData?.events_getOne.registrationForm,
+                  registrationForm: getRegsData?.events_getOne.registrationForm,
                 } as Event
               }
               setAttendCb={handleSetAttend}

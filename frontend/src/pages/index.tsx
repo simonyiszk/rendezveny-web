@@ -7,10 +7,12 @@ import { eventGetAllQuery } from '../api/index/EventsGetAllQuery';
 import { Layout } from '../components/layout/Layout';
 import EventSection from '../components/sections/EventSection';
 import Loading from '../components/util/Loading';
+import { AllEventResult } from '../interfaces';
 
 export default function IndexPage(): JSX.Element {
-  const [{ data, fetching, error }] = useQuery({
+  const [{ data, fetching, error }] = useQuery<AllEventResult>({
     query: eventGetAllQuery,
+    requestPolicy: 'cache-and-network',
   });
 
   if (fetching) {

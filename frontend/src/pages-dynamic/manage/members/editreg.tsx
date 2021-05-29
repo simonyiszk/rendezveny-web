@@ -1,11 +1,12 @@
 import { Box, Flex, Grid, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useMutation } from 'urql';
 
 import {
-  useModifyFilledInForm,
-  useRegisterDeleteMutation,
+  modifyFilledInForm,
+  registerDeleteMutation,
 } from '../../../api/registration/RegistrationMutation';
 import Button from '../../../components/control/Button';
 import QuestionListElement from '../../../components/form/QuestionListElement';
@@ -39,39 +40,12 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [newAnswers, setNewAnswers] = useState<AnswerState>({});
-
-  const getAnswersFromProps = (): void => {
-    setNewAnswers(answers);
-  };
-
   const makeToast = useToastService();
 
-  const [getModifyFilledInForm] = useModifyFilledInForm({
-    onCompleted: () => {
-      makeToast('Sikeres módosítás');
-      navigate(-1);
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
-  const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
-    onCompleted: () => {
-      makeToast('Sikeres leiratkozás');
-      navigate(`/manage/${event?.uniqueName}/members`, { state: { event } });
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getModifyFilledInForm] = useMutation(modifyFilledInForm);
+  const [, getRegisterDeleteMutation] = useMutation(registerDeleteMutation);
 
-  useEffect(() => {
-    if (user && answers) getAnswersFromProps();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.userId]);
+  const [newAnswers, setNewAnswers] = useState<AnswerState>(answers ?? {});
 
   if (!answers) {
     if (typeof window !== 'undefined') {
@@ -118,10 +92,27 @@ export default function EditMemberRegPage({ location }: Props): JSX.Element {
   };
 
   const handleModify = (): void => {
-    getModifyFilledInForm(user.registration.id, generateAnswerDTO());
+    getModifyFilledInForm({
+      id: user.registration.id,
+      filledInForm: generateAnswerDTO(),
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres módosítás');
+        navigate(-1);
+      }
+    });
   };
   const handleDelete = (): void => {
-    getRegisterDeleteMutation(user.registration.id);
+    getRegisterDeleteMutation({ id: user.registration.id }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres leiratkozás');
+        navigate(`/manage/${event?.uniqueName}/members`, { state: { event } });
+      }
+    });
     onClose();
   };
 

@@ -1,24 +1,35 @@
 import 'react-quill/dist/quill.snow.css';
 
-import { useApolloClient } from '@apollo/client';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useClubsGetAllQuery } from '../../api/details/ClubsGetAllQuery';
-import { useEventGetOrganizersQuery } from '../../api/details/EventGetOrganizersQuery';
-import { useEventInformationMutation } from '../../api/details/EventInformationMutation';
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
-import { useEventGetUniquenamesQuery } from '../../api/index/EventsGetUniquenamesQuery';
-import { useProfileGetSelfQueryLazy } from '../../api/profile/UserGetSelfQuery';
+import { clubsGetAllQuery } from '../../api/details/ClubsGetAllQuery';
+import { eventGetOrganizersQuery } from '../../api/details/EventGetOrganizersQuery';
+import { eventInformationMutation } from '../../api/details/EventInformationMutation';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventGetUniquenamesQuery } from '../../api/index/EventsGetUniquenamesQuery';
+import { profileGetSelfQuery } from '../../api/profile/UserGetSelfQuery';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import EventTabs from '../../components/event/EventTabs';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
-import { Club, ClubRole, Event, EventTabProps, User } from '../../interfaces';
+import {
+  Club,
+  ClubGetAllResult,
+  ClubRole,
+  Event,
+  EventGetAllResult,
+  EventGetOneResult,
+  EventTabProps,
+  User,
+  UserGetSelfResult,
+} from '../../interfaces';
 import useToastService from '../../utils/services/ToastService';
 import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
@@ -39,179 +50,177 @@ export default function DetailsPage({
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
 
-  const [accessCMAdmin, setAccessCMAdmin] = useState(false);
-
-  const [, setAllUsers] = useState<User[]>([]);
-  const [uniqueNames, setUniqueNames] = useState<string[]>([]);
-  const [originalUniqueName, setOriginalUniqueName] = useState('');
-  const [allClubs, setAllClubs] = useState<Club[]>([]);
-  const [managedClubs, setManagedClubs] = useState<Club[]>([]);
-  const [ownClubs, setOwnClubs] = useState<Club[]>([]);
-  const [initialValues, setInitialValues] = useState<EventTabProps>();
+  const [
+    { fetching: eventTokenIDFetch, error: eventTokenIDError },
+    getEventTokenMutationID,
+  ] = useMutation(eventsGetTokenMutationID);
+  const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
+    getEventTokenMutationUN,
+  ] = useMutation(eventsGetTokenMutationUN);
 
   const [
-    getOrganizers,
     {
-      called: getOrganizersCalled,
-      loading: getOrganizersLoading,
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
+  });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+
+  const accessCMAdmin =
+    isAdmin() || eventData ? isClubManagerOf(eventData.hostingClubs) : false;
+
+  const originalUniqueName = eventData.uniqueName;
+
+  const [
+    {
+      data: getOrganizersData,
+      fetching: getOrganizersFetch,
       error: getOrganizersError,
     },
-  ] = useEventGetOrganizersQuery((queryData) => {
-    const resultAllUser = queryData.events_getOne.relations.nodes.map((u) => {
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetOrganizersQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
+  });
+
+  const allUsers =
+    getOrganizersData?.events_getOne.relations.nodes.map((u) => {
       return {
         id: u.userId,
         name: u.name,
       } as User;
-    });
-    const resultOrganizers = queryData.events_getOne.organizers.nodes.map(
-      (u) => {
-        return {
-          id: u.userId,
-          name: u.name,
-        } as User;
-      },
-    );
-    const resultChiefOrganizers = queryData.events_getOne.chiefOrganizers.nodes.map(
-      (u) => {
-        return {
-          id: u.userId,
-          name: u.name,
-        } as User;
-      },
-    );
-    const resultOrganizerClubs = queryData.events_getOne.hostingClubs.map(
-      (c) => {
-        return { id: c.id, name: c.name } as Club;
-      },
-    );
+    }) ?? [];
+  const resultOrganizers =
+    getOrganizersData?.events_getOne.organizers.nodes.map((u) => {
+      return {
+        id: u.userId,
+        name: u.name,
+      } as User;
+    }) ?? [];
+  const resultChiefOrganizers =
+    getOrganizersData?.events_getOne.chiefOrganizers.nodes.map((u) => {
+      return {
+        id: u.userId,
+        name: u.name,
+      } as User;
+    }) ?? [];
+  const resultOrganizerClubs =
+    getOrganizersData?.events_getOne.hostingClubs.map((c) => {
+      return { id: c.id, name: c.name } as Club;
+    }) ?? [];
 
-    setAllUsers(resultAllUser);
-    setInitialValues({
-      name: queryData.events_getOne.name,
-      description: queryData.events_getOne.description,
-      start: new Date(queryData.events_getOne.start),
-      end: new Date(queryData.events_getOne.end),
-      regStart: new Date(queryData.events_getOne.registrationStart),
-      regEnd: new Date(queryData.events_getOne.registrationEnd),
-      place: queryData.events_getOne.place ?? '',
-      isClosed: queryData.events_getOne.isClosedEvent ?? true,
-      capacity: `${queryData.events_getOne.capacity || ''}`,
-      reglink: queryData.events_getOne.uniqueName ?? '',
-      application: queryData.events_getOne.registrationAllowed ?? true,
-      organizers: resultOrganizers,
-      chiefOrganizers: resultChiefOrganizers,
-      hostingClubs: resultOrganizerClubs,
-    });
-  });
+  const initialValues = getOrganizersData
+    ? {
+        name: getOrganizersData.events_getOne.name,
+        description: getOrganizersData.events_getOne.description,
+        start: new Date(getOrganizersData.events_getOne.start),
+        end: new Date(getOrganizersData.events_getOne.end),
+        regStart: new Date(getOrganizersData.events_getOne.registrationStart),
+        regEnd: new Date(getOrganizersData.events_getOne.registrationEnd),
+        place: getOrganizersData.events_getOne.place ?? '',
+        isClosed: getOrganizersData.events_getOne.isClosedEvent ?? true,
+        capacity: `${getOrganizersData.events_getOne.capacity || ''}`,
+        reglink: getOrganizersData.events_getOne.uniqueName ?? '',
+        application:
+          getOrganizersData.events_getOne.registrationAllowed ?? true,
+        organizers: resultOrganizers,
+        chiefOrganizers: resultChiefOrganizers,
+        hostingClubs: resultOrganizerClubs,
+      }
+    : undefined;
 
   const [
-    getUniquenames,
     {
-      called: getUniquenamesCalled,
-      loading: getUniquenamesLoading,
-      error: getUniquenamesError,
+      data: getUniqueNamesData,
+      fetching: getUniqueNamesFetch,
+      error: getUniqueNamesError,
     },
-  ] = useEventGetUniquenamesQuery((queryData) => {
-    setUniqueNames(queryData.events_getAll.nodes.map((e) => e.uniqueName));
+  ] = useQuery<EventGetAllResult>({
+    query: eventGetUniquenamesQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
   });
 
+  const uniqueNames =
+    getUniqueNamesData?.events_getAll.nodes.map((e) => e.uniqueName) ?? [];
+
   const [
-    getClubs,
-    { called: getClubsCalled, loading: getClubsLoading, error: getClubsError },
-  ] = useClubsGetAllQuery((queryData) => {
-    setAllClubs(
-      queryData.clubs_getAll.nodes
+    { data: getClubsData, fetching: getClubsFetch, error: getClubsError },
+  ] = useQuery<ClubGetAllResult>({
+    query: clubsGetAllQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
+  });
+  const allClubs = getClubsData
+    ? getClubsData.clubs_getAll.nodes
         .map((c) => {
           return { id: c.id, name: c.name } as Club;
         })
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    );
-  });
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
 
   const [
-    getOwnClubs,
     {
-      called: getOwnClubsCalled,
-      loading: getOwnClubsLoading,
+      data: getOwnClubsData,
+      fetching: getOwnClubsFetch,
       error: getOwnClubsError,
     },
-  ] = useProfileGetSelfQueryLazy((queryData) => {
-    setOwnClubs(
-      queryData.users_getSelf.clubMemberships.nodes.map((c) => {
+  ] = useQuery<UserGetSelfResult>({
+    query: profileGetSelfQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
+  });
+
+  const ownClubs =
+    getOwnClubsData?.users_getSelf.clubMemberships.nodes.map((c) => {
+      return { id: c.club.id, name: c.club.name } as Club;
+    }) ?? [];
+  const managedClubs =
+    getOwnClubsData?.users_getSelf.clubMemberships.nodes
+      .filter((c) => c.role === ClubRole[ClubRole.CLUB_MANAGER])
+      .map((c) => {
         return { id: c.club.id, name: c.club.name } as Club;
-      }),
-    );
-    setManagedClubs(
-      queryData.users_getSelf.clubMemberships.nodes
-        .filter((c) => c.role === ClubRole[ClubRole.CLUB_MANAGER])
-        .map((c) => {
-          return { id: c.club.id, name: c.club.name } as Club;
-        }),
-    );
-  });
-
-  const [
-    getCurrentEvent,
-    {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    getOrganizers({ variables: { id: queryData.events_getOne.id } });
-    getClubs();
-    getOwnClubs();
-    getUniquenames();
-    setAccessCMAdmin(
-      isClubManagerOf(queryData.events_getOne.hostingClubs) || isAdmin(),
-    );
-    setOriginalUniqueName(queryData.events_getOne.uniqueName);
-  });
-
-  const client = useApolloClient();
-  const [
-    getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
-    getOrganizers({ variables: { id: event.id } });
-    getClubs();
-    getOwnClubs();
-    getUniquenames();
-    setAccessCMAdmin(isClubManagerOf(event.hostingClubs) || isAdmin());
-    setOriginalUniqueName(event.uniqueName);
-  });
-  const [
-    getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
-    getCurrentEvent({ variables: { uniqueName } });
-  });
+      }) ?? [];
 
   const makeToast = useToastService();
 
-  const [getEventInformationMutation] = useEventInformationMutation({
-    onCompleted: () => {
-      makeToast('Sikeres szerkesztés');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getEventInformationMutation] = useMutation(eventInformationMutation);
 
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
   if (
-    (getOrganizersCalled && getOrganizersLoading) ||
-    (getClubsCalled && getClubsLoading) ||
-    (getOwnClubsCalled && getOwnClubsLoading) ||
-    (getCurrentEventCalled && getCurrentEventLoading) ||
-    (getUniquenamesCalled && getUniquenamesLoading) ||
+    getCurrentEventFetch ||
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    (!event && !getCurrentEventData) ||
+    getOrganizersFetch ||
+    getUniqueNamesFetch ||
+    getClubsFetch ||
+    getOwnClubsFetch ||
     !initialValues
   ) {
     return <Loading />;
@@ -219,13 +228,13 @@ export default function DetailsPage({
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
-    getOrganizersError ||
     getCurrentEventError ||
+    eventTokenIDError ||
+    eventTokenUNError ||
+    getOrganizersError ||
+    getUniqueNamesError ||
     getClubsError ||
-    getOwnClubsError ||
-    getUniquenamesError
+    getOwnClubsError
   ) {
     if (typeof window !== 'undefined') {
       navigate('/');
@@ -234,23 +243,31 @@ export default function DetailsPage({
   }
 
   const handleSubmit = (values: EventTabProps): void => {
-    getEventInformationMutation(
-      event?.id ?? getCurrentEventData?.events_getOne.id,
-      values.name,
-      values.description,
-      values.start.toISOString(),
-      values.end.toISOString(),
-      values.regStart.toISOString(),
-      values.regEnd.toISOString(),
-      values.place,
-      values.organizers.map((o) => o.id),
-      values.chiefOrganizers.map((o) => o.id),
-      accessCMAdmin ? values.isClosed : undefined,
-      parseInt(values.capacity, 10) || 0,
-      values.reglink,
-      values.application,
-      accessCMAdmin ? values.hostingClubs.map((c) => c.id) : undefined,
-    );
+    getEventInformationMutation({
+      id: event?.id ?? getCurrentEventData?.events_getOne.id,
+      name: values.name,
+      description: values.description,
+      start: values.start.toISOString(),
+      end: values.end.toISOString(),
+      registrationStart: values.regStart.toISOString(),
+      registrationEnd: values.regEnd.toISOString(),
+      place: values.place,
+      organizerIds: values.organizers.map((o) => o.id),
+      chiefOrganizerIds: values.chiefOrganizers.map((o) => o.id),
+      isClosedEvent: accessCMAdmin ? values.isClosed : undefined,
+      capacity: parseInt(values.capacity, 10) || 0,
+      uniqueName: values.reglink,
+      registrationAllowed: values.application,
+      hostingClubIds: accessCMAdmin
+        ? values.hostingClubs.map((c) => c.id)
+        : undefined,
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres szerkesztés');
+      }
+    });
   };
 
   return (

@@ -1,116 +1,130 @@
 import 'react-quill/dist/quill.snow.css';
 
 import { navigate } from 'gatsby';
-import React, { useState } from 'react';
+import React from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useClubsGetAllQuery } from '../api/details/ClubsGetAllQuery';
-import { useClubsGetOtherMembersQuery } from '../api/details/ClubsGetOtherMembersQuery';
-import { useEventCreateMutation } from '../api/details/EventInformationMutation';
-import { useEventGetUniquenamesQuery } from '../api/index/EventsGetUniquenamesQuery';
-import { useProfileGetNameQuery } from '../api/profile/UserGetSelfQuery';
+import { clubsGetAllQuery } from '../api/details/ClubsGetAllQuery';
+import { clubsGetOtherMembersQuery } from '../api/details/ClubsGetOtherMembersQuery';
+import { eventCreateMutation } from '../api/details/EventInformationMutation';
+import { eventGetUniquenamesQuery } from '../api/index/EventsGetUniquenamesQuery';
+import { profileGetNameQuery } from '../api/profile/UserGetSelfQuery';
 import EventTabs from '../components/event/EventTabs';
 import { Layout } from '../components/layout/Layout';
 import { ceilTime, nextTime } from '../components/util/Calendar';
 import Loading from '../components/util/Loading';
-import { Club, EventTabProps } from '../interfaces';
+import {
+  Club,
+  ClubGetAllResult,
+  EventGetAllResult,
+  EventTabProps,
+  UserGetSelfResult,
+} from '../interfaces';
 import useToastService from '../utils/services/ToastService';
 
 export default function CreatePage(): JSX.Element {
-  const [uniqueNames, setUniqueNames] = useState<string[]>([]);
-  const [allClubs, setAllClubs] = useState<Club[]>([]);
-  const [managedClubs, setManagedClubs] = useState<Club[]>([]);
-
-  const {
-    called: getSelfNameCalled,
-    loading: getSelfNameLoading,
-    data: getSelfNameData,
-  } = useProfileGetNameQuery();
-
   const [
-    getUniquenames,
     {
-      called: getUniquenamesCalled,
-      loading: getUniquenamesLoading,
+      data: otherMembersData,
+      fetching: otherMembersFetch,
+      error: otherMembersError,
+    },
+  ] = useQuery<UserGetSelfResult>({
+    query: clubsGetOtherMembersQuery,
+  });
+  const [
+    {
+      data: clubsGetAllData,
+      fetching: clubsGetAllFetch,
+      error: clubsGetAllError,
+    },
+  ] = useQuery<ClubGetAllResult>({
+    query: clubsGetAllQuery,
+  });
+  const [
+    {
+      data: getUniquenamesData,
+      fetching: getUniquenamesFetch,
       error: getUniquenamesError,
     },
-  ] = useEventGetUniquenamesQuery((queryData) => {
-    setUniqueNames(queryData.events_getAll.nodes.map((e) => e.uniqueName));
+  ] = useQuery<EventGetAllResult>({
+    query: eventGetUniquenamesQuery,
   });
-
   const [
-    getClubs,
-    { called: getClubsCalled, loading: getClubsLoading, error: getClubsError },
-  ] = useClubsGetAllQuery((queryData) => {
-    setAllClubs(
-      queryData.clubs_getAll.nodes
-        .map((c) => {
-          return { id: c.id, name: c.name } as Club;
-        })
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    );
-  });
-
-  const {
-    called: getOtherMembersCalled,
-    loading: getOtherMembersLoading,
-    error: getOtherMembersError,
-  } = useClubsGetOtherMembersQuery((queryData) => {
-    const resultManagedClubs = queryData.users_getSelf.clubMemberships.nodes.map(
-      (m) => {
-        return { id: m.club.id, name: m.club.name } as Club;
-      },
-    );
-    getClubs();
-    getUniquenames();
-    setManagedClubs(resultManagedClubs);
+    {
+      data: profileGetNameData,
+      fetching: profileGetNameFetch,
+      error: profileGetNameError,
+    },
+  ] = useQuery<UserGetSelfResult>({
+    query: profileGetNameQuery,
   });
 
   const makeToast = useToastService();
 
-  const [getEventCreateMutation] = useEventCreateMutation({
-    onCompleted: () => {
-      makeToast('Új esemény létrehozva');
-      navigate('/');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getEventCreateMutation] = useMutation(eventCreateMutation);
 
   if (
-    (getOtherMembersCalled && getOtherMembersLoading) ||
-    (getClubsCalled && getClubsLoading) ||
-    (getUniquenamesCalled && getUniquenamesLoading) ||
-    (getSelfNameCalled && getSelfNameLoading)
+    otherMembersFetch ||
+    clubsGetAllFetch ||
+    getUniquenamesFetch ||
+    profileGetNameFetch
   ) {
     return <Loading />;
   }
 
-  if (getOtherMembersError || getClubsError || getUniquenamesError) {
+  if (
+    otherMembersError ||
+    clubsGetAllError ||
+    getUniquenamesError ||
+    profileGetNameError
+  ) {
     if (typeof window !== 'undefined') {
       navigate('/');
     }
     return <div>Error</div>;
   }
 
+  const uniqueNames = getUniquenamesData
+    ? getUniquenamesData.events_getAll.nodes.map((e) => e.uniqueName)
+    : [];
+  const allClubs = clubsGetAllData
+    ? clubsGetAllData.clubs_getAll.nodes
+        .map((c) => {
+          return { id: c.id, name: c.name } as Club;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+  const managedClubs = otherMembersData
+    ? otherMembersData.users_getSelf.clubMemberships.nodes.map((m) => {
+        return { id: m.club.id, name: m.club.name } as Club;
+      })
+    : [];
+
   const handleSubmit = (values: EventTabProps): void => {
-    getEventCreateMutation(
-      values.name,
-      values.description,
-      values.start.toISOString(),
-      values.end.toISOString(),
-      values.regStart.toISOString(),
-      values.regEnd.toISOString(),
-      values.place,
-      values.organizers.map((o) => o.id),
-      values.chiefOrganizers.map((o) => o.id),
-      values.isClosed,
-      parseInt(values.capacity, 10) || 0,
-      values.reglink,
-      values.application,
-      values.hostingClubs.map((c) => c.id),
-    );
+    getEventCreateMutation({
+      name: values.name,
+      description: values.description,
+      start: values.start.toISOString(),
+      end: values.end.toISOString(),
+      registrationStart: values.regStart.toISOString(),
+      registrationEnd: values.regEnd.toISOString(),
+      place: values.place,
+      organizerIds: values.organizers.map((o) => o.id),
+      chiefOrganizerIds: values.chiefOrganizers.map((o) => o.id),
+      isClosedEvent: values.isClosed,
+      capacity: parseInt(values.capacity, 10) || 0,
+      uniqueName: values.reglink,
+      registrationAllowed: values.application,
+      hostingClubIds: values.hostingClubs.map((c) => c.id),
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Új esemény létrehozva');
+        navigate('/');
+      }
+    });
   };
 
   const oneHourLater = ceilTime(new Date(), 60);
@@ -134,8 +148,8 @@ export default function CreatePage(): JSX.Element {
           regEnd: twoHourLater,
           place: '',
           organizers: [],
-          chiefOrganizers: getSelfNameData
-            ? [getSelfNameData.users_getSelf]
+          chiefOrganizers: profileGetNameData
+            ? [profileGetNameData.users_getSelf]
             : [],
           isClosed: true,
           capacity: '',
