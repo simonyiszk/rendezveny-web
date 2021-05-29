@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { ApolloProvider } from '@apollo/client';
 import React from 'react';
+import { Provider } from 'urql';
 
-import useAppApolloClient from './src/utils/token/ApolloClient';
+import client from './src/utils/token/UrqlClient';
 
 // eslint-disable-next-line import/prefer-default-export
 export const wrapRootElement = ({ element }) => (
   // eslint-disable-next-line react/jsx-filename-extension
-  <ApolloProvider client={useAppApolloClient()}>{element}</ApolloProvider>
+  <Provider value={client}>{element}</Provider>
 );

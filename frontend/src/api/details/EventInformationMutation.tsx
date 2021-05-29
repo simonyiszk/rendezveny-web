@@ -1,6 +1,5 @@
-import { FetchResult, gql, MutationResult, useMutation } from '@apollo/client';
-
-import { MutationProps } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const eventInformationMutation = gql`
   mutation e_eventInformationMutation(
@@ -56,76 +55,6 @@ export const eventInformationMutation = gql`
   }
 `;
 
-export const useEventInformationMutation = ({
-  onCompleted,
-  onError,
-  refetchQueries,
-}: MutationProps): [
-  (
-    id: string,
-    name: string,
-    description: string,
-    start: string,
-    end: string,
-    registrationStart: string,
-    registrationEnd: string,
-    place: string,
-    organizerIds: string[],
-    chiefOrganizerIds: string[],
-    isClosedEvent: boolean | undefined,
-    capacity: number,
-    uniqueName: string,
-    registrationAllowed: boolean,
-    hostingClubIds: string[] | undefined,
-  ) => Promise<FetchResult>,
-  MutationResult,
-] => {
-  const [mutation, mutationResults] = useMutation(eventInformationMutation, {
-    onCompleted,
-    onError,
-    refetchQueries,
-  });
-
-  const getMutation = (
-    id: string,
-    name: string,
-    description: string,
-    start: string,
-    end: string,
-    registrationStart: string,
-    registrationEnd: string,
-    place: string,
-    organizerIds: string[],
-    chiefOrganizerIds: string[],
-    isClosedEvent: boolean | undefined,
-    capacity: number,
-    uniqueName: string,
-    registrationAllowed: boolean,
-    hostingClubIds: string[] | undefined,
-  ): Promise<FetchResult> => {
-    return mutation({
-      variables: {
-        id,
-        name,
-        description,
-        start,
-        end,
-        registrationStart,
-        registrationEnd,
-        place,
-        organizerIds,
-        chiefOrganizerIds,
-        isClosedEvent,
-        capacity,
-        uniqueName,
-        registrationAllowed,
-        hostingClubIds,
-      },
-    });
-  };
-  return [getMutation, mutationResults];
-};
-
 export const eventCreateMutation = gql`
   mutation eventCreateMutation(
     $name: String!
@@ -174,96 +103,8 @@ export const eventCreateMutation = gql`
   }
 `;
 
-export const useEventCreateMutation = ({
-  onCompleted,
-  onError,
-  refetchQueries,
-}: MutationProps): [
-  (
-    name: string,
-    description: string,
-    start: string,
-    end: string,
-    registrationStart: string,
-    registrationEnd: string,
-    place: string,
-    organizerIds: string[],
-    chiefOrganizerIds: string[],
-    isClosedEvent: boolean,
-    capacity: number,
-    uniqueName: string,
-    registrationAllowed: boolean,
-    hostingClubIds: string[],
-  ) => Promise<FetchResult>,
-  MutationResult,
-] => {
-  const [mutation, mutationResults] = useMutation(eventCreateMutation, {
-    onCompleted,
-    onError,
-    refetchQueries,
-  });
-
-  const getMutation = (
-    name: string,
-    description: string,
-    start: string,
-    end: string,
-    registrationStart: string,
-    registrationEnd: string,
-    place: string,
-    organizerIds: string[],
-    chiefOrganizerIds: string[],
-    isClosedEvent: boolean,
-    capacity: number,
-    uniqueName: string,
-    registrationAllowed: boolean,
-    hostingClubIds: string[],
-  ): Promise<FetchResult> => {
-    return mutation({
-      variables: {
-        name,
-        description,
-        start,
-        end,
-        registrationStart,
-        registrationEnd,
-        place,
-        organizerIds,
-        chiefOrganizerIds,
-        isClosedEvent,
-        capacity,
-        uniqueName,
-        registrationAllowed,
-        hostingClubIds,
-      },
-    });
-  };
-  return [getMutation, mutationResults];
-};
-
 export const eventDeleteMutation = gql`
   mutation e_eventDeleteMutation($id: String!) {
     events_deleteEvent(id: $id)
   }
 `;
-
-export const useEventDeleteMutation = ({
-  onCompleted,
-  onError,
-  refetchQueries,
-}: MutationProps): [(id: string) => Promise<FetchResult>, MutationResult] => {
-  const [mutation, mutationResults] = useMutation(eventDeleteMutation, {
-    onCompleted,
-    onError,
-    refetchQueries,
-  });
-
-  const getMutation = (id: string): Promise<FetchResult> => {
-    return mutation({
-      variables: {
-        id,
-      },
-    });
-  };
-  return [getMutation, mutationResults];
-};

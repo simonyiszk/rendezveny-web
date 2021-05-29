@@ -1,21 +1,22 @@
 import 'react-quill/dist/quill.bubble.css';
 import '../../components/reactquillcustom.css';
 
-import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Heading } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
-import { Event } from '../../interfaces';
+import { Event, EventGetOneResult } from '../../interfaces';
 import {
   isAdmin,
   isClubManagerOf,
@@ -42,64 +43,72 @@ export default function EventShowPage({
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
 
-  const [access, setAccess] = useState(false);
-
   const [
-    getCurrentEvent,
-    {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    setAccess(
-      isOrganizer() ||
-        isClubManagerOf(queryData.events_getOne.hostingClubs) ||
-        isAdmin(),
-    );
-  });
-
-  const client = useApolloClient();
-  const [
+    { fetching: eventTokenIDFetch, error: eventTokenIDError },
     getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
-    setAccess(
-      isOrganizer() || isClubManagerOf(event.hostingClubs) || isAdmin(),
-    );
-  });
+  ] = useMutation(eventsGetTokenMutationID);
   const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
     getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
-    getCurrentEvent({ variables: { uniqueName } });
+  ] = useMutation(eventsGetTokenMutationUN);
+
+  const [
+    {
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
   });
 
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
   if (
-    (!event && !getCurrentEventCalled) ||
-    (getCurrentEventCalled && getCurrentEventLoading)
+    getCurrentEventFetch ||
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    (!event && !getCurrentEventData)
   ) {
     return <Loading />;
   }
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
-    getCurrentEventError
+    getCurrentEventError ||
+    eventTokenIDError ||
+    eventTokenUNError
   ) {
     if (typeof window !== 'undefined') {
       navigate('/');
     }
     return <Box>Error</Box>;
   }
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+  const access =
+    isOrganizer() || isAdmin() || eventData
+      ? isClubManagerOf(eventData.hostingClubs)
+      : false;
 
   const convertDateToText = (d: string): string => {
     const dateTime = new Date(d);
@@ -111,7 +120,7 @@ export default function EventShowPage({
   };
 
   const hasDescription = (): boolean => {
-    const desc = (event ?? getCurrentEventData?.events_getOne)?.description;
+    const desc = eventData?.description;
     const cleaned = desc.replace(/<\/?[^>]+(>|$)/g, '');
     return cleaned.length > 0;
   };
@@ -119,7 +128,7 @@ export default function EventShowPage({
   return (
     <Layout>
       <Heading textAlign="center" mb="2rem">
-        {(event ?? getCurrentEventData?.events_getOne)?.name}
+        {eventData?.name}
       </Heading>
       <Flex>
         <Box fontWeight="bold" mr={1}>
@@ -127,17 +136,11 @@ export default function EventShowPage({
         </Box>
         <Flex flexDir={['column', 'row']}>
           <Box>
-            {convertDateToText(
-              (event ?? getCurrentEventData?.events_getOne)?.start,
-            )}
-            {(event ?? getCurrentEventData?.events_getOne)?.end && ' -'}
+            {convertDateToText(eventData?.start)}
+            {eventData?.end && ' -'}
           </Box>
-          {(event ?? getCurrentEventData?.events_getOne)?.end && (
-            <Box ml={1}>
-              {convertDateToText(
-                (event ?? getCurrentEventData?.events_getOne)?.end,
-              )}
-            </Box>
+          {eventData?.end && (
+            <Box ml={1}>{convertDateToText(eventData?.end)}</Box>
           )}
         </Flex>
       </Flex>
@@ -145,7 +148,7 @@ export default function EventShowPage({
         <Box fontWeight="bold" mr={1}>
           Helyszín:
         </Box>
-        <Box>{(event ?? getCurrentEventData?.events_getOne)?.place}</Box>
+        <Box>{eventData?.place}</Box>
       </Flex>
       <Flex mt={2}>
         <Box fontWeight="bold" mr={1}>
@@ -153,18 +156,11 @@ export default function EventShowPage({
         </Box>
         <Flex flexDir={['column', 'row']}>
           <Box>
-            {convertDateToText(
-              (event ?? getCurrentEventData?.events_getOne)?.registrationStart,
-            )}
-            {(event ?? getCurrentEventData?.events_getOne)?.registrationEnd &&
-              ' -'}
+            {convertDateToText(eventData?.registrationStart)}
+            {eventData?.registrationEnd && ' -'}
           </Box>
-          {(event ?? getCurrentEventData?.events_getOne)?.registrationEnd && (
-            <Box ml={1}>
-              {convertDateToText(
-                (event ?? getCurrentEventData?.events_getOne)?.registrationEnd,
-              )}
-            </Box>
+          {eventData?.registrationEnd && (
+            <Box ml={1}>{convertDateToText(eventData?.registrationEnd)}</Box>
           )}
         </Flex>
       </Flex>
@@ -172,14 +168,8 @@ export default function EventShowPage({
         <Box fontWeight="bold" mr={1}>
           Résztvevők száma:
         </Box>
-        <Box mr={1}>{`${
-          (event ?? getCurrentEventData?.events_getOne)?.alreadyRegistered ?? 0
-        }`}</Box>
-        {(event ?? getCurrentEventData?.events_getOne)?.capacity > 0 && (
-          <Box>{`/ ${
-            (event ?? getCurrentEventData?.events_getOne)?.capacity
-          }`}</Box>
-        )}
+        <Box mr={1}>{`${eventData?.alreadyRegistered ?? 0}`}</Box>
+        {eventData?.capacity > 0 && <Box>{`/ ${eventData?.capacity}`}</Box>}
       </Flex>
       {hasDescription() && (
         <Box
@@ -191,7 +181,7 @@ export default function EventShowPage({
           borderRadius="5px"
         >
           <ReactQuill
-            value={(event ?? getCurrentEventData?.events_getOne)?.description}
+            value={eventData?.description}
             style={{ fontFamily: 'Montserrat' }}
             readOnly
             theme="bubble"

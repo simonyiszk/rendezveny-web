@@ -1,6 +1,5 @@
-import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
-
-import { Log } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const logGetAllQuery = gql`
   query logGetAll {
@@ -17,16 +16,3 @@ export const logGetAllQuery = gql`
     }
   }
 `;
-interface QueryResultL {
-  logs_getAll: {
-    nodes: Log[];
-  };
-}
-export const useLogGetAllQuery = (
-  cb?: (data: QueryResultL) => void,
-): QueryResult<QueryResultL, OperationVariables> => {
-  const getQuery = useQuery<QueryResultL>(logGetAllQuery, {
-    onCompleted: cb,
-  });
-  return getQuery;
-};

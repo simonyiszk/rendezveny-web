@@ -20,10 +20,11 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import BeforeUnloadComponent from 'react-beforeunload-component';
+import { useMutation } from 'urql';
 
 import {
-  useCreateHRTableMutation,
-  useModifyHRTableMutation,
+  createHRTableMutation,
+  modifyHRTableMutation,
 } from '../../../api/hrtable/HRModifyTableMutation';
 import Button from '../../../components/control/Button';
 import LinkButton from '../../../components/control/LinkButton';
@@ -80,27 +81,16 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
   );
   const makeToast = useToastService();
 
-  const [getCreateHRTableMutation] = useCreateHRTableMutation({
-    onCompleted: () => {},
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
-  const [getModifyHRTableMutation] = useModifyHRTableMutation({
-    onCompleted: () => {
-      makeToast('Sikeres mentés');
-      setIsModified(false);
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getCreateHRTableMutation] = useMutation(createHRTableMutation);
+  const [, getModifyHRTableMutation] = useMutation(modifyHRTableMutation);
 
   useEffect(() => {
     if (event && !hrTable) {
-      getCreateHRTableMutation(event.id);
+      getCreateHRTableMutation({ id: event.id }).then((res) => {
+        if (res.error) {
+          makeToast('Hiba', true, res.error.message);
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
@@ -236,25 +226,35 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
   };
 
   const handleSubmit = async (): Promise<void> => {
-    getModifyHRTableMutation(event.id, {
-      isLocked: hrTable?.isLocked ?? false,
-      tasks: tasks.map((t) => {
-        return {
-          id: t.id.startsWith('pseudo') ? null : t.id,
-          name: t.name,
-          isLocked: t.isLocked,
-          segments: t.segments.map((s) => {
-            return {
-              id: s.id.startsWith('pseudo') ? null : s.id,
-              start: s.start.toISOString(),
-              end: s.end.toISOString(),
-              isRequired: s.isRequired,
-              capacity: s.capacity,
-              isLocked: s.isLocked,
-            };
-          }),
-        };
-      }),
+    getModifyHRTableMutation({
+      id: event.id,
+      hrTable: {
+        isLocked: hrTable?.isLocked ?? false,
+        tasks: tasks.map((t) => {
+          return {
+            id: t.id.startsWith('pseudo') ? null : t.id,
+            name: t.name,
+            isLocked: t.isLocked,
+            segments: t.segments.map((s) => {
+              return {
+                id: s.id.startsWith('pseudo') ? null : s.id,
+                start: s.start.toISOString(),
+                end: s.end.toISOString(),
+                isRequired: s.isRequired,
+                capacity: s.capacity,
+                isLocked: s.isLocked,
+              };
+            }),
+          };
+        }),
+      },
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres mentés');
+        setIsModified(false);
+      }
     });
   };
 

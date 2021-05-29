@@ -1,13 +1,5 @@
-import {
-  gql,
-  OperationVariables,
-  QueryResult,
-  QueryTuple,
-  useLazyQuery,
-  useQuery,
-} from '@apollo/client';
-
-import { User } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const profileGetSelfQuery = gql`
   query profileGetSelfQuery {
@@ -26,25 +18,6 @@ export const profileGetSelfQuery = gql`
     }
   }
 `;
-interface QueryResultL {
-  users_getSelf: User;
-}
-export const useProfileGetSelfQuery = (
-  cb?: (data: QueryResultL) => void,
-): QueryResult<QueryResultL, OperationVariables> => {
-  const getQuery = useQuery<QueryResultL>(profileGetSelfQuery, {
-    onCompleted: cb,
-  });
-  return getQuery;
-};
-export const useProfileGetSelfQueryLazy = (
-  cb?: (data: QueryResultL) => void,
-): QueryTuple<QueryResultL, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResultL>(profileGetSelfQuery, {
-    onCompleted: cb,
-  });
-  return [getQuery, data];
-};
 
 export const profileGetNameQuery = gql`
   query profileGetNameQuery {
@@ -54,14 +27,3 @@ export const profileGetNameQuery = gql`
     }
   }
 `;
-interface QueryResultL {
-  users_getSelf: User;
-}
-export const useProfileGetNameQuery = (
-  cb?: (data: QueryResultL) => void,
-): QueryResult<QueryResultL, OperationVariables> => {
-  const getQuery = useQuery<QueryResultL>(profileGetSelfQuery, {
-    onCompleted: cb,
-  });
-  return getQuery;
-};

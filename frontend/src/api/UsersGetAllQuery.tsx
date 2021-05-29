@@ -1,11 +1,5 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
-
-import { User } from '../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const usersGetAllQuery = gql`
   query usersGetAll {
@@ -17,16 +11,3 @@ export const usersGetAllQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  users_getAll: {
-    nodes: User[];
-  };
-}
-export const useUsersGetAllQuery = (
-  cb: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getUsers, data] = useLazyQuery<QueryResult>(usersGetAllQuery, {
-    onCompleted: cb,
-  });
-  return [getUsers, data];
-};

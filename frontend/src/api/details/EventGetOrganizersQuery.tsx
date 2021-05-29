@@ -1,11 +1,5 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
-
-import { Event } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const eventGetOrganizersQuery = gql`
   query e_eventGetOrganizers($id: String!) {
@@ -47,14 +41,3 @@ export const eventGetOrganizersQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  events_getOne: Event;
-}
-export const useEventGetOrganizersQuery = (
-  cb: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetOrganizersQuery, {
-    onCompleted: cb,
-  });
-  return [getQuery, data];
-};

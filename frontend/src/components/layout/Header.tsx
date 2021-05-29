@@ -1,4 +1,3 @@
-import { useApolloClient } from '@apollo/client';
 import {
   Box,
   Flex,
@@ -19,8 +18,7 @@ import useLogoutService from '../../utils/services/LogoutService';
 import { isLoggedin } from '../../utils/token/TokenContainer';
 
 export default function Header(): JSX.Element {
-  const client = useApolloClient();
-  const getLogoutService = useLogoutService(client);
+  const getLogoutService = useLogoutService(null);
 
   const handleLogout = (): void => {
     getLogoutService();

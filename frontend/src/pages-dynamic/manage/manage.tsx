@@ -1,21 +1,22 @@
-import { useApolloClient } from '@apollo/client';
 import { Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useEventDeleteMutation } from '../../api/details/EventInformationMutation';
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventDeleteMutation } from '../../api/details/EventInformationMutation';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import { Layout } from '../../components/layout/Layout';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import ManagePageButton from '../../components/util/ManagePageButton';
-import { Event } from '../../interfaces';
+import { Event, EventGetOneResult } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import useToastService from '../../utils/services/ToastService';
 import { isClubManagerOf } from '../../utils/token/TokenContainer';
@@ -39,63 +40,69 @@ export default function EventPage({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [accessManagerOfHosting, setAccessManagerOfHosting] = useState(false);
-
   const [
-    getCurrentEvent,
-    {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    setAccessManagerOfHosting(
-      isClubManagerOf(queryData.events_getOne.hostingClubs),
-    );
-  });
-
-  const client = useApolloClient();
-  const [
+    { fetching: eventTokenIDFetch, error: eventTokenIDError },
     getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
-    setAccessManagerOfHosting(isClubManagerOf(event.hostingClubs));
-  });
+  ] = useMutation(eventsGetTokenMutationID);
   const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
     getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
-    getCurrentEvent({ variables: { uniqueName } });
+  ] = useMutation(eventsGetTokenMutationUN);
+
+  const [
+    {
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
   });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+
+  const accessManagerOfHosting = eventData
+    ? isClubManagerOf(eventData.hostingClubs)
+    : false;
 
   const makeToast = useToastService();
 
-  const [getEventDeleteMutation] = useEventDeleteMutation({
-    onCompleted: () => {
-      makeToast('Sikeres törlés');
-      navigate('/');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getEventDeleteMutation] = useMutation(eventDeleteMutation);
 
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
-  if (getCurrentEventCalled && getCurrentEventLoading) {
+  if (
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    getCurrentEventFetch ||
+    (!event && !getCurrentEventData)
+  ) {
     return <Loading />;
   }
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
+    eventTokenIDError ||
+    eventTokenUNError ||
     getCurrentEventError
   ) {
     if (typeof window !== 'undefined') {
@@ -105,8 +112,17 @@ export default function EventPage({
   }
 
   const handleDelete = (): void => {
-    getEventDeleteMutation(event?.id ?? getCurrentEventData?.events_getOne.id);
-    onClose();
+    getEventDeleteMutation({
+      id: event?.id ?? getCurrentEventData?.events_getOne.id,
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres törlés');
+        navigate('/');
+        onClose();
+      }
+    });
   };
 
   return (

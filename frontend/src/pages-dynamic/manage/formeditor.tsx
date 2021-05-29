@@ -1,4 +1,3 @@
-import { useApolloClient } from '@apollo/client';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -29,14 +28,16 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import BeforeUnloadComponent from 'react-beforeunload-component';
+import { useMutation, useQuery } from 'urql';
 
-import { useModifyFormMutation } from '../../api/form/FormModifyMutation';
-import { useFormTemplatesGetQuery } from '../../api/form/FormTemplatesGetAllQuery';
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
-import { useEventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
+import { modifyFormMutation } from '../../api/form/FormModifyMutation';
+import { formTemplatesGetQuery } from '../../api/form/FormTemplatesGetAllQuery';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import { Radio, RadioGroup } from '../../components/control/RadioGroup';
@@ -45,6 +46,8 @@ import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
 import {
   Event,
+  EventGetOneResult,
+  EventGetRegistrationFormTemplatesResult,
   EventQuestionType,
   EventRegistrationFormMultipleChoiceOption,
   EventRegistrationFormMultipleChoiceQuestion,
@@ -77,6 +80,32 @@ export default function FormeditorPage({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  const [
+    { fetching: eventTokenIDFetch, error: eventTokenIDError },
+    getEventTokenMutationID,
+  ] = useMutation(eventsGetTokenMutationID);
+  const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
+    getEventTokenMutationUN,
+  ] = useMutation(eventsGetTokenMutationUN);
+
+  const [
+    {
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
+  });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+
   const [answers, setAnswers] = useState<AnswerState>({});
   const [newId, setNewId] = useState(0);
   const [newQuestion, setNewQuestion] = useState<
@@ -88,81 +117,70 @@ export default function FormeditorPage({
   );
   const [isModified, setIsModified] = useState(false);
 
-  const [questions, setQuestions] = useState<EventRegistrationFormQuestion[]>(
-    [],
-  );
-  const [tabIndex, setTabIndex] = React.useState(0);
-
-  const {
-    called: getTemplatesCalled,
-    loading: getTemplatesLoading,
-    error: getTemplatesError,
-    data: getTemplatesData,
-  } = useFormTemplatesGetQuery();
+  const [tabIndex, setTabIndex] = useState(0);
 
   const [
-    getEvent,
-    { called: getEventCalled, loading: getEventLoading, error: getEventError },
-  ] = useEventGetRegistrationQuery((queryData) => {
-    setQuestions(queryData.events_getOne.registrationForm.questions);
-  });
-
-  const [
-    getCurrentEvent,
     {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
+      data: getTemplatesData,
+      fetching: getTemplatesFetch,
+      error: getTemplatesError,
     },
-  ] = useEventGetInformationQuery((queryData) => {
-    getEvent({ variables: { id: queryData.events_getOne.id } });
+  ] = useQuery<EventGetRegistrationFormTemplatesResult>({
+    query: formTemplatesGetQuery,
+    variables: { id: eventData?.id },
   });
 
-  const client = useApolloClient();
   const [
-    getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
-    getEvent({ variables: { id: event.id } });
+    { data: getEventData, fetching: getEventFetch, error: getEventError },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetRegistrationQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
   });
-  const [
-    getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
-    getCurrentEvent({ variables: { uniqueName } });
-  });
+
+  const [questions, setQuestions] = useState<EventRegistrationFormQuestion[]>(
+    getEventData?.events_getOne.registrationForm.questions ?? [],
+  );
+  useEffect(() => {
+    if (getEventData)
+      setQuestions(getEventData?.events_getOne.registrationForm.questions);
+  }, [getEventData]);
 
   const makeToast = useToastService();
 
-  const [getModifyFormMutation] = useModifyFormMutation({
-    onCompleted: () => {
-      makeToast('Sikeres mentés');
-      setIsModified(false);
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getModifyFormMutation] = useMutation(modifyFormMutation);
+
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
   if (
-    (getCurrentEventCalled && getCurrentEventLoading) ||
-    (getEventCalled && getEventLoading) ||
-    (getTemplatesCalled && getTemplatesLoading)
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    getCurrentEventFetch ||
+    (!event && !getCurrentEventData) ||
+    getEventFetch ||
+    getTemplatesFetch
   ) {
     return <Loading />;
   }
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
+    eventTokenIDError ||
+    eventTokenUNError ||
     getCurrentEventError ||
     getEventError ||
     getTemplatesError
@@ -303,15 +321,25 @@ export default function FormeditorPage({
   };
 
   const handleSubmit = (): void => {
-    getModifyFormMutation(event?.id ?? getCurrentEventData?.events_getOne.id, {
-      questions: questions.map((q) => {
-        return {
-          id: q.id.startsWith('pseudo') ? null : q.id,
-          isRequired: q.isRequired,
-          question: q.question,
-          metadata: JSON.stringify(q.metadata),
-        } as EventRegistrationFormQuestionInput;
-      }),
+    getModifyFormMutation({
+      id: event?.id ?? getCurrentEventData?.events_getOne.id,
+      form: {
+        questions: questions.map((q) => {
+          return {
+            id: q.id.startsWith('pseudo') ? null : q.id,
+            isRequired: q.isRequired,
+            question: q.question,
+            metadata: JSON.stringify(q.metadata),
+          } as EventRegistrationFormQuestionInput;
+        }),
+      },
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres mentés');
+        setIsModified(false);
+      }
     });
   };
 

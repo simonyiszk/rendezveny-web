@@ -1,5 +1,3 @@
-import { ApolloError } from '@apollo/client';
-
 export interface Event {
   id: string;
   name: string;
@@ -227,7 +225,7 @@ export interface HREditCallback {
 // UTIL
 export interface MutationProps {
   onCompleted: () => void;
-  onError: (error: ApolloError) => void;
+  onError: (error: any) => void;
   refetchQueries: any;
 }
 export interface EventTabProps {
@@ -251,3 +249,56 @@ export interface OrganizerWorkingHours {
   hours: number;
 }
 export type AccessTexts = 'admin' | 'manager' | 'chief' | 'organizer';
+
+// Query results
+export interface EventGetOneResult {
+  events_getOne: Event;
+}
+export interface AllEventResult {
+  organizedEvents: {
+    nodes: Event[];
+  };
+  registeredEvents: {
+    nodes: Event[];
+  };
+  availableEvents: {
+    nodes: Event[];
+  };
+}
+export interface HistoryResult {
+  organizedEvents: {
+    nodes: Event[];
+  };
+  registeredEvents: {
+    nodes: Event[];
+  };
+}
+export interface EventGetAllResult {
+  events_getAll: {
+    nodes: Event[];
+  };
+}
+export interface UserGetSelfResult {
+  users_getSelf: User;
+}
+export interface ClubGetAllResult {
+  clubs_getAll: {
+    nodes: Club[];
+  };
+}
+export interface ClubGetOneResult {
+  clubs_getOne: Club;
+}
+export interface LogsGetAllResult {
+  logs_getAll: {
+    nodes: Log[];
+  };
+}
+export interface RegistrationGetOneResult {
+  registration_getOne: EventRegistration;
+}
+export interface EventGetRegistrationFormTemplatesResult {
+  events_getRegistrationFormTemplates: {
+    nodes: EventRegistrationFormQuestion[];
+  };
+}

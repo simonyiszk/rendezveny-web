@@ -1,6 +1,5 @@
-import { gql, OperationVariables, QueryResult, useQuery } from '@apollo/client';
-
-import { EventRegistrationFormQuestion } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const formTemplatesGetQuery = gql`
   query formTemplatesGet {
@@ -26,16 +25,3 @@ export const formTemplatesGetQuery = gql`
     }
   }
 `;
-interface QueryResultL {
-  events_getRegistrationFormTemplates: {
-    nodes: EventRegistrationFormQuestion[];
-  };
-}
-export const useFormTemplatesGetQuery = (
-  cb?: (data: QueryResultL) => void,
-): QueryResult<QueryResultL, OperationVariables> => {
-  const getQuery = useQuery<QueryResultL>(formTemplatesGetQuery, {
-    onCompleted: cb,
-  });
-  return getQuery;
-};
