@@ -93,13 +93,13 @@ export default function DetailsPage({
     pause: eventData === undefined,
   });
 
-  const allUsers =
+  /* const allUsers =
     getOrganizersData?.events_getOne.relations.nodes.map((u) => {
       return {
         id: u.userId,
         name: u.name,
       } as User;
-    }) ?? [];
+    }) ?? []; */
   const resultOrganizers =
     getOrganizersData?.events_getOne.organizers.nodes.map((u) => {
       return {

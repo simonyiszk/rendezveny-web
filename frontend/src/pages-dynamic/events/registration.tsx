@@ -85,13 +85,9 @@ export default function RegistrationPage({
     pause: eventTokenUNData === undefined,
   });
   const eventData = event ?? getCurrentEventData?.events_getOne;
-  console.log('---Id', eventTokenIDData);
-  console.log('---Un', eventTokenUNData);
   const tokenData = (eventTokenIDData ?? eventTokenUNData)?.events_getToken
     .relation.registration;
-  // console.log('Event', event);
-  // console.log('currdata', getCurrentEventData);
-  // console.log('EVENTDATA', eventData);
+
   const [
     { data: getEventData, fetching: getEventFetch, error: getEventError },
   ] = useQuery<EventGetOneResult>({
@@ -99,7 +95,7 @@ export default function RegistrationPage({
     variables: { id: eventData?.id },
     pause: eventData === undefined,
   });
-  console.log('tokendata', tokenData);
+
   const [
     { data: getCurrentData, fetching: getCurrentFetch, error: getCurrentError },
     refetchCurrentData,
@@ -108,10 +104,6 @@ export default function RegistrationPage({
     variables: { id: eventData?.id },
     pause: eventData === undefined || !loadAnswers,
   });
-
-  // console.log('Getcurrev', getCurrentEventData);
-  // console.log('Getev', getEventData);
-  console.log('Getcurr', getCurrentData);
 
   const getInitialAnswers = () => {
     if (
