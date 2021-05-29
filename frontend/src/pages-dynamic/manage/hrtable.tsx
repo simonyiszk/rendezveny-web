@@ -1,19 +1,20 @@
-import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useEventGetHRTableQuery } from '../../api/hrtable/HRGetTableQuery';
+import { eventGetHRTableQuery } from '../../api/hrtable/HRGetTableQuery';
 import {
-  useHRTableRegisterMutation,
-  useHRTableUnRegisterMutation,
+  hrtableRegisterMutation,
+  hrtableUnRegisterMutation,
 } from '../../api/hrtable/HRTableOrganizerSelfMutation';
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
-import { useProfileGetNameQuery } from '../../api/profile/UserGetSelfQuery';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { profileGetSelfQuery } from '../../api/profile/UserGetSelfQuery';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
@@ -23,8 +24,7 @@ import InfoModal from '../../components/util/InfoModal';
 import Loading from '../../components/util/Loading';
 import {
   Event,
-  EventOrganizer,
-  HRTable,
+  EventGetOneResult,
   OrganizerWorkingHours,
 } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
@@ -49,97 +49,94 @@ export default function HRTablePage({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [hrTable, setHRTable] = useState<HRTable>();
-  const [organizer, setOrganizer] = useState<EventOrganizer>();
+  const [
+    { fetching: eventTokenIDFetch, error: eventTokenIDError },
+    getEventTokenMutationID,
+  ] = useMutation(eventsGetTokenMutationID);
+  const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
+    getEventTokenMutationUN,
+  ] = useMutation(eventsGetTokenMutationUN);
+
+  const [
+    {
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
+  });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+
+  const [
+    { data: getHRTableData, fetching: getHRTableFetch, error: getHRTableError },
+    refetchHRTable,
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetHRTableQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
+  });
+
+  const [
+    {
+      data: getSelfNameData,
+      fetching: getSelfNameFetch,
+      error: getSelfNameError,
+    },
+  ] = useQuery({
+    query: profileGetSelfQuery,
+  });
+
+  const hrTable = getHRTableData?.events_getOne.hrTable;
+  const organizer = getHRTableData?.events_getOne.selfRelation.organizer;
   const [signUps, setSignUps] = useState<string[]>([]);
   const [signOffs, setSignOffs] = useState<string[]>([]);
 
-  const {
-    called: getSelfNameCalled,
-    loading: getSelfNameLoading,
-    data: getSelfNameData,
-  } = useProfileGetNameQuery();
-
-  const [
-    getHRTable,
-    {
-      called: getHRTableCalled,
-      loading: getHRTableLoading,
-      error: getHRTableError,
-      data: getHRTableData,
-    },
-  ] = useEventGetHRTableQuery((queryData) => {
-    setOrganizer(queryData.events_getOne.selfRelation.organizer);
-    setHRTable(queryData.events_getOne.hrTable);
-    setSignUps([]);
-    setSignOffs([]);
-  });
-
-  const [
-    getCurrentEvent,
-    {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    getHRTable({ variables: { id: queryData.events_getOne.id } });
-  });
-
-  const client = useApolloClient();
-  const [
-    getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, () => {
-    getHRTable({ variables: { id: event.id } });
-  });
-  const [
-    getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, () => {
-    getCurrentEvent({ variables: { uniqueName } });
-  });
-
   const makeToast = useToastService();
-
-  const [getRegisterMutation] = useHRTableRegisterMutation({
-    onCompleted: () => {},
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
-  const [getUnRegisterMutation] = useHRTableUnRegisterMutation({
-    onCompleted: () => {},
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {},
-  });
+  const [, getRegisterMutation] = useMutation(hrtableRegisterMutation);
+  const [, getUnRegisterMutation] = useMutation(hrtableUnRegisterMutation);
 
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
   if (
-    (getCurrentEventCalled && getCurrentEventLoading) ||
-    !getHRTableCalled ||
-    getHRTableLoading ||
-    !getSelfNameCalled ||
-    getSelfNameLoading
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    getCurrentEventFetch ||
+    (!event && !getCurrentEventData) ||
+    getHRTableFetch ||
+    getSelfNameFetch
   ) {
     return <Loading />;
   }
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
+    eventTokenIDError ||
+    eventTokenUNError ||
     getCurrentEventError ||
-    getHRTableError
+    getHRTableError ||
+    getSelfNameError
   ) {
     if (typeof window !== 'undefined') {
       navigate('/');
@@ -164,14 +161,30 @@ export default function HRTablePage({
   const handleSubmit = async (): Promise<void> => {
     if (organizer) {
       await Promise.all(
-        signOffs.map((s) => getUnRegisterMutation(s, organizer.id)),
+        signOffs.map((s) =>
+          getUnRegisterMutation({ hrSegmentId: s, id: organizer.id }).then(
+            (res) => {
+              if (res.error) {
+                makeToast('Hiba', true, res.error.message);
+              }
+            },
+          ),
+        ),
       );
       await Promise.all(
-        signUps.map((s) => getRegisterMutation(s, organizer.id)),
+        signUps.map((s) =>
+          getRegisterMutation({ hrSegmentId: s, id: organizer.id }).then(
+            (res) => {
+              if (res.error) {
+                makeToast('Hiba', true, res.error.message);
+              }
+            },
+          ),
+        ),
       );
-      getHRTable({
-        variables: { id: event?.id ?? getCurrentEventData?.events_getOne.id },
-      });
+      setSignUps([]);
+      setSignOffs([]);
+      refetchHRTable({ requestPolicy: 'cache-and-network' });
       makeToast('Sikeres mentés');
     }
   };
@@ -230,7 +243,7 @@ export default function HRTablePage({
     );
   };
 
-  if (getHRTableCalled && !getHRTableData?.events_getOne.hrTable) {
+  if (!hrTable) {
     return (
       <Layout>
         <Heading fontSize="3xl" textAlign="center">

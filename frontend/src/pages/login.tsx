@@ -15,7 +15,7 @@ export default function LoginPage(): JSX.Element {
 
   const makeToast = useToastService();
 
-  const [_, loginMutation] = useMutation(loginWithLocalIdentityMutation);
+  const [, loginMutation] = useMutation(loginWithLocalIdentityMutation);
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();

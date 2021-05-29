@@ -1,11 +1,5 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
-
-import { Event } from '../../interfaces';
+/* eslint-disable import/prefer-default-export */
+import { gql } from '@urql/core';
 
 export const formAggregationQuery = gql`
   query e_formAggregation($id: String!) {
@@ -52,15 +46,3 @@ export const formAggregationQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  events_getOne: Event;
-}
-export const useFormAggregationQuery = (
-  cb?: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(formAggregationQuery, {
-    onCompleted: cb,
-    fetchPolicy: 'cache-and-network',
-  });
-  return [getQuery, data];
-};

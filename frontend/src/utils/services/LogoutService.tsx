@@ -1,11 +1,7 @@
-import { ApolloClient } from '@apollo/client';
-
-import { resetContext } from '../token/ApolloClient';
 import { resetTokens } from '../token/TokenContainer';
 
-export default function useLogoutService(client: ApolloClient<object>) {
+export default function useLogoutService(client: any) {
   return function getLogoutService(): void {
     resetTokens();
-    resetContext(client);
   };
 }

@@ -1,20 +1,25 @@
 import { Box } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React from 'react';
+import { useQuery } from 'urql';
 
-import { useProfileGetSelfQuery } from '../api/profile/UserGetSelfQuery';
+import { profileGetSelfQuery } from '../api/profile/UserGetSelfQuery';
 import { Layout } from '../components/layout/Layout';
 import Loading from '../components/util/Loading';
-import { ClubRole } from '../interfaces';
+import { ClubRole, UserGetSelfResult } from '../interfaces';
 
 export default function LogsPage(): JSX.Element {
-  const getEvents = useProfileGetSelfQuery();
+  const [
+    { data: getProfileData, fetching: getProfileFetch, error: getProfileError },
+  ] = useQuery<UserGetSelfResult>({
+    query: profileGetSelfQuery,
+  });
 
-  if (getEvents.called && getEvents.loading) {
+  if (getProfileFetch) {
     return <Loading />;
   }
 
-  if (getEvents.error) {
+  if (getProfileError) {
     if (typeof window !== 'undefined') {
       navigate('/');
     }
@@ -23,10 +28,10 @@ export default function LogsPage(): JSX.Element {
   return (
     <Layout>
       <Box fontSize="2rem" fontWeight="bold">
-        {getEvents.data?.users_getSelf.name}
+        {getProfileData?.users_getSelf.name}
       </Box>
       <Box mt={4}>Körök</Box>
-      {getEvents.data?.users_getSelf.clubMemberships.nodes.map((c) => (
+      {getProfileData?.users_getSelf.clubMemberships.nodes.map((c) => (
         <Box key={c.club.id}>
           {c.club.name} (
           {c.role.toString() === ClubRole[ClubRole.MEMBER]

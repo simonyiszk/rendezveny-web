@@ -1,20 +1,21 @@
-import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Grid, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery } from 'urql';
 
-import { useEventGetInformationQuery } from '../../api/index/EventsGetInformation';
-import { useEventGetCurrentQuery } from '../../api/registration/EventGetCurrentQuery';
-import { useEventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
+import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventGetCurrentQuery } from '../../api/registration/EventGetCurrentQuery';
+import { eventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
 import {
-  useModifyFilledInForm,
-  useRegisterDeleteMutation,
-  useRegisterSelfMutation,
+  modifyFilledInForm,
+  registerDeleteMutation,
+  registerSelfMutation,
 } from '../../api/registration/RegistrationMutation';
 import {
-  useEventTokenMutationID,
-  useEventTokenMutationUN,
+  eventsGetTokenMutationID,
+  eventsGetTokenMutationUN,
+  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import QuestionListElement from '../../components/form/QuestionListElement';
@@ -23,6 +24,7 @@ import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import {
   Event,
+  EventGetOneResult,
   EventRegistrationFormAnswersInput,
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormTextAnswer,
@@ -52,20 +54,71 @@ export default function RegistrationPage({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [registered, setRegistered] = useState('');
-  const [answers, setAnswers] = useState<AnswerState>({});
-  const [questionCounter, setQuestionCounter] = useState(0);
+  const [loadAnswers, setLoadAnswers] = useState(false);
 
   const [
-    getCurrent,
     {
-      loading: getCurrentLoading,
-      called: getCurrentCalled,
-      error: getCurrentError,
+      data: eventTokenIDData,
+      fetching: eventTokenIDFetch,
+      error: eventTokenIDError,
     },
-  ] = useEventGetCurrentQuery((queryData) => {
-    if (queryData.events_getOne.selfRelation.registration) {
-      const res = queryData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
+    getEventTokenMutationID,
+  ] = useMutation(eventsGetTokenMutationID);
+  const [
+    {
+      data: eventTokenUNData,
+      fetching: eventTokenUNFetch,
+      error: eventTokenUNError,
+    },
+    getEventTokenMutationUN,
+  ] = useMutation(eventsGetTokenMutationUN);
+
+  const [
+    {
+      data: getCurrentEventData,
+      fetching: getCurrentEventFetch,
+      error: getCurrentEventError,
+    },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetInformationQuery,
+    variables: { uniqueName },
+    pause: eventTokenUNData === undefined,
+  });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+  console.log('---Id', eventTokenIDData);
+  console.log('---Un', eventTokenUNData);
+  const tokenData = (eventTokenIDData ?? eventTokenUNData)?.events_getToken
+    .relation.registration;
+  // console.log('Event', event);
+  // console.log('currdata', getCurrentEventData);
+  // console.log('EVENTDATA', eventData);
+  const [
+    { data: getEventData, fetching: getEventFetch, error: getEventError },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetRegistrationQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
+  });
+  console.log('tokendata', tokenData);
+  const [
+    { data: getCurrentData, fetching: getCurrentFetch, error: getCurrentError },
+    refetchCurrentData,
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetCurrentQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined || !loadAnswers,
+  });
+
+  // console.log('Getcurrev', getCurrentEventData);
+  // console.log('Getev', getEventData);
+  console.log('Getcurr', getCurrentData);
+
+  const getInitialAnswers = () => {
+    if (
+      getCurrentData &&
+      getCurrentData.events_getOne.selfRelation.registration
+    ) {
+      const res = getCurrentData.events_getOne.selfRelation.registration.formAnswer.answers.reduce(
         (acc, curr) => {
           if (curr.answer.type === 'multiple_choice') {
             return {
@@ -84,124 +137,61 @@ export default function RegistrationPage({
         },
         {},
       );
-      setAnswers(res);
-    } else {
-      setAnswers({});
+      return res;
     }
-  });
+    return {};
+  };
 
-  const [
-    getEvent,
-    {
-      called: getEventCalled,
-      loading: getEventLoading,
-      error: getEventError,
-      data: getEventData,
-    },
-  ] = useEventGetRegistrationQuery((queryData) => {
-    setQuestionCounter(
-      queryData.events_getOne.registrationForm.questions.length,
-    );
-  });
+  const [answers, setAnswers] = useState<AnswerState>(getInitialAnswers());
 
-  const [
-    getCurrentEvent,
-    {
-      called: getCurrentEventCalled,
-      loading: getCurrentEventLoading,
-      error: getCurrentEventError,
-      data: getCurrentEventData,
-    },
-  ] = useEventGetInformationQuery((queryData) => {
-    getEvent({ variables: { id: queryData.events_getOne.id } });
-    if (registered) {
-      getCurrent({
-        variables: { id: queryData.events_getOne.id },
-      });
-    }
-  });
-
-  const client = useApolloClient();
-  const [
-    getEventTokenMutationID,
-    { error: eventTokenMutationErrorID },
-  ] = useEventTokenMutationID(client, (queryData) => {
-    getEvent({ variables: { id: event.id } });
-    if (queryData.events_getToken.relation.registration) {
-      setRegistered(queryData.events_getToken.relation.registration.id);
-      getCurrent({
-        variables: { id: event.id },
-      });
-    } else {
-      setRegistered('');
-    }
-  });
-  const [
-    getEventTokenMutationUN,
-    { error: eventTokenMutationErrorUN },
-  ] = useEventTokenMutationUN(client, (queryData) => {
-    setRegistered(
-      queryData.events_getToken.relation.registration
-        ? queryData.events_getToken.relation.registration.id
-        : '',
-    );
-    getCurrentEvent({ variables: { uniqueName } });
-  });
+  useEffect(() => {
+    setAnswers(getInitialAnswers());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getCurrentData]);
 
   const makeToast = useToastService();
 
-  const [getRegisterSelfMutation] = useRegisterSelfMutation({
-    onCompleted: () => {
-      makeToast('Sikeres regisztráció');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {
-      if (uniqueName) getEventTokenMutationUN(uniqueName);
-    },
-  });
-  const [getModifyFilledInForm] = useModifyFilledInForm({
-    onCompleted: () => {
-      makeToast('Sikeres módosítás');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {
-      if (uniqueName) getEventTokenMutationUN(uniqueName);
-    },
-  });
-  const [getRegisterDeleteMutation] = useRegisterDeleteMutation({
-    onCompleted: () => {
-      makeToast('Sikeres leiratkozás');
-    },
-    onError: (error) => {
-      makeToast('Hiba', true, error.message);
-    },
-    refetchQueries: () => {
-      if (uniqueName) getEventTokenMutationUN(uniqueName);
-    },
-  });
+  const [, getRegisterSelfMutation] = useMutation(registerSelfMutation);
+  const [, getModifyFilledInForm] = useMutation(modifyFilledInForm);
+  const [, getRegisterDeleteMutation] = useMutation(registerDeleteMutation);
 
   useEffect(() => {
-    if (event) getEventTokenMutationID(event.id);
-    else if (uniqueName) getEventTokenMutationUN(uniqueName);
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+          if (res.data.events_getToken.relation.registration) {
+            setLoadAnswers(true);
+          }
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+          if (res.data.events_getToken.relation.registration) {
+            setLoadAnswers(true);
+          }
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueName, event?.id]);
 
   if (
-    (getCurrentEventCalled && getCurrentEventLoading) ||
-    (getEventCalled && getEventLoading) ||
-    (getCurrentCalled && getCurrentLoading)
+    eventTokenIDFetch ||
+    eventTokenUNFetch ||
+    getCurrentEventFetch ||
+    (!event && !getCurrentEventData) ||
+    getEventFetch ||
+    getCurrentFetch
   ) {
     return <Loading />;
   }
 
   if (
     !uniqueName ||
-    eventTokenMutationErrorID ||
-    eventTokenMutationErrorUN ||
+    eventTokenIDError ||
+    eventTokenUNError ||
     getCurrentEventError ||
     getEventError ||
     getCurrentError
@@ -240,21 +230,64 @@ export default function RegistrationPage({
     };
   };
 
-  /* const registered = getIsRegisteredData
-    ? getIsRegisteredData.events_getOne.selfRelation2.registration?.id
-    : null; */
+  const registered = tokenData ? tokenData.id : '';
+  const questionCounter = getEventData
+    ? getEventData.events_getOne.registrationForm.questions.length
+    : 0;
 
+  const successfulOperationCallback = () => {
+    if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+          if (res.data.events_getToken.relation.registration) {
+            setLoadAnswers(true);
+            refetchCurrentData({
+              query: eventGetCurrentQuery,
+              variables: { id: eventData?.id },
+            });
+          }
+          setLoadAnswers(false);
+        }
+      });
+  };
   const handleRegistration = (): void => {
-    getRegisterSelfMutation(
-      event?.id ?? getCurrentEventData?.events_getOne.id,
-      generateAnswerDTO(),
-    );
+    getRegisterSelfMutation({
+      eventId: event?.id ?? getCurrentEventData?.events_getOne.id,
+      filledInForm: generateAnswerDTO(),
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres regisztráció');
+        successfulOperationCallback();
+      }
+    });
   };
   const handleModify = (): void => {
-    if (registered) getModifyFilledInForm(registered, generateAnswerDTO());
+    if (registered)
+      getModifyFilledInForm({
+        id: registered,
+        filledInForm: generateAnswerDTO(),
+      }).then((res) => {
+        if (res.error) {
+          makeToast('Hiba', true, res.error.message);
+        } else {
+          makeToast('Sikeres módosítás');
+          successfulOperationCallback();
+        }
+      });
   };
   const handleDelete = (): void => {
-    if (registered) getRegisterDeleteMutation(registered);
+    if (registered)
+      getRegisterDeleteMutation({ id: registered }).then((res) => {
+        if (res.error) {
+          makeToast('Hiba', true, res.error.message);
+        } else {
+          makeToast('Sikeres leiratkozás');
+          successfulOperationCallback();
+        }
+      });
     onClose();
   };
 

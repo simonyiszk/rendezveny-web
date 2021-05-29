@@ -1,28 +1,35 @@
 import { Box } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
 import React from 'react';
+import { useQuery } from 'urql';
 
-import { useLogGetAllQuery } from '../api/logs/LogsGetAllQuery';
+import { logGetAllQuery } from '../api/logs/LogsGetAllQuery';
 import { Layout } from '../components/layout/Layout';
 import LogBox from '../components/sections/LogBox';
 import Loading from '../components/util/Loading';
+import { LogsGetAllResult } from '../interfaces';
 
 export default function LogsPage(): JSX.Element {
-  const getLogs = useLogGetAllQuery();
+  const [
+    { data: getLogData, fetching: getLogFetch, error: getLogError },
+  ] = useQuery<LogsGetAllResult>({
+    query: logGetAllQuery,
+  });
 
-  if (getLogs.called && getLogs.loading) {
+  if (getLogFetch) {
     return <Loading />;
   }
-  if (getLogs.error) {
+  if (getLogError) {
     if (typeof window !== 'undefined') {
       navigate('/');
     }
     return <Box>Error</Box>;
   }
 
+  const logs = getLogData ? getLogData.logs_getAll.nodes : [];
   return (
     <Layout>
-      {getLogs.data?.logs_getAll.nodes.map((l) => (
+      {logs.map((l) => (
         <LogBox key={l.id} log={l} />
       ))}
     </Layout>

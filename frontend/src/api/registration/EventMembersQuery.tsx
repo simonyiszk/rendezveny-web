@@ -1,11 +1,4 @@
-import {
-  gql,
-  OperationVariables,
-  QueryTuple,
-  useLazyQuery,
-} from '@apollo/client';
-
-import { Event, EventRegistration } from '../../interfaces';
+import { gql } from '@urql/core';
 
 export const eventGetMembersQuery = gql`
   query e_eventGetMembers($id: String!) {
@@ -47,18 +40,6 @@ export const eventGetMembersQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  events_getOne: Event;
-}
-export const useEventGetMembersQuery = (
-  cb: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(eventGetMembersQuery, {
-    onCompleted: cb,
-    fetchPolicy: 'cache-and-network',
-  });
-  return [getQuery, data];
-};
 
 export const registrationGetOneQuery = gql`
   query e_registrationGetOne($id: String!) {
@@ -83,15 +64,3 @@ export const registrationGetOneQuery = gql`
     }
   }
 `;
-interface QueryResult {
-  registration_getOne: EventRegistration;
-}
-export const useRegistrationGetOneQuery = (
-  cb: (data: QueryResult) => void,
-): QueryTuple<QueryResult, OperationVariables> => {
-  const [getQuery, data] = useLazyQuery<QueryResult>(registrationGetOneQuery, {
-    onCompleted: cb,
-    fetchPolicy: 'cache-and-network',
-  });
-  return [getQuery, data];
-};
