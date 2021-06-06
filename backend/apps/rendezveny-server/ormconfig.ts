@@ -1,9 +1,9 @@
 import config from './src/config/config';
 
-const { host, port, username, password, database } = config().database as never;
+const { type, host, port, username, password, database } = config().database as never;
 
 export = {
-	type: 'mysql',
+	type: type,
 
 	host: host,
 	port: port,

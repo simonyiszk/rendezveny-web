@@ -55,7 +55,7 @@ export class DataModule {
 				imports: [ConfigModule],
 				inject: [ConfigService],
 				useFactory: async (configService: ConfigService) => ({
-					type: 'mysql',
+					type: configService.get('type'),
 					host: configService.get('database.host'),
 					port: configService.get('database.port'),
 					username: configService.get('database.username'),
