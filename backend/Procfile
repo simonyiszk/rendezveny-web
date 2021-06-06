@@ -1,2 +1,3 @@
 web: npm run start:prod
+migrate: npm run migrate:generate initial_migration
 seed: npm run migrate:up && npm run seed:dev
