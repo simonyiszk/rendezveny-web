@@ -1,4 +1,8 @@
 export default (): Record<string, unknown> => ({
+	app: {
+		// eslint-disable-next-line no-magic-numbers
+		port: process.env.PORT ?? 3000
+	},
 	database: {
 		type: 'postgres',
 		host: process.env.DATABASE_HOST ?? 'localhost',

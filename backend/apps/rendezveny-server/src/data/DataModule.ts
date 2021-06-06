@@ -57,7 +57,7 @@ export class DataModule {
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore
 				useFactory: async (configService: ConfigService) => ({
-					type: configService.get('type'),
+					type: configService.get('database.type'),
 					host: configService.get('database.host'),
 					port: configService.get('database.port'),
 					username: configService.get('database.username'),
