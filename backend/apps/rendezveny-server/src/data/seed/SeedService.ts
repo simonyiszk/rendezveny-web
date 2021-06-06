@@ -54,28 +54,23 @@ export class SeedService {
 	) {}
 
 	public async clearDatabase(): Promise<void> {
-		try {
-			await this.entityManager.query('SET FOREIGN_KEY_CHECKS = 0');
-			await this.clubRepository.clear();
-			await this.userRepository.clear();
-			await this.localIdentityRepository.clear();
-			await this.authSCHIdentityRepository.clear();
-			await this.membershipRepository.clear();
-			await this.refreshTokenRepository.clear();
-			await this.eventRepository.clear();
-			await this.registrationRepository.clear();
-			await this.formTempRepository.clear();
-			await this.formQuestionRepository.clear();
-			await this.formAnswerRepository.clear();
-			await this.tempIdentityRepository.clear();
-			await this.organizerRepository.clear();
-			await this.hrTableRepository.clear();
-			await this.hrTaskRepository.clear();
-			await this.hrSegmentRepository.clear();
-			await this.logRepository.clear();
-		} finally {
-			await this.entityManager.query('SET FOREIGN_KEY_CHECKS = 1');
-		}
+		await this.clubRepository.clear();
+		await this.userRepository.clear();
+		await this.localIdentityRepository.clear();
+		await this.authSCHIdentityRepository.clear();
+		await this.membershipRepository.clear();
+		await this.refreshTokenRepository.clear();
+		await this.eventRepository.clear();
+		await this.registrationRepository.clear();
+		await this.formTempRepository.clear();
+		await this.formQuestionRepository.clear();
+		await this.formAnswerRepository.clear();
+		await this.tempIdentityRepository.clear();
+		await this.organizerRepository.clear();
+		await this.hrTableRepository.clear();
+		await this.hrTaskRepository.clear();
+		await this.hrSegmentRepository.clear();
+		await this.logRepository.clear();
 	}
 
 	private readonly salt =
