@@ -37,6 +37,7 @@
 		"@nestjs/typeorm": "^7.1.4",
 		"apollo-server-express": "^2.19.0",
 		"class-validator": "^0.12.2",
+		"dotenv": "^8.2.0",
 		"express-rate-limit": "^5.2.3",
 		"graphql": "^15.4.0",
 		"graphql-tools": "^6.2.6",

@@ -1,9 +1,15 @@
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig();
+
 const connectionUrlSplit =
 	process.env.DATABASE_URL !== undefined
 		? process.env.DATABASE_URL.match(
 				/postgres:\/\/(?<user>.*):(?<pass>.*)@(?<host>[a-z0-9\.-]*)(?<port>:[0-9]{4})?\/(?<db>.*)/u
 		  )
 		: null;
+
+console.log('dataurl', process.env.DATABASE_URL);
+console.log('processenv', process.env);
 
 export default (): Record<string, unknown> => ({
 	app: {

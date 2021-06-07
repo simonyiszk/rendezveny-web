@@ -2,3 +2,4 @@
 /dist/
 /.idea/
 /apps/**/src/data/migrations/
+.env
