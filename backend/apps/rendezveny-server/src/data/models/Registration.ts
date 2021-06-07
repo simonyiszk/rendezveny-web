@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './User';
 import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
@@ -9,8 +9,7 @@ import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
 export class Registration extends BaseEntity<Registration> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

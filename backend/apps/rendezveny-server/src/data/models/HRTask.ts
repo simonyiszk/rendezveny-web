@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { HRSegment } from './HRSegment';
 import { nameof } from '../../utils/nameof';
 import { HRTable } from './HRTable';
@@ -6,8 +6,7 @@ import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
 export class HRTask extends BaseEntity<HRTask> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

@@ -1,12 +1,11 @@
-import { Column, Entity, Generated, ManyToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { FormQuestionMetadata, FormQuestionType } from './FormQuestion';
 import { Tag } from './Tag';
 import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
 export class FormQuestionTemplate extends BaseEntity<FormQuestionTemplate> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

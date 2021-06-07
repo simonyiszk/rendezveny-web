@@ -54,23 +54,28 @@ export class SeedService {
 	) {}
 
 	public async clearDatabase(): Promise<void> {
-		await this.clubRepository.clear();
-		await this.userRepository.clear();
-		await this.localIdentityRepository.clear();
-		await this.authSCHIdentityRepository.clear();
-		await this.membershipRepository.clear();
-		await this.refreshTokenRepository.clear();
-		await this.eventRepository.clear();
-		await this.registrationRepository.clear();
-		await this.formTempRepository.clear();
-		await this.formQuestionRepository.clear();
-		await this.formAnswerRepository.clear();
-		await this.tempIdentityRepository.clear();
-		await this.organizerRepository.clear();
-		await this.hrTableRepository.clear();
-		await this.hrTaskRepository.clear();
-		await this.hrSegmentRepository.clear();
-		await this.logRepository.clear();
+		try {
+			await this.entityManager.query('SET session_replication_role = replica;');
+			await this.clubRepository.delete({});
+			await this.userRepository.delete({});
+			await this.localIdentityRepository.delete({});
+			await this.authSCHIdentityRepository.delete({});
+			await this.membershipRepository.delete({});
+			await this.refreshTokenRepository.delete({});
+			await this.eventRepository.delete({});
+			await this.registrationRepository.delete({});
+			await this.formTempRepository.delete({});
+			await this.formQuestionRepository.delete({});
+			await this.formAnswerRepository.delete({});
+			await this.tempIdentityRepository.delete({});
+			await this.organizerRepository.delete({});
+			await this.hrTableRepository.delete({});
+			await this.hrTaskRepository.delete({});
+			await this.hrSegmentRepository.delete({});
+			await this.logRepository.delete({});
+		} finally {
+			await this.entityManager.query('SET session_replication_role = DEFAULT;');
+		}
 	}
 
 	private readonly salt =

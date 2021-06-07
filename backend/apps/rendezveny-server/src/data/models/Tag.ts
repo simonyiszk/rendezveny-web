@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinTable, ManyToMany, PrimaryColumn, Unique } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
 import { FormQuestionTemplate } from './FormQuestionTemplate';
@@ -6,8 +6,7 @@ import { FormQuestionTemplate } from './FormQuestionTemplate';
 @Entity()
 @Unique([nameof<Tag>('name')])
 export class Tag {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()
