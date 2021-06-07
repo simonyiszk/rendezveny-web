@@ -1,3 +1,11 @@
+/* eslint-disable no-magic-numbers */
+//url.match(/postgres:\/\/(.*):(.*)@(.*):([0-9]{4})\/(.*)/)
+
+const connectionUrlSplit =
+	process.env.DATABASE_URL !== undefined
+		? process.env.DATABASE_URL.match(/postgres:\/\/(.*):(.*)@(.*):([0-9]{4})\/(.*)/)
+		: null;
+
 export default (): Record<string, unknown> => ({
 	app: {
 		// eslint-disable-next-line no-magic-numbers
@@ -5,11 +13,11 @@ export default (): Record<string, unknown> => ({
 	},
 	database: {
 		type: 'postgres',
-		host: process.env.DATABASE_HOST ?? 'localhost',
-		port: parseInt(process.env.DATABASE_PORT ?? '3306'),
-		username: process.env.DATABASE_USERNAME ?? 'rendezveny',
-		password: process.env.DATABASE_PASSWORD ?? 'rendezveny',
-		database: process.env.DATABASE_DATABASE ?? 'rendezveny_db'
+		host: connectionUrlSplit ? connectionUrlSplit[3] : process.env.DATABASE_HOST ?? 'localhost',
+		port: parseInt(connectionUrlSplit ? connectionUrlSplit[4] : process.env.DATABASE_PORT ?? '5432'),
+		username: connectionUrlSplit ? connectionUrlSplit[1] : process.env.DATABASE_USERNAME ?? 'postgres',
+		password: connectionUrlSplit ? connectionUrlSplit[2] : process.env.DATABASE_PASSWORD ?? 'somePassword',
+		database: connectionUrlSplit ? connectionUrlSplit[5] : process.env.DATABASE_DATABASE ?? 'postgres'
 	},
 	token: {
 		secret: process.env.TOKEN_SECRET ?? 'rendezveny',
