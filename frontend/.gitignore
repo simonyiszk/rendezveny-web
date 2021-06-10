@@ -1,6 +1,6 @@
 *.log*
 .cache/
-.env.development
+.env
 .eslintcache
 coverage/
 node_modules/
