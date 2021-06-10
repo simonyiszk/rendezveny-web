@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Club } from './Club';
 import { Tag } from './Tag';
 import { Registration } from './Registration';
@@ -9,8 +9,7 @@ import { HRTable } from './HRTable';
 
 @Entity()
 export class Event extends BaseEntity<Event> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

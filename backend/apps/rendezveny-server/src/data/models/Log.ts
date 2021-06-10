@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '../utils/BaseEntity';
 
 export enum LogType {
@@ -10,8 +10,7 @@ export enum LogType {
 
 @Entity()
 export class Log extends BaseEntity<Log> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column({ type: 'timestamp' })

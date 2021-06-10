@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRole } from './UserRole';
 import { LocalIdentity } from './LocalIdentity';
 import { ClubMembership } from './ClubMembership';
@@ -10,8 +10,7 @@ import { AuthSCHIdentity } from './AuthSCHIdentity';
 
 @Entity()
 export class User extends BaseEntity<User> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

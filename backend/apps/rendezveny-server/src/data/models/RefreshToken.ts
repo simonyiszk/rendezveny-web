@@ -1,12 +1,11 @@
-import { Entity, Generated, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './User';
 import { nameof } from '../../utils/nameof';
 import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
 export class RefreshToken extends BaseEntity<RefreshToken> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@PrimaryColumn()

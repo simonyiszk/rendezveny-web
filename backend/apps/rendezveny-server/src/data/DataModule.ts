@@ -54,8 +54,10 @@ export class DataModule {
 			TypeOrmModule.forRootAsync({
 				imports: [ConfigModule],
 				inject: [ConfigService],
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
 				useFactory: async (configService: ConfigService) => ({
-					type: 'mysql',
+					type: configService.get('database.type'),
 					host: configService.get('database.host'),
 					port: configService.get('database.port'),
 					username: configService.get('database.username'),

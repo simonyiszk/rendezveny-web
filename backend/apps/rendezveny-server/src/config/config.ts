@@ -1,10 +1,35 @@
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig();
+
+const connectionUrlSplit =
+	process.env.DATABASE_URL !== undefined
+		? process.env.DATABASE_URL.match(
+				/postgres:\/\/(?<user>.*):(?<pass>.*)@(?<host>[a-z0-9\.-]*)(?<port>:[0-9]{4})?\/(?<db>.*)/u
+		  )
+		: null;
+
 export default (): Record<string, unknown> => ({
+	app: {
+		// eslint-disable-next-line no-magic-numbers
+		port: process.env.PORT ?? 3000
+	},
 	database: {
-		host: process.env.DATABASE_HOST ?? 'localhost',
-		port: parseInt(process.env.DATABASE_PORT ?? '3306'),
-		username: process.env.DATABASE_USERNAME ?? 'rendezveny',
-		password: process.env.DATABASE_PASSWORD ?? 'rendezveny',
-		database: process.env.DATABASE_DATABASE ?? 'rendezveny_db'
+		type: 'postgres',
+		host: connectionUrlSplit?.groups ? connectionUrlSplit.groups.host : process.env.DATABASE_HOST ?? 'localhost',
+		port: parseInt(
+			connectionUrlSplit?.groups && connectionUrlSplit.groups.port
+				? connectionUrlSplit.groups.port.slice(1)
+				: process.env.DATABASE_PORT ?? '5432'
+		),
+		username: connectionUrlSplit?.groups
+			? connectionUrlSplit.groups.user
+			: process.env.DATABASE_USERNAME ?? 'postgres',
+		password: connectionUrlSplit?.groups
+			? connectionUrlSplit.groups.pass
+			: process.env.DATABASE_PASSWORD ?? 'somePassword',
+		database: connectionUrlSplit?.groups
+			? connectionUrlSplit.groups.db
+			: process.env.DATABASE_DATABASE ?? 'postgres'
 	},
 	token: {
 		secret: process.env.TOKEN_SECRET ?? 'rendezveny',

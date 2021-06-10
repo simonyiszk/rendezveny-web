@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
 import { FormQuestionAnswer } from './FormQuestionAnswer';
@@ -24,8 +24,7 @@ export type FormQuestionMetadata = TextFormQuestionMetadata | MultipleChoiceForm
 
 @Entity()
 export class FormQuestion extends BaseEntity<FormQuestion> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

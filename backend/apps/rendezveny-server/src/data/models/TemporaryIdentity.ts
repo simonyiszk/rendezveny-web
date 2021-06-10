@@ -1,10 +1,9 @@
-import { Column, Entity, Generated, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Registration } from './Registration';
 
 @Entity()
 export class TemporaryIdentity {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly token!: string;
 
 	@Column()

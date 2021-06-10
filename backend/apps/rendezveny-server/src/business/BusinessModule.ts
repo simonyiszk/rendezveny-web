@@ -63,7 +63,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 		HRTableManager,
 		AuthManager,
 		LogManager,
-		LoggingInterceptor
+		LoggingInterceptor,
+		CryptoService
 	]
 })
 export class BusinessModule {

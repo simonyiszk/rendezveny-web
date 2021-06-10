@@ -1,12 +1,11 @@
-import { Column, Entity, Generated, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ClubMembership } from './ClubMembership';
 import { Event } from './Event';
 import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
 export class Club extends BaseEntity<Club> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()

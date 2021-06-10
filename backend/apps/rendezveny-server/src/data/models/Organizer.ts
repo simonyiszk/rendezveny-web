@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, JoinColumn, ManyToMany, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './User';
 import { nameof } from '../../utils/nameof';
 import { Event } from './Event';
@@ -8,8 +8,7 @@ import { BaseEntity } from '../utils/BaseEntity';
 
 @Entity()
 export class Organizer extends BaseEntity<Organizer> {
-	@PrimaryColumn()
-	@Generated('uuid')
+	@PrimaryGeneratedColumn('uuid')
 	public readonly id!: string;
 
 	@Column()
