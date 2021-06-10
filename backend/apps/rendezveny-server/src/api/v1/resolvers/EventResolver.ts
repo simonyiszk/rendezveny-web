@@ -645,7 +645,8 @@ export class EventResolver {
 			registration: relation.isRegistered()
 				? {
 						id: relation.getRegistration().id,
-						didAttend: relation.didAttend()
+						didAttend: relation.didAttend(),
+						registrationDate: relation.getRegistration().registrationDate ?? undefined
 				  }
 				: undefined,
 			organizer: relation.isOrganizer()

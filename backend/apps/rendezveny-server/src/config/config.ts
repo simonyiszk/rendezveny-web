@@ -8,9 +8,6 @@ const connectionUrlSplit =
 		  )
 		: null;
 
-console.log('dataurl', process.env.DATABASE_URL);
-console.log('processenv', process.env);
-
 export default (): Record<string, unknown> => ({
 	app: {
 		// eslint-disable-next-line no-magic-numbers
