@@ -316,7 +316,7 @@ export default function EventTabs({
                         name="start"
                         selected={start}
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setStart(newDate);
                           setStartValid(getStartValid(newDate));
                         }}
@@ -342,7 +342,7 @@ export default function EventTabs({
                         name="end"
                         selected={end}
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setEnd(newDate);
                           setEndValid(getEndValid(newDate, start));
                         }}
@@ -370,7 +370,7 @@ export default function EventTabs({
                         name="regStart"
                         selected={regStart}
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setRegStart(newDate);
                           setRegStartValid(getRegStartValid(newDate, start));
                         }}
@@ -398,7 +398,7 @@ export default function EventTabs({
                         name="regEnd"
                         selected={regEnd}
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setRegEnd(newDate);
                           setRegEndValid(getRegEndValid(newDate, regStart));
                         }}

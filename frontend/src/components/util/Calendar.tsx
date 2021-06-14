@@ -65,8 +65,9 @@ export default function Calendar({
       dateFormat="yyyy.MM.dd. HH:mm"
       locale="hu"
       renderCustomHeader={datePickerCustomHeader}
-      timeInputLabel="Időpont"
-      showTimeInput
+      timeCaption="Időpont"
+      showTimeSelect
+      timeIntervals={15}
       customInput={<CustomInput />}
     />
   );
