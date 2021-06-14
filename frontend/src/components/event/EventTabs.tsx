@@ -308,7 +308,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isStartValid ? 'transparent' : 'red.500'}
@@ -335,7 +334,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isEndValid ? 'transparent' : 'red.500'}
@@ -364,7 +362,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isRegStartValid ? 'transparent' : 'red.500'}
@@ -393,7 +390,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isRegEndValid ? 'transparent' : 'red.500'}
