@@ -582,7 +582,7 @@ export default function EventTabs({
                   gridTemplateColumns={['1fr', null, '1fr 1fr']}
                   rowGap={['0', null, '1rem']}
                 >
-                  <Label minHeight={['0', null, '2rem']}>Szerező körök</Label>
+                  <Label minHeight={['0', null, '2rem']}>Szervező körök</Label>
                   <Flex flexDir="column">
                     <Multiselect
                       options={allClubs}
