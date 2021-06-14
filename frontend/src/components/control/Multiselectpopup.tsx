@@ -31,7 +31,7 @@ export default function Multiselectpopup<T>({
       borderRadius="0.25rem"
       borderStyle="solid"
       borderWidth={isInvalid ? '2px' : '1px'}
-      borderColor={isInvalid ? 'red.500' : 'inherit'}
+      borderColor={isInvalid ? 'red.500' : 'gray.600'}
       backgroundColor="#fff"
       minHeight="3.125rem"
       height="100%"
@@ -44,7 +44,7 @@ export default function Multiselectpopup<T>({
       <Flex
         pl={2}
         borderLeft="2px solid"
-        borderColor="gray.400"
+        borderColor="gray.600"
         fontWeight="bold"
         cursor="pointer"
         height="100%"
