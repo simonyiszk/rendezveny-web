@@ -640,18 +640,19 @@ export default function EventTabs({
               for (let i = 0; i < 4; i += 1) {
                 validTab(i);
               }
-              if (
-                isNameValid.length === 0 &&
-                isReglinkValid.length === 0 &&
-                isStartValid.length === 0 &&
-                isEndValid.length === 0 &&
-                isRegStartValid.length === 0 &&
-                isRegEndValid.length === 0 &&
-                isPlaceValid.length === 0 &&
-                isCapacityValid.length === 0 &&
-                isChiefOrganizersValid.length === 0 &&
-                hostingClubsValid.length === 0
-              ) {
+              const allErrors = [
+                ...isNameValid,
+                ...isReglinkValid,
+                ...isStartValid,
+                ...isEndValid,
+                ...isRegStartValid,
+                ...isRegEndValid,
+                ...isPlaceValid,
+                ...isCapacityValid,
+                ...isChiefOrganizersValid,
+                ...hostingClubsValid,
+              ];
+              if (allErrors.length === 0) {
                 handleSubmit({
                   name,
                   description,
@@ -669,7 +670,7 @@ export default function EventTabs({
                   hostingClubs,
                 });
               } else {
-                makeToast('Hibás adatok', true);
+                makeToast('Hibás adatok', true, allErrors.join('\n'));
               }
             }}
           />

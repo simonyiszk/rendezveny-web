@@ -1,3 +1,5 @@
+import './main.css';
+
 import { Box } from '@chakra-ui/react';
 import { Link, navigate } from 'gatsby';
 import React from 'react';
