@@ -1,10 +1,6 @@
 import 'react-quill/dist/quill.snow.css';
 
-import {
-  ArrowBackIcon,
-  ArrowForwardIcon,
-  QuestionIcon,
-} from '@chakra-ui/icons';
+import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -17,7 +13,6 @@ import {
   TabPanels,
   Tabs,
   Text,
-  Tooltip,
   useDisclosure,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';

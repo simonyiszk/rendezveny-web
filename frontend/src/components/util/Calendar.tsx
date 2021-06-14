@@ -38,6 +38,7 @@ interface Props {
   onChange: (date: Date) => void;
 }
 
+// eslint-disable-next-line react/prop-types
 const CustomInput = forwardRef(({ value, onClick, onChange }, ref) => {
   return (
     <Flex width="100%" onClick={onClick} ref={ref} alignItems="center">
