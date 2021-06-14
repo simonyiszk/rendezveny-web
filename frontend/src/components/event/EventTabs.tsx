@@ -32,8 +32,8 @@ import {
 } from '../../utils/services/EventFormValidation';
 import useToastService from '../../utils/services/ToastService';
 import Button from '../control/Button';
-import Multiselect from '../control/Multiselect';
 import Multiselectpopup from '../control/Multiselectpopup';
+import ClubselectorModal from '../userselector/ClubSelectorModal';
 import UserSelectorModal from '../userselector/UserSelectorModal';
 import Calendar, { roundTime } from '../util/Calendar';
 import Label from '../util/Label';
@@ -104,6 +104,7 @@ export default function EventTabs({
   const makeToast = useToastService();
   const useDisclosureChiefOrganizers = useDisclosure();
   const useDisclosureOrganizers = useDisclosure();
+  const useDisclosureClubs = useDisclosure();
 
   const validTab = (index: number): void => {
     switch (index) {
@@ -579,16 +580,10 @@ export default function EventTabs({
                 >
                   <Label minHeight={['0', null, '2rem']}>Szervező körök</Label>
                   <Flex flexDir="column">
-                    <Multiselect
-                      options={allClubs}
+                    <Multiselectpopup
                       value={hostingClubs}
                       isInvalid={hostingClubsValid.length > 0}
-                      onChangeCb={(values: Club[]): void => {
-                        onChangeClubs(values);
-                        setHostingClubsValid(
-                          getHostingClubsValid(values, managedClubs),
-                        );
-                      }}
+                      onClick={useDisclosureClubs.onOpen}
                       valueProp="id"
                       labelProp="name"
                     />
@@ -697,6 +692,16 @@ export default function EventTabs({
         users={organizers}
         setUsers={(values: User[], newValue?: User): void => {
           onChangeOrganizers(values, newValue);
+        }}
+      />
+      <ClubselectorModal
+        useDisclosureProps={useDisclosureClubs}
+        title="Szervező körök"
+        allClubs={allClubs}
+        selectedClubs={hostingClubs}
+        setClubs={(values: Club[]): void => {
+          onChangeClubs(values);
+          setHostingClubsValid(getHostingClubsValid(values, managedClubs));
         }}
       />
     </Box>
