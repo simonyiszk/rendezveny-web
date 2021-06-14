@@ -67,7 +67,7 @@ export default function Multiselect<T>({
       }}
       onMouseLeave={(): void => {
         // TODO Change to outside click
-        setOpen(false);
+        // setOpen(false);
       }}
     >
       <Flex flexWrap="wrap" flexGrow={1} pr={1}>
@@ -107,6 +107,8 @@ export default function Multiselect<T>({
         borderColor="inherit"
         backgroundColor="#fff"
         boxShadow="rgb(210,210,210) 2px 2px 2px 1px"
+        maxHeight="20rem"
+        overflowY="auto"
       >
         {unselectedValues.map((o) => (
           <UnselectedOption
