@@ -241,10 +241,10 @@ export default function EventTabs({
                     </Box>
                   </Box>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény meghivó linkje{' '}
-                    <Tooltip label="Ez fog megjelenni az esemény URL-jében.">
-                      <QuestionIcon />
-                    </Tooltip>
+                    <Box>Esemény meghivó linkje</Box>
+                    <Box fontStyle="italic" fontSize="0.75rem">
+                      Ez fog megjelenni az esemény URL-jében.
+                    </Box>
                   </Label>
                   <Box>
                     <Input
@@ -439,10 +439,11 @@ export default function EventTabs({
                     </Box>
                   </Box>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény létszám korlátja{' '}
-                    <Tooltip label="Maximálisan hány fő regisztrálhat. Hagyd üresen, ha korlátlan eseményt szeretnél.">
-                      <QuestionIcon />
-                    </Tooltip>
+                    <Box>Esemény létszám korlátja</Box>
+                    <Box fontStyle="italic" fontSize="0.75rem">
+                      Maximálisan hány fő regisztrálhat. Hagyd üresen, ha
+                      korlátlan eseményt szeretnél.
+                    </Box>
                   </Label>
                   <Box>
                     <Input
@@ -471,10 +472,11 @@ export default function EventTabs({
                   {withApplication && (
                     <>
                       <Label minHeight={['0', null, '2rem']}>
-                        Jelentkezés letiltva{' '}
-                        <Tooltip label="A regisztrációs időszak ellenére le van-e tiltva a jelentkezés.">
-                          <QuestionIcon />
-                        </Tooltip>
+                        <Box>Jelentkezés letiltva</Box>
+                        <Box fontStyle="italic" fontSize="0.75rem">
+                          A regisztrációs időszak ellenére le van-e tiltva a
+                          jelentkezés.
+                        </Box>
                       </Label>
                       <Select
                         name="application"
@@ -606,13 +608,12 @@ export default function EventTabs({
                     </Box>
                   </Flex>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény látogathatósága{' '}
-                    <Tooltip
-                      label={`Nyílt: publikus esemény\nZárt: csak a szervező körök tagjai érhetik el`}
-                      whiteSpace="pre"
-                    >
-                      <QuestionIcon />
-                    </Tooltip>
+                    <Box>Esemény látogathatósága</Box>
+                    <Box fontStyle="italic" fontSize="0.75rem">
+                      Nyílt: publikus esemény
+                      <br />
+                      Zárt: csak a szervező körök tagjai érhetik el
+                    </Box>
                   </Label>
                   <Select
                     name="isClosed"
