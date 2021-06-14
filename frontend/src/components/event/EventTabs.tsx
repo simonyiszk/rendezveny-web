@@ -122,7 +122,7 @@ export default function EventTabs({
         setStartValid(getStartValid(start));
         setEndValid(getEndValid(end, start));
         setRegStartValid(getRegStartValid(regStart, start));
-        setRegEndValid(getRegEndValid(regEnd, regStart));
+        setRegEndValid(getRegEndValid(regEnd, regStart, end));
         setPlaceValid(getPlaceValid(place));
         setCapacityValid(getCapacityValid(capacity));
         break;
@@ -400,7 +400,9 @@ export default function EventTabs({
                         onChange={(date: Date): void => {
                           const newDate = roundTime(date, 15);
                           setRegEnd(newDate);
-                          setRegEndValid(getRegEndValid(newDate, regStart));
+                          setRegEndValid(
+                            getRegEndValid(newDate, regStart, end),
+                          );
                         }}
                       />
                     </Flex>
