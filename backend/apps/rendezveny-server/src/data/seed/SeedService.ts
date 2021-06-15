@@ -60,16 +60,16 @@ export class SeedService {
 		await this.userRepository.delete({});
 		await this.membershipRepository.delete({});
 		await this.refreshTokenRepository.delete({});
-		await this.eventRepository.delete({});
-		await this.registrationRepository.delete({});
-		await this.formTempRepository.delete({});
-		await this.formQuestionRepository.delete({});
-		await this.formAnswerRepository.delete({});
-		await this.tempIdentityRepository.delete({});
-		await this.organizerRepository.delete({});
-		await this.hrTableRepository.delete({});
-		await this.hrTaskRepository.delete({});
 		await this.hrSegmentRepository.delete({});
+		await this.hrTaskRepository.delete({});
+		await this.hrTableRepository.delete({});
+		await this.organizerRepository.delete({});
+		await this.formAnswerRepository.delete({});
+		await this.formQuestionRepository.delete({});
+		await this.formTempRepository.delete({});
+		await this.registrationRepository.delete({});
+		await this.eventRepository.delete({});
+		await this.tempIdentityRepository.delete({});
 		await this.logRepository.delete({});
 	}
 
