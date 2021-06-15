@@ -1,22 +1,30 @@
 import 'react-quill/dist/quill.bubble.css';
 import '../../components/reactquillcustom.css';
 
-import { Box, Flex, Heading } from '@chakra-ui/react';
+import { Box, Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
+import { eventGetRegistrationQuery } from '../../api/registration/EventGetRegistrationQuery';
+import {
+  registerDeleteMutation,
+  registerSelfMutation,
+} from '../../api/registration/RegistrationMutation';
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
   setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
+import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import { Event, EventGetOneResult } from '../../interfaces';
+import useToastService from '../../utils/services/ToastService';
 import {
   isAdmin,
   isClubManagerOf,
@@ -43,8 +51,14 @@ export default function EventShowPage({
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [
-    { fetching: eventTokenIDFetch, error: eventTokenIDError },
+    {
+      data: eventTokenIDData,
+      fetching: eventTokenIDFetch,
+      error: eventTokenIDError,
+    },
     getEventTokenMutationID,
   ] = useMutation(eventsGetTokenMutationID);
   const [
@@ -67,6 +81,32 @@ export default function EventShowPage({
     variables: { uniqueName },
     pause: eventTokenUNData === undefined,
   });
+  const eventData = event ?? getCurrentEventData?.events_getOne;
+  const tokenData = (eventTokenIDData ?? eventTokenUNData)?.events_getToken
+    .relation.registration;
+
+  const access =
+    isOrganizer() || isAdmin() || eventData
+      ? isClubManagerOf(eventData.hostingClubs)
+      : false;
+
+  const [
+    { data: getEventData, fetching: getEventFetch, error: getEventError },
+  ] = useQuery<EventGetOneResult>({
+    query: eventGetRegistrationQuery,
+    variables: { id: eventData?.id },
+    pause: eventData === undefined,
+  });
+
+  const registered = tokenData ? tokenData.id : '';
+  const questionCounter = getEventData
+    ? getEventData.events_getOne.registrationForm.questions.length
+    : 0;
+
+  const makeToast = useToastService();
+
+  const [, getRegisterSelfMutation] = useMutation(registerSelfMutation);
+  const [, getRegisterDeleteMutation] = useMutation(registerDeleteMutation);
 
   useEffect(() => {
     if (event)
@@ -88,6 +128,7 @@ export default function EventShowPage({
     getCurrentEventFetch ||
     eventTokenIDFetch ||
     eventTokenUNFetch ||
+    getEventFetch ||
     (!event && !getCurrentEventData)
   ) {
     return <Loading />;
@@ -97,18 +138,14 @@ export default function EventShowPage({
     !uniqueName ||
     getCurrentEventError ||
     eventTokenIDError ||
-    eventTokenUNError
+    eventTokenUNError ||
+    getEventError
   ) {
     if (typeof window !== 'undefined') {
       navigate('/');
     }
     return <Box>Error</Box>;
   }
-  const eventData = event ?? getCurrentEventData?.events_getOne;
-  const access =
-    isOrganizer() || isAdmin() || eventData
-      ? isClubManagerOf(eventData.hostingClubs)
-      : false;
 
   const convertDateToText = (d: string): string => {
     const dateTime = new Date(d);
@@ -123,6 +160,81 @@ export default function EventShowPage({
     const desc = eventData?.description;
     const cleaned = desc.replace(/<\/?[^>]+(>|$)/g, '');
     return cleaned.length > 0;
+  };
+
+  const successfulOperationCallback = () => {
+    if (event)
+      getEventTokenMutationID({ id: event.id }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+    else if (uniqueName)
+      getEventTokenMutationUN({ uniqueName }).then((res) => {
+        if (!res.error) {
+          setEventTokenAndRole(res.data);
+        }
+      });
+  };
+
+  const handleRegistration = (): void => {
+    getRegisterSelfMutation({
+      eventId: event?.id ?? getCurrentEventData?.events_getOne.id,
+      filledInForm: {
+        answers: [],
+      },
+    }).then((res) => {
+      if (res.error) {
+        makeToast('Hiba', true, res.error.message);
+      } else {
+        makeToast('Sikeres regisztráció');
+        successfulOperationCallback();
+      }
+    });
+  };
+  const handleDelete = (): void => {
+    if (registered)
+      getRegisterDeleteMutation({ id: registered }).then((res) => {
+        if (res.error) {
+          makeToast('Hiba', true, res.error.message);
+        } else {
+          makeToast('Sikeres leiratkozás');
+          successfulOperationCallback();
+        }
+      });
+    onClose();
+  };
+
+  const getRegistrationButtonComponent = (): JSX.Element => {
+    if (questionCounter > 0) {
+      return (
+        <LinkButton
+          text="Regisztráció"
+          width={['100%', null, '45%']}
+          to={`/events/${
+            event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+          }/registration`}
+          state={{ event: null }}
+        />
+      );
+    }
+    if (!registered) {
+      return (
+        <Button
+          width={['100%', null, '45%']}
+          text="Regisztráció"
+          onClick={handleRegistration}
+        />
+      );
+    }
+    return (
+      <Button
+        width={['100%', null, '45%']}
+        text="Regisztráció törlése"
+        backgroundColor="red.500"
+        onClick={onOpen}
+      />
+    );
   };
 
   return (
@@ -205,15 +317,16 @@ export default function EventShowPage({
             state={{ event: null }}
           />
         )}
-        <LinkButton
-          text="Regisztráció"
-          width={['100%', null, '45%']}
-          to={`/events/${
-            event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-          }/registration`}
-          state={{ event: null }}
-        />
+        {getRegistrationButtonComponent()}
       </Flex>
+
+      <BinaryModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Biztosan leiratkozol az eseményről?"
+        onAccept={handleDelete}
+        onReject={onClose}
+      />
     </Layout>
   );
 }
