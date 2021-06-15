@@ -207,9 +207,21 @@ export default function EventShowPage({
 
   const getRegistrationButtonComponent = (): JSX.Element => {
     if (questionCounter > 0) {
+      if (!registered) {
+        return (
+          <LinkButton
+            text="Regisztráció"
+            width={['100%', null, '45%']}
+            to={`/events/${
+              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
+            }/registration`}
+            state={{ event: null }}
+          />
+        );
+      }
       return (
         <LinkButton
-          text="Regisztráció"
+          text="Regisztráció szerkesztése"
           width={['100%', null, '45%']}
           to={`/events/${
             event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
