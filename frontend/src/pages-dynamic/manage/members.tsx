@@ -13,6 +13,7 @@ import {
   eventsGetTokenMutationUN,
   setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Backtext from '../../components/control/Backtext';
 import { Layout } from '../../components/layout/Layout';
 import FormAggregation from '../../components/sections/FormAggregation';
 import MemberSection from '../../components/sections/MemberSection';
@@ -167,6 +168,11 @@ export default function MembersPage({
 
   return (
     <Layout>
+      <Backtext
+        text="Vissza a rendezvény kezeléséhez"
+        to={`/manage/${event?.uniqueName}`}
+        state={{ event }}
+      />
       <Tabs isFitted variant="enclosed" width="100%">
         <TabList mb="1em">
           <Tab>Résztvevők</Tab>

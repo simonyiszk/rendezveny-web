@@ -26,6 +26,7 @@ import {
   createHRTableMutation,
   modifyHRTableMutation,
 } from '../../../api/hrtable/HRModifyTableMutation';
+import Backtext from '../../../components/control/Backtext';
 import Button from '../../../components/control/Button';
 import LinkButton from '../../../components/control/LinkButton';
 import HRTableComp from '../../../components/hrtable/HRTableComp';
@@ -265,8 +266,7 @@ export default function HRTableEditPage({ location }: Props): JSX.Element {
   return (
     <BeforeUnloadComponent blockRoute={isModified}>
       <Layout>
-        <LinkButton
-          width={['100%', null, '45%']}
+        <Backtext
           text="Vissza"
           to={`/manage/${event?.uniqueName}/hrtable`}
           state={{ event }}

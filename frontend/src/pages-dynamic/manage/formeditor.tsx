@@ -1,4 +1,5 @@
 import {
+  ArrowBackIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   CloseIcon,
@@ -24,7 +25,7 @@ import {
   Textarea,
   useDisclosure,
 } from '@chakra-ui/react';
-import { RouteComponentProps } from '@reach/router';
+import { Link, RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
 import React, { useEffect, useState } from 'react';
 import BeforeUnloadComponent from 'react-beforeunload-component';
@@ -39,6 +40,7 @@ import {
   eventsGetTokenMutationUN,
   setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Backtext from '../../components/control/Backtext';
 import Button from '../../components/control/Button';
 import { Radio, RadioGroup } from '../../components/control/RadioGroup';
 import QuestionListElement from '../../components/form/QuestionListElement';
@@ -347,6 +349,11 @@ export default function FormeditorPage({
     <BeforeUnloadComponent blockRoute={isModified}>
       <Layout>
         <Flex flexDir="column" alignItems="center">
+          <Backtext
+            text="Vissza a rendezvény kezeléséhez"
+            to={`/manage/${event?.uniqueName}`}
+            state={{ event }}
+          />
           <Box as="form" width="80%">
             <Grid
               gridTemplateColumns={['1fr', null, '4fr 4fr 7rem']}

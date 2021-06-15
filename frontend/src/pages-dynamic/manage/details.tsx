@@ -16,6 +16,7 @@ import {
   eventsGetTokenMutationUN,
   setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Backtext from '../../components/control/Backtext';
 import EventTabs from '../../components/event/EventTabs';
 import { Layout } from '../../components/layout/Layout';
 import Loading from '../../components/util/Loading';
@@ -272,6 +273,11 @@ export default function DetailsPage({
 
   return (
     <Layout>
+      <Backtext
+        text="Vissza a rendezvény kezeléséhez"
+        to={`/manage/${event?.uniqueName}`}
+        state={{ event }}
+      />
       <EventTabs
         accessCMAdmin={accessCMAdmin}
         uniqueNames={uniqueNames}

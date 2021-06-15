@@ -16,6 +16,7 @@ import {
   eventsGetTokenMutationUN,
   setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Backtext from '../../components/control/Backtext';
 import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import HRTableComp from '../../components/hrtable/HRTableComp';
@@ -246,6 +247,11 @@ export default function HRTablePage({
   if (!hrTable) {
     return (
       <Layout>
+        <Backtext
+          text="Vissza a rendezvény kezeléséhez"
+          to={`/manage/${event?.uniqueName}`}
+          state={{ event }}
+        />
         <Heading fontSize="3xl" textAlign="center">
           Nincs elérhető HR tábla
         </Heading>
@@ -271,6 +277,11 @@ export default function HRTablePage({
   const emptySegmentCount = getEmptySegmentCount();
   return (
     <Layout>
+      <Backtext
+        text="Vissza a rendezvény kezeléséhez"
+        to={`/manage/${event?.uniqueName}`}
+        state={{ event }}
+      />
       <ProtectedComponent accessText={['chief']}>
         <Flex
           justifyContent={['center', null, 'space-between']}
