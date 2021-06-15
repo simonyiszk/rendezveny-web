@@ -18,7 +18,7 @@ module.exports = {
         theme_color: '#663399',
         background_color: 'white',
         icon: 'src/assets/favicon.png',
-        lang: 'en-US',
+        lang: 'hu-HU',
         start_url: '/',
       },
     },
