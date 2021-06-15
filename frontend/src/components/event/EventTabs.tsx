@@ -311,6 +311,7 @@ export default function EventTabs({
                       <Calendar
                         name="start"
                         selected={start}
+                        withIcon
                         onChange={(date: Date): void => {
                           const newDate = roundTime(date, 15);
                           setStart(newDate);
@@ -337,6 +338,7 @@ export default function EventTabs({
                       <Calendar
                         name="end"
                         selected={end}
+                        withIcon
                         onChange={(date: Date): void => {
                           const newDate = roundTime(date, 15);
                           setEnd(newDate);
@@ -365,6 +367,7 @@ export default function EventTabs({
                       <Calendar
                         name="regStart"
                         selected={regStart}
+                        withIcon
                         onChange={(date: Date): void => {
                           const newDate = roundTime(date, 15);
                           setRegStart(newDate);
@@ -393,6 +396,7 @@ export default function EventTabs({
                       <Calendar
                         name="regEnd"
                         selected={regEnd}
+                        withIcon
                         onChange={(date: Date): void => {
                           const newDate = roundTime(date, 15);
                           setRegEnd(newDate);
