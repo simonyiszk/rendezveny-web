@@ -86,9 +86,9 @@ export default function EventShowPage({
     .relation.registration;
 
   const access =
-    isOrganizer() || isAdmin() || eventData
-      ? isClubManagerOf(eventData.hostingClubs)
-      : false;
+    isOrganizer() ||
+    isAdmin() ||
+    (eventData ? isClubManagerOf(eventData.hostingClubs) : false);
 
   const [
     { data: getEventData, fetching: getEventFetch, error: getEventError },

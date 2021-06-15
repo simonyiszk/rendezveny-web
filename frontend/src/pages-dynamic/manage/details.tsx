@@ -77,7 +77,7 @@ export default function DetailsPage({
   const eventData = event ?? getCurrentEventData?.events_getOne;
 
   const accessCMAdmin =
-    isAdmin() || eventData ? isClubManagerOf(eventData.hostingClubs) : false;
+    isAdmin() || (eventData ? isClubManagerOf(eventData.hostingClubs) : false);
 
   const originalUniqueName = eventData.uniqueName;
 
