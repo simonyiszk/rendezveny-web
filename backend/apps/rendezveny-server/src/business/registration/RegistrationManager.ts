@@ -95,23 +95,32 @@ export class RegistrationManager {
 		}
 
 		await event.loadRelation(this.eventRepository, 'hostingClubs');
-		if (event.isClosedEvent && !event.hostingClubs.some((club) => accessContext.isMemberOfClub(club))) {
+		if (
+			event.isClosedEvent &&
+			!event.hostingClubs.some((club) => accessContext.isMemberOfClub(club)) &&
+			!accessContext.isAdmin()
+		) {
 			throw new RegistrationClosedEventException(event.hostingClubs);
 		}
 
 		const now = new Date();
-		if (event.registrationAllowed === false) {
+		if (event.registrationAllowed === false && !accessContext.isAdmin()) {
 			throw new RegistrationDisabledException();
 		}
-		if (event.registrationStart && event.registrationStart > now) {
+		if (event.registrationStart && event.registrationStart > now && !accessContext.isAdmin()) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
-		if (event.registrationEnd && event.registrationEnd < now) {
+		if (event.registrationEnd && event.registrationEnd < now && !accessContext.isAdmin()) {
 			throw new RegistrationOutsideRegistrationPeriodException();
 		}
 
 		const alreadyRegistered = await this.registrationRepository.count({ event });
-		if (typeof event.capacity === 'number' && event.capacity > 0 && alreadyRegistered >= event.capacity) {
+		if (
+			typeof event.capacity === 'number' &&
+			event.capacity > 0 &&
+			alreadyRegistered >= event.capacity &&
+			!accessContext.isAdmin()
+		) {
 			throw new RegistrationLimitReachedException();
 		}
 
