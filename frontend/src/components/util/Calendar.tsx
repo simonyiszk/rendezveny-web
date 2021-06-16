@@ -5,10 +5,7 @@ import { Box, Flex, Input } from '@chakra-ui/react';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
 import React, { forwardRef } from 'react';
-import DatePicker, {
-  ReactDatePickerProps,
-  registerLocale,
-} from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
 
 registerLocale('hu', hu);
 
