@@ -25,6 +25,7 @@ import Loading from '../../components/util/Loading';
 import { Event, EventGetOneResult } from '../../interfaces';
 import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
+import { setEventToken } from '../../utils/token/TokenContainer';
 
 const ReactQuill =
   typeof window === 'object' ? require('react-quill') : (): boolean => false;
@@ -113,6 +114,7 @@ export default function EventShowPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
           console.log('res.data', res.data);
@@ -121,6 +123,7 @@ export default function EventShowPage({
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
           console.log('res.data', res.data);
@@ -171,6 +174,7 @@ export default function EventShowPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
         }
@@ -178,6 +182,7 @@ export default function EventShowPage({
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
         }

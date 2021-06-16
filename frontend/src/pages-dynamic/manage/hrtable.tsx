@@ -30,6 +30,7 @@ import {
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
 import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
+import { setEventToken } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -110,6 +111,7 @@ export default function HRTablePage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
         }
@@ -117,6 +119,7 @@ export default function HRTablePage({
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
         }

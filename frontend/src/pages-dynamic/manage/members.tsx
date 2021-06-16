@@ -20,6 +20,7 @@ import Loading from '../../components/util/Loading';
 import { Event, EventGetOneResult, EventRelation } from '../../interfaces';
 import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
+import { setEventToken } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -103,6 +104,7 @@ export default function MembersPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
         }
@@ -110,6 +112,7 @@ export default function MembersPage({
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
+          setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
         }
