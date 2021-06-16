@@ -80,6 +80,7 @@ export default function EventShowPage({
     pause: eventTokenUNData === undefined,
   });
   const eventData = event ?? getCurrentEventData?.events_getOne;
+  console.log('eventData', eventData);
   const tokenData = (eventTokenIDData ?? eventTokenUNData)?.events_getToken
     .relation.registration;
 
@@ -185,7 +186,7 @@ export default function EventShowPage({
 
   const handleRegistration = (): void => {
     getRegisterSelfMutation({
-      eventId: event?.id ?? getCurrentEventData?.events_getOne.id,
+      eventId: eventData.id,
       filledInForm: {
         answers: [],
       },
@@ -212,15 +213,58 @@ export default function EventShowPage({
   };
 
   const getRegistrationButtonComponent = (): JSX.Element => {
+    if (!roleContext.isAdmin && !registered) {
+      if (
+        new Date() < new Date(eventData.registrationStart) ||
+        new Date() > new Date(eventData.registrationEnd)
+      ) {
+        return (
+          <Button
+            width={['100%', null, '45%']}
+            backgroundColor="gray.300"
+            text="Regisztráció"
+            onClick={() => {
+              makeToast('Jelenleg nincs regisztrációs időszak', true);
+            }}
+          />
+        );
+      }
+      if (
+        eventData.capacity &&
+        eventData.capacity > 0 &&
+        eventData.alreadyRegistered >= eventData.capacity
+      ) {
+        return (
+          <Button
+            width={['100%', null, '45%']}
+            backgroundColor="gray.300"
+            text="Regisztráció"
+            onClick={() => {
+              makeToast('A rendezvény megtelt', true);
+            }}
+          />
+        );
+      }
+      if (!eventData.registrationAllowed) {
+        return (
+          <Button
+            width={['100%', null, '45%']}
+            backgroundColor="gray.300"
+            text="Regisztráció"
+            onClick={() => {
+              makeToast('Jelenleg nem lehet regisztrálni az eseményre', true);
+            }}
+          />
+        );
+      }
+    }
     if (questionCounter > 0) {
       if (!registered) {
         return (
           <LinkButton
             text="Regisztráció"
             width={['100%', null, '45%']}
-            to={`/events/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }/registration`}
+            to={`/events/${eventData.uniqueName}/registration`}
             state={{ event: null }}
           />
         );
@@ -229,9 +273,7 @@ export default function EventShowPage({
         <LinkButton
           text="Regisztráció szerkesztése"
           width={['100%', null, '45%']}
-          to={`/events/${
-            event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-          }/registration`}
+          to={`/events/${eventData.uniqueName}/registration`}
           state={{ event: null }}
         />
       );
@@ -328,9 +370,7 @@ export default function EventShowPage({
             text="Szerkesztés"
             width={['100%', null, '45%']}
             order={[1, null, 0]}
-            to={`/manage/${
-              event?.uniqueName ?? getCurrentEventData?.events_getOne.uniqueName
-            }`}
+            to={`/manage/${eventData.uniqueName}`}
             mt={[4, null, 0]}
             state={{ event: null }}
           />
