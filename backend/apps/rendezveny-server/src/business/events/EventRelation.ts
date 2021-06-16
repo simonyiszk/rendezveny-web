@@ -10,7 +10,8 @@ export enum EventRelationType {
 	ATTENDED = 1 << 1,
 	ORGANIZER = 1 << 2,
 	CHIEF_ORGANIZER = 1 << 3,
-	HOSTING_MEMBER = 1 << 4
+	HOSTING_MEMBER = 1 << 4,
+	HOSTING_MANAGER = 1 << 5
 }
 /* eslint-enable no-magic-numbers */
 
@@ -46,6 +47,10 @@ export class EventRelation {
 
 	public isHostingClubMember(): boolean {
 		return (this.relation & EventRelationType.HOSTING_MEMBER) === EventRelationType.HOSTING_MEMBER;
+	}
+
+	public isHostingClubManager(): boolean {
+		return (this.relation & EventRelationType.HOSTING_MANAGER) === EventRelationType.HOSTING_MANAGER;
 	}
 
 	public isOrganizer(): boolean {

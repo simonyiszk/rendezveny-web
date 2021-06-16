@@ -460,7 +460,7 @@ export class EventManager extends BaseManager {
 		const managerOfHost = event.hostingClubs.some((club) => accessContext.isManagerOfClub(club));
 
 		const isOrganizing = typeof organizing !== 'undefined' || managerOfHost || accessContext.isAdmin();
-		const isChief = accessContext.isAdmin() || managerOfHost ? true : organizing?.isChief ?? false;
+		const isChief = accessContext.isAdmin() || managerOfHost || organizing?.isChief;
 
 		return {
 			token: this.jwtService.sign(
@@ -731,14 +731,10 @@ export class EventManager extends BaseManager {
 			let registration: Registration | undefined;
 			let organizer: Organizer | undefined;
 
-			const isInstantChief =
-				user.role === UserRole.ADMIN ||
-				event.hostingClubs.some((club) =>
-					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					(club.memberships ?? [])
-						.filter((m) => m.user.id === user.id)
-						.some((m) => m.clubRole === ClubRole.CLUB_MANAGER)
-				);
+			const isAdmin = user.role === UserRole.ADMIN;
+			const isManagerOfHosting = event.hostingClubs.some((club) =>
+				user.memberships.some((m) => m.club.id === club.id && m.clubRole === ClubRole.CLUB_MANAGER)
+			);
 
 			if (event.registrations.some((reg) => reg.user?.id === user.id)) {
 				relation = relation | EventRelationType.REGISTERED;
@@ -747,17 +743,24 @@ export class EventManager extends BaseManager {
 			if (event.registrations.some((reg) => reg.user?.id === user.id && reg.attendDate)) {
 				relation = relation | EventRelationType.ATTENDED;
 			}
-			if (event.organizers.some((org) => org.user.id === user.id) || isInstantChief) {
+			if (event.organizers.some((org) => org.user.id === user.id) || isAdmin || isManagerOfHosting) {
 				relation = relation | EventRelationType.ORGANIZER;
 				organizer = event.organizers.find((org) => org.user.id === user.id)!;
 			}
-			if (event.organizers.some((org) => org.user.id === user.id && org.isChief) || isInstantChief) {
+			if (
+				event.organizers.some((org) => org.user.id === user.id && org.isChief) ||
+				isAdmin ||
+				isManagerOfHosting
+			) {
 				relation = relation | EventRelationType.CHIEF_ORGANIZER;
 			}
 			if (
 				user.memberships.some((membership) => event.hostingClubs.some((club) => club.id === membership.club.id))
 			) {
 				relation = relation | EventRelationType.HOSTING_MEMBER;
+			}
+			if (isManagerOfHosting) {
+				relation = relation | EventRelationType.HOSTING_MANAGER;
 			}
 			return new EventRelation(user, relation, registration, organizer);
 		});
