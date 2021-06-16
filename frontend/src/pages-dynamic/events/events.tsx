@@ -87,10 +87,6 @@ export default function EventShowPage({
     roleContext.isOrganizer ||
     roleContext.isAdmin ||
     roleContext.isManagerOfHost;
-  console.log('access', access);
-  console.log('isOrganizer', roleContext.isOrganizer);
-  console.log('isAdmin', roleContext.isAdmin);
-  console.log('manager', roleContext.isManagerOfHost);
 
   const [
     { data: getEventData, fetching: getEventFetch, error: getEventError },
@@ -117,7 +113,6 @@ export default function EventShowPage({
           setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
-          console.log('res.data', res.data);
         }
       });
     else if (uniqueName)
@@ -126,7 +121,6 @@ export default function EventShowPage({
           setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
-          console.log('res.data', res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps

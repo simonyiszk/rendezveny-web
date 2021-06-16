@@ -26,7 +26,6 @@ export default function LoginPage(): JSX.Element {
       if (res.error) {
         makeToast('Hiba', true, res.error.message);
       } else {
-        console.log('logindata', res.data);
         setAuthToken(res.data.login_withLocalIdentity.access);
         if (roleContext.setSystemRelation)
           roleContext.setSystemRelation(

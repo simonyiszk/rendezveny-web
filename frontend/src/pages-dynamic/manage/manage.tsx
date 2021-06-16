@@ -79,7 +79,6 @@ export default function EventPage({
           setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
-          console.log('res.data', res.data);
         }
       });
     else if (uniqueName)
@@ -88,7 +87,6 @@ export default function EventPage({
           setEventToken(res.data.events_getToken.eventToken);
           if (roleContext.setEventRelation)
             roleContext.setEventRelation(res.data);
-          console.log('res.data', res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
