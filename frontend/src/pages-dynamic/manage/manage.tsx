@@ -1,7 +1,7 @@
 import { Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { eventDeleteMutation } from '../../api/details/EventInformationMutation';
@@ -9,7 +9,6 @@ import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import { Layout } from '../../components/layout/Layout';
@@ -18,8 +17,8 @@ import Loading from '../../components/util/Loading';
 import ManagePageButton from '../../components/util/ManagePageButton';
 import { Event, EventGetOneResult } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
-import { isClubManagerOf } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -37,6 +36,8 @@ export default function EventPage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -64,11 +65,7 @@ export default function EventPage({
     variables: { uniqueName },
     pause: eventTokenUNData === undefined,
   });
-  const eventData = event ?? getCurrentEventData?.events_getOne;
-
-  const accessManagerOfHosting = eventData
-    ? isClubManagerOf(eventData.hostingClubs)
-    : false;
+  // const eventData = event ?? getCurrentEventData?.events_getOne;
 
   const makeToast = useToastService();
 
@@ -78,13 +75,17 @@ export default function EventPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
+          console.log('res.data', res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
+          console.log('res.data', res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,8 +139,7 @@ export default function EventPage({
           event={event ?? getCurrentEventData?.events_getOne}
         />
         <ManagePageButton
-          access={accessManagerOfHosting}
-          accessText={['admin', 'chief']}
+          accessText={['admin', 'chief', 'managerofhost']}
           text="Rendezvény kezelése"
           toPostfix="details"
           event={event ?? getCurrentEventData?.events_getOne}
@@ -156,10 +156,7 @@ export default function EventPage({
           toPostfix="formeditor"
           event={event ?? getCurrentEventData?.events_getOne}
         />
-        <ProtectedComponent
-          access={accessManagerOfHosting}
-          accessText={['admin', 'chief']}
-        >
+        <ProtectedComponent accessText={['admin', 'chief', 'managerofhost']}>
           <Button
             text="Esemény törlése"
             width={['100%', null, '30rem']}

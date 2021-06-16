@@ -1,5 +1,4 @@
 import {
-  ArrowBackIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   CloseIcon,
@@ -25,9 +24,9 @@ import {
   Textarea,
   useDisclosure,
 } from '@chakra-ui/react';
-import { Link, RouteComponentProps } from '@reach/router';
+import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import BeforeUnloadComponent from 'react-beforeunload-component';
 import { useMutation, useQuery } from 'urql';
 
@@ -38,7 +37,6 @@ import { eventGetRegistrationQuery } from '../../api/registration/EventGetRegist
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Backtext from '../../components/control/Backtext';
 import Button from '../../components/control/Button';
@@ -57,6 +55,7 @@ import {
   EventRegistrationFormQuestionInput,
   EventRegistrationFormTextQuestion,
 } from '../../interfaces';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
 
 interface PageState {
@@ -79,6 +78,8 @@ export default function FormeditorPage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -156,13 +157,15 @@ export default function FormeditorPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps

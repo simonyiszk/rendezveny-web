@@ -1,15 +1,18 @@
 import { Box, Flex, Grid, Input } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useMutation } from 'urql';
 
 import { loginWithLocalIdentityMutation } from '../api/token/LoginWithLocalIdentityMutation';
 import Button from '../components/control/Button';
 import { Layout } from '../components/layout/Layout';
+import { RoleContext } from '../utils/services/RoleContext';
 import useToastService from '../utils/services/ToastService';
-import { setAuthToken, setRoleAndClubs } from '../utils/token/TokenContainer';
+import { setAuthToken } from '../utils/token/TokenContainer';
 
 export default function LoginPage(): JSX.Element {
+  const roleContext = useContext(RoleContext);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -23,11 +26,13 @@ export default function LoginPage(): JSX.Element {
       if (res.error) {
         makeToast('Hiba', true, res.error.message);
       } else {
+        console.log('logindata', res.data);
         setAuthToken(res.data.login_withLocalIdentity.access);
-        setRoleAndClubs(
-          res.data.login_withLocalIdentity.role,
-          res.data.login_withLocalIdentity.memberships,
-        );
+        if (roleContext.setSystemRelation)
+          roleContext.setSystemRelation(
+            res.data.login_withLocalIdentity.role,
+            res.data.login_withLocalIdentity.memberships,
+          );
         if (typeof window !== 'undefined') {
           navigate('/');
         }

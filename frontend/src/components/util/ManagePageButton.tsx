@@ -6,21 +6,19 @@ import LinkButton from '../control/LinkButton';
 
 interface Props {
   text: string;
-  access?: boolean;
-  accessText?: AccessTexts[];
+  accessText: AccessTexts[];
   toPostfix: string;
   event: Event | undefined;
 }
 
 export default function ManagePageButton({
   text,
-  access,
   accessText,
   toPostfix,
   event,
 }: Props): JSX.Element {
   return (
-    <ProtectedComponent access={access} accessText={accessText}>
+    <ProtectedComponent accessText={accessText}>
       <LinkButton
         text={text}
         width={['100%', null, '30rem']}
@@ -31,7 +29,3 @@ export default function ManagePageButton({
     </ProtectedComponent>
   );
 }
-ManagePageButton.defaultProps = {
-  access: undefined,
-  accessText: [],
-};

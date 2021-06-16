@@ -9,19 +9,20 @@ import {
   MenuList,
 } from '@chakra-ui/react';
 import { Link } from 'gatsby';
-import React from 'react';
+import React, { useContext } from 'react';
 
 import logoSmall from '../../assets/images/simonyi_white_small.svg';
 import logo from '../../assets/images/simonyi_white_white.svg';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
-import useLogoutService from '../../utils/services/LogoutService';
-import { isLoggedin } from '../../utils/token/TokenContainer';
+import { RoleContext } from '../../utils/services/RoleContext';
+import { resetTokens } from '../../utils/token/TokenContainer';
 
 export default function Header(): JSX.Element {
-  const getLogoutService = useLogoutService(null);
+  const roleContext = useContext(RoleContext);
 
   const handleLogout = (): void => {
-    getLogoutService();
+    resetTokens();
+    if (roleContext.clearRelations) roleContext.clearRelations();
     if (typeof window !== 'undefined') {
       window.location.href = '/login';
     }
@@ -52,7 +53,7 @@ export default function Header(): JSX.Element {
             <MenuButton fontWeight="bold">Rendezvények</MenuButton>
             <MenuList>
               <MenuItem
-                isDisabled={!isLoggedin()}
+                isDisabled={!roleContext.isLoggedIn}
                 _hover={{ bg: 'simonyi' }}
                 as={Link}
                 to="/"
@@ -60,7 +61,7 @@ export default function Header(): JSX.Element {
                 Regisztráció
               </MenuItem>
               <MenuItem
-                isDisabled={!isLoggedin()}
+                isDisabled={!roleContext.isLoggedIn}
                 _hover={{ bg: 'simonyi' }}
                 as={Link}
                 to="/history"
@@ -70,7 +71,7 @@ export default function Header(): JSX.Element {
               <ProtectedComponent accessText={['admin', 'manager']}>
                 <MenuDivider />
                 <MenuItem
-                  isDisabled={!isLoggedin()}
+                  isDisabled={!roleContext.isLoggedIn}
                   _hover={{ bg: 'simonyi' }}
                   as={Link}
                   to="/create"
@@ -86,7 +87,7 @@ export default function Header(): JSX.Element {
             <MenuButton fontWeight="bold">Profil</MenuButton>
             <MenuList>
               <MenuItem
-                isDisabled={!isLoggedin()}
+                isDisabled={!roleContext.isLoggedIn}
                 _hover={{ bg: 'simonyi' }}
                 as={Link}
                 to="/profile"
@@ -95,7 +96,7 @@ export default function Header(): JSX.Element {
               </MenuItem>
               <ProtectedComponent accessText={['admin']}>
                 <MenuItem
-                  isDisabled={!isLoggedin()}
+                  isDisabled={!roleContext.isLoggedIn}
                   _hover={{ bg: 'simonyi' }}
                   as={Link}
                   to="/logs"
@@ -105,7 +106,7 @@ export default function Header(): JSX.Element {
               </ProtectedComponent>
               <MenuDivider />
               <MenuItem
-                isDisabled={!isLoggedin()}
+                isDisabled={!roleContext.isLoggedIn}
                 _hover={{ bg: 'simonyi' }}
                 onClick={handleLogout}
               >

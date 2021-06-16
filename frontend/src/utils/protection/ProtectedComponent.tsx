@@ -1,38 +1,32 @@
 import React from 'react';
 
 import { AccessTexts } from '../../interfaces';
-import {
-  isAdmin,
-  isChiefOrganizer,
-  isClubManager,
-  isOrganizer,
-} from '../token/TokenContainer';
+import { RoleContext } from '../services/RoleContext';
 
 export interface Props {
   children: React.ReactNode;
-  access?: boolean;
-  accessText?: AccessTexts[];
+  accessText: AccessTexts[];
 }
 
 export default function ProtectedComponent({
   children,
-  access,
   accessText,
 }: Props): JSX.Element {
-  if (access) return <>{children}</>;
-  if (accessText) {
-    if (accessText.includes('admin') && isAdmin()) {
-      return <>{children}</>;
-    }
-    if (accessText.includes('manager') && isClubManager()) {
-      return <>{children}</>;
-    }
-    if (accessText.includes('chief') && isChiefOrganizer()) {
-      return <>{children}</>;
-    }
-    if (accessText.includes('organizer') && isOrganizer()) {
-      return <>{children}</>;
-    }
-  }
-  return <></>;
+  return (
+    <RoleContext.Consumer>
+      {(value) => {
+        if (
+          (accessText.includes('admin') && value.isAdmin) ||
+          (accessText.includes('manager') && value.isManager) ||
+          (accessText.includes('organizer') && value.isOrganizer) ||
+          (accessText.includes('chief') && value.isChief) ||
+          (accessText.includes('memberofhost') && value.isMemberOfHost) ||
+          (accessText.includes('managerofhost') && value.isManagerOfHost)
+        ) {
+          return <>{children}</>;
+        }
+        return <></>;
+      }}
+    </RoleContext.Consumer>
+  );
 }

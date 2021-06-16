@@ -11,7 +11,6 @@ import EventSection from '../components/sections/EventSection';
 import Loading from '../components/util/Loading';
 import { AllEventResult } from '../interfaces';
 import ProtectedComponent from '../utils/protection/ProtectedComponent';
-import { isAdmin, isClubManager } from '../utils/token/TokenContainer';
 
 export default function IndexPage(): JSX.Element {
   const [{ data, fetching, error }] = useQuery<AllEventResult>({
@@ -33,8 +32,6 @@ export default function IndexPage(): JSX.Element {
   const registeredEvents = data?.registeredEvents.nodes ?? [];
   const availableEvents = data?.availableEvents.nodes ?? [];
 
-  const access = isAdmin() || isClubManager();
-
   return (
     <Layout>
       {registeredEvents.length > 0 && (
@@ -54,7 +51,7 @@ export default function IndexPage(): JSX.Element {
       {registeredEvents.length === 0 && availableEvents.length === 0 && (
         <Box>
           Nincs elérhető esemény.{' '}
-          <ProtectedComponent access={access}>
+          <ProtectedComponent accessText={['admin', 'manager']}>
             <Link to="/create">
               <Box color="simonyi" fontWeight="bold" display="inline-block">
                 Hozz létre egyet.

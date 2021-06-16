@@ -1,7 +1,4 @@
-/* eslint-disable import/prefer-default-export */
 import { gql } from '@urql/core';
-
-import { setEventRole, setEventToken } from '../../utils/token/TokenContainer';
 
 export const eventsGetTokenMutationID = gql`
   mutation getEventToken($id: String) {
@@ -13,6 +10,8 @@ export const eventsGetTokenMutationID = gql`
         isChiefOrganizer
         isOrganizer
         isRegistered
+        isMemberOfHostingClub
+        isManagerOfHostingClub
         registration {
           id
         }
@@ -31,6 +30,8 @@ export const eventsGetTokenMutationUN = gql`
         isChiefOrganizer
         isOrganizer
         isRegistered
+        isMemberOfHostingClub
+        isManagerOfHostingClub
         registration {
           id
         }
@@ -38,11 +39,3 @@ export const eventsGetTokenMutationUN = gql`
     }
   }
 `;
-
-export const setEventTokenAndRole = (data) => {
-  setEventToken(data.events_getToken.eventToken);
-  setEventRole(
-    data.events_getToken.relation.isChiefOrganizer,
-    data.events_getToken.relation.isOrganizer,
-  );
-};

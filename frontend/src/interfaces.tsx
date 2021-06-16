@@ -41,8 +41,8 @@ export interface User {
   registration: EventRegistration;
 }
 export enum UserRole {
-  ADMIN,
   USER,
+  ADMIN,
 }
 
 export interface EventRelation {
@@ -160,8 +160,8 @@ export interface Membership {
   user: User;
 }
 export enum ClubRole {
-  CLUB_MANAGER,
   MEMBER,
+  CLUB_MANAGER,
 }
 
 // LOG
@@ -248,7 +248,14 @@ export interface OrganizerWorkingHours {
   organizer: User;
   hours: number;
 }
-export type AccessTexts = 'admin' | 'manager' | 'chief' | 'organizer';
+export type AccessTexts =
+  | 'loggedin'
+  | 'admin'
+  | 'manager'
+  | 'organizer'
+  | 'chief'
+  | 'memberofhost'
+  | 'managerofhost';
 
 // Query results
 export interface EventGetOneResult {
@@ -300,5 +307,39 @@ export interface RegistrationGetOneResult {
 export interface EventGetRegistrationFormTemplatesResult {
   events_getRegistrationFormTemplates: {
     nodes: EventRegistrationFormQuestion[];
+  };
+}
+/* eslint-disable no-bitwise */
+export enum SystemRoleTypes {
+  NONE = 0,
+  LOGGEDIN = 1 << 0,
+  ADMIN = 1 << 1,
+  MANAGER = 1 << 2,
+}
+export enum EventRoleTypes {
+  NONE = 0,
+  REGISTERED = 1 << 0,
+  ATTENDED = 1 << 1,
+  ORGANIZER = 1 << 2,
+  CHIEF_ORGANIZER = 1 << 3,
+  HOSTING_MEMBER = 1 << 4,
+  HOSTING_MANAGER = 1 << 5,
+}
+/* eslint-enable no-bitwise */
+export interface EventTokenType {
+  events_getToken: {
+    eventToken: string;
+    id: string;
+    relation: {
+      userId: string;
+      isChiefOrganizer: boolean;
+      isOrganizer: boolean;
+      isRegistered: boolean;
+      isMemberOfHostingClub: boolean;
+      isManagerOfHostingClub: boolean;
+      registration: {
+        id: string;
+      };
+    };
   };
 }

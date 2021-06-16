@@ -2,7 +2,7 @@ import 'react-quill/dist/quill.snow.css';
 
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { clubsGetAllQuery } from '../../api/details/ClubsGetAllQuery';
@@ -14,7 +14,6 @@ import { profileGetSelfQuery } from '../../api/profile/UserGetSelfQuery';
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Backtext from '../../components/control/Backtext';
 import EventTabs from '../../components/event/EventTabs';
@@ -31,8 +30,8 @@ import {
   User,
   UserGetSelfResult,
 } from '../../interfaces';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
-import { isAdmin, isClubManagerOf } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -50,6 +49,8 @@ export default function DetailsPage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const [
     { fetching: eventTokenIDFetch, error: eventTokenIDError },
@@ -77,8 +78,7 @@ export default function DetailsPage({
   });
   const eventData = event ?? getCurrentEventData?.events_getOne;
 
-  const accessCMAdmin =
-    isAdmin() || (eventData ? isClubManagerOf(eventData.hostingClubs) : false);
+  const access = roleContext.isAdmin || roleContext.isManagerOfHost;
 
   const originalUniqueName = eventData.uniqueName;
 
@@ -201,13 +201,15 @@ export default function DetailsPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -255,13 +257,11 @@ export default function DetailsPage({
       place: values.place,
       organizerIds: values.organizers.map((o) => o.id),
       chiefOrganizerIds: values.chiefOrganizers.map((o) => o.id),
-      isClosedEvent: accessCMAdmin ? values.isClosed : undefined,
+      isClosedEvent: access ? values.isClosed : undefined,
       capacity: parseInt(values.capacity, 10) || 0,
       uniqueName: values.reglink,
       registrationAllowed: values.application,
-      hostingClubIds: accessCMAdmin
-        ? values.hostingClubs.map((c) => c.id)
-        : undefined,
+      hostingClubIds: access ? values.hostingClubs.map((c) => c.id) : undefined,
     }).then((res) => {
       if (res.error) {
         makeToast('Hiba', true, res.error.message);
@@ -279,12 +279,12 @@ export default function DetailsPage({
         state={{ event }}
       />
       <EventTabs
-        accessCMAdmin={accessCMAdmin}
+        accessCMAdmin={access}
         uniqueNames={uniqueNames}
         originalUniqueName={originalUniqueName}
         allClubs={allClubs}
         showedClubs={
-          accessCMAdmin
+          access
             ? allClubs
             : allClubs.filter((c) => ownClubs.map((o) => o.id).includes(c.id))
         }

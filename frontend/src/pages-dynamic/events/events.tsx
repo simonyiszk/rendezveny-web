@@ -4,7 +4,7 @@ import '../../components/reactquillcustom.css';
 import { Box, Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
@@ -16,7 +16,6 @@ import {
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
@@ -24,12 +23,8 @@ import { Layout } from '../../components/layout/Layout';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import { Event, EventGetOneResult } from '../../interfaces';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
-import {
-  isAdmin,
-  isClubManagerOf,
-  isOrganizer,
-} from '../../utils/token/TokenContainer';
 
 const ReactQuill =
   typeof window === 'object' ? require('react-quill') : (): boolean => false;
@@ -50,6 +45,8 @@ export default function EventShowPage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -86,9 +83,13 @@ export default function EventShowPage({
     .relation.registration;
 
   const access =
-    isOrganizer() ||
-    isAdmin() ||
-    (eventData ? isClubManagerOf(eventData.hostingClubs) : false);
+    roleContext.isOrganizer ||
+    roleContext.isAdmin ||
+    roleContext.isManagerOfHost;
+  console.log('access', access);
+  console.log('isOrganizer', roleContext.isOrganizer);
+  console.log('isAdmin', roleContext.isAdmin);
+  console.log('manager', roleContext.isManagerOfHost);
 
   const [
     { data: getEventData, fetching: getEventFetch, error: getEventError },
@@ -112,13 +113,17 @@ export default function EventShowPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
+          console.log('res.data', res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
+          console.log('res.data', res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -166,13 +171,15 @@ export default function EventShowPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
   };
