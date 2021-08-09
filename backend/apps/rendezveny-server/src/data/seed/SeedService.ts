@@ -60,16 +60,16 @@ export class SeedService {
 		await this.userRepository.delete({});
 		await this.membershipRepository.delete({});
 		await this.refreshTokenRepository.delete({});
-		await this.eventRepository.delete({});
-		await this.registrationRepository.delete({});
-		await this.formTempRepository.delete({});
-		await this.formQuestionRepository.delete({});
-		await this.formAnswerRepository.delete({});
-		await this.tempIdentityRepository.delete({});
-		await this.organizerRepository.delete({});
-		await this.hrTableRepository.delete({});
-		await this.hrTaskRepository.delete({});
 		await this.hrSegmentRepository.delete({});
+		await this.hrTaskRepository.delete({});
+		await this.hrTableRepository.delete({});
+		await this.organizerRepository.delete({});
+		await this.formAnswerRepository.delete({});
+		await this.formQuestionRepository.delete({});
+		await this.formTempRepository.delete({});
+		await this.registrationRepository.delete({});
+		await this.eventRepository.delete({});
+		await this.tempIdentityRepository.delete({});
 		await this.logRepository.delete({});
 	}
 
@@ -89,7 +89,11 @@ export class SeedService {
 		barni: 'borcsok.barnabas',
 		laci: 'sepsi.laszlo',
 		andris: 'borbas.andras',
-		pali: 'weisz.pal'
+		kpali: 'kurgyis.pal',
+		wpali: 'weisz.pal',
+		marci: 'balogh.marcell',
+		barbi: 'keri.barbara',
+		basic: 'basic.user'
 	};
 
 	private readonly groups = [
@@ -104,22 +108,26 @@ export class SeedService {
 		'kezek',
 		'simonyi',
 		'oregek',
-		'weeb'
+		'weeb',
+		'konferencia',
+		'pr'
 	];
 
 	private readonly memberships = {
-		ac: { lead: 'cucu', members: ['dave', 'balazska', 'andris', 'pali'] },
-		bss: { lead: 'balazska', members: ['cucu', 'dave', 'barni', 'pali'] },
-		mgmt: { lead: 'dani', members: ['cucu', 'dave', 'bea', 'bazs'] },
-		kirdev: { lead: 'laci', members: ['dani', 'bazs', 'johnny', 'barni'] },
-		sem: { lead: 'pali', members: ['bea', 'adi', 'balazska', 'andris'] },
-		schdesign: { lead: 'barni', members: ['dani', 'bazs', 'johnny', 'andris'] },
-		phd: { lead: 'adi', members: ['bea', 'balazska', 'laci', 'pali'] },
-		cica: { lead: 'bea', members: ['cucu', 'adi', 'laci', 'andris'] },
-		kezek: { lead: 'dave', members: ['bea', 'johnny', 'barni', 'pali'] },
-		simonyi: { lead: 'bazs', members: ['cucu', 'dani', 'balazska', 'barni'] },
-		oregek: { lead: 'johnny', members: ['dave', 'bazs', 'adi', 'laci'] },
-		weeb: { lead: 'andris', members: ['dani', 'adi', 'johnny', 'laci'] }
+		ac: { lead: 'cucu', members: ['dave', 'balazska', 'andris', 'wpali', 'bazs'] },
+		bss: { lead: 'balazska', members: ['dave', 'barni', 'wpali', 'bazs'] },
+		mgmt: { lead: 'kpali', members: ['cucu', 'dave', 'bea', 'barbi'] },
+		kirdev: { lead: 'laci', members: ['marci', 'johnny', 'barni', 'basic'] },
+		sem: { lead: 'wpali', members: ['bea', 'adi', 'balazska', 'andris', 'basic'] },
+		schdesign: { lead: 'barni', members: ['dani', 'marci', 'johnny', 'andris', 'barbi'] },
+		phd: { lead: 'adi', members: ['bea', 'balazska', 'laci', 'wpali'] },
+		cica: { lead: 'bea', members: ['cucu', 'adi', 'laci', 'andris', 'kpali'] },
+		kezek: { lead: 'dave', members: ['bea', 'johnny', 'barni', 'wpali', 'kpali'] },
+		simonyi: { lead: 'dani', members: ['cucu', 'balazska', 'barni', 'kpali', 'marci'] },
+		oregek: { lead: 'johnny', members: ['dave', 'bazs', 'adi', 'laci', 'dani'] },
+		weeb: { lead: 'andris', members: ['dani', 'adi', 'johnny', 'laci', 'barbi'] },
+		konferencia: { lead: 'marci', members: ['barbi', 'bazs', 'cucu', 'kpali', 'basic'] },
+		pr: { lead: 'barbi', members: ['bazs', 'marci', 'dani', 'basic'] }
 	};
 
 	public async seedDatabase(): Promise<void> {

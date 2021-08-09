@@ -10,6 +10,7 @@ async function bootstrap() {
 	const seedService = appContext.get(SeedService);
 
 	await seedService.clearDatabase();
+	console.log('---Database cleared');
 	await seedService.seedDatabase();
 	await appContext.close();
 }

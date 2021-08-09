@@ -639,6 +639,7 @@ export class EventResolver {
 			// eslint-disable-next-line no-undefined
 			userId: relation.user instanceof User ? relation.user.id : undefined,
 			isMemberOfHostingClub: relation.isHostingClubMember(),
+			isManagerOfHostingClub: relation.isHostingClubManager(),
 			isRegistered: relation.isRegistered(),
 			isOrganizer: relation.isOrganizer(),
 			isChiefOrganizer: relation.isChiefOrganizer(),

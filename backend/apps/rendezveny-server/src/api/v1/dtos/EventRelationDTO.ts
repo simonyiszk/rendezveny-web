@@ -30,6 +30,11 @@ export class EventRelationDTO {
 	public isMemberOfHostingClub: boolean = false;
 
 	@Field({
+		description: 'Indicates whether the user is a manager of one of the organizer clubs'
+	})
+	public isManagerOfHostingClub: boolean = false;
+
+	@Field({
 		description: 'Indicates whether the user has registered to the event'
 	})
 	public isRegistered: boolean = false;
