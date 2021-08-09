@@ -47,12 +47,18 @@ export function getRegStartValid(
 export function getRegEndValid(
   eventRegEnd: Date,
   eventRegStart: Date,
+  eventEnd: Date,
 ): string[] {
   return [
     ...(eventRegEnd ? [] : ['Kötelező mező']),
     ...(eventRegEnd > eventRegStart
       ? []
       : ['A regisztráció a végének későbbinek kell lennie, mint a kezdetének']),
+    ...(eventRegEnd <= eventEnd
+      ? []
+      : [
+          'A regisztráció a végének korábbinak kell lennie, mint az esemény végének',
+        ]),
   ];
 }
 export function getPlaceValid(eventPlace: string): string[] {

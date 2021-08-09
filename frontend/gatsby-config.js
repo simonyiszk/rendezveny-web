@@ -1,7 +1,6 @@
 const siteMetadata = {
-  name: 'Gatsby Strict Starter',
-  description:
-    'Demo for a Gatsby starter with strict linting and auto-formatting rules.',
+  name: 'Rendezvény web - Simonyi Károly Szakkollégium',
+  description: 'A Simonyi Károly Szakkollégium rendezvényeinek oldala.',
 };
 
 require('dotenv').config();
@@ -19,7 +18,7 @@ module.exports = {
         theme_color: '#663399',
         background_color: 'white',
         icon: 'src/assets/favicon.png',
-        lang: 'en-US',
+        lang: 'hu-HU',
         start_url: '/',
       },
     },

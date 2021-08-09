@@ -1,7 +1,7 @@
 import { Box, Flex, Grid, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
@@ -15,7 +15,6 @@ import {
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import QuestionListElement from '../../components/form/QuestionListElement';
@@ -29,7 +28,9 @@ import {
   EventRegistrationFormMultipleChoiceAnswer,
   EventRegistrationFormTextAnswer,
 } from '../../interfaces';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
+import { setEventToken } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -51,6 +52,8 @@ export default function RegistrationPage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -151,7 +154,9 @@ export default function RegistrationPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
           if (res.data.events_getToken.relation.registration) {
             setLoadAnswers(true);
           }
@@ -160,7 +165,9 @@ export default function RegistrationPage({
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
           if (res.data.events_getToken.relation.registration) {
             setLoadAnswers(true);
           }
@@ -231,7 +238,9 @@ export default function RegistrationPage({
     if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
           if (res.data.events_getToken.relation.registration) {
             setLoadAnswers(true);
             refetchCurrentData({

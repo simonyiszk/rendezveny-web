@@ -1,9 +1,10 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { Box, Flex } from '@chakra-ui/react';
+import { EditIcon } from '@chakra-ui/icons';
+import { Box, Flex, Input } from '@chakra-ui/react';
 import { getYear } from 'date-fns';
 import hu from 'date-fns/locale/hu';
-import React from 'react';
+import React, { forwardRef } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 
 registerLocale('hu', hu);
@@ -31,16 +32,35 @@ const datePickerCustomHeader = ({
   </Flex>
 );
 
+const CustomInput = forwardRef(
+  // eslint-disable-next-line react/prop-types
+  ({ value, onClick, onChange, withIcon }: { withIcon: boolean }, ref) => {
+    return (
+      <Flex width="100%" onClick={onClick} ref={ref} alignItems="center">
+        {withIcon && <EditIcon />}
+        <Input
+          border="none"
+          value={value}
+          onChange={onChange}
+          _focus={{ border: 'none' }}
+        />
+      </Flex>
+    );
+  },
+);
+
 interface Props {
   name: string;
   selected: Date;
   onChange: (date: Date) => void;
+  withIcon?: boolean;
 }
 
 export default function Calendar({
   name,
   selected,
   onChange,
+  withIcon,
 }: Props): JSX.Element {
   return (
     <DatePicker
@@ -50,11 +70,16 @@ export default function Calendar({
       dateFormat="yyyy.MM.dd. HH:mm"
       locale="hu"
       renderCustomHeader={datePickerCustomHeader}
-      timeInputLabel="Időpont"
-      showTimeInput
+      timeCaption="Időpont"
+      showTimeSelect
+      timeIntervals={15}
+      customInput={<CustomInput withIcon={!!withIcon} />}
     />
   );
 }
+Calendar.defaultProps = {
+  withIcon: false,
+};
 
 export function roundTime(dateTime: Date, minuteInterval: number): Date {
   const coeff = 1000 * 60 * minuteInterval;

@@ -1,10 +1,6 @@
 import 'react-quill/dist/quill.snow.css';
 
-import {
-  ArrowBackIcon,
-  ArrowForwardIcon,
-  QuestionIcon,
-} from '@chakra-ui/icons';
+import { ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
 import {
   Box,
   Flex,
@@ -17,7 +13,6 @@ import {
   TabPanels,
   Tabs,
   Text,
-  Tooltip,
   useDisclosure,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
@@ -37,8 +32,8 @@ import {
 } from '../../utils/services/EventFormValidation';
 import useToastService from '../../utils/services/ToastService';
 import Button from '../control/Button';
-import Multiselect from '../control/Multiselect';
 import Multiselectpopup from '../control/Multiselectpopup';
+import ClubselectorModal from '../userselector/ClubSelectorModal';
 import UserSelectorModal from '../userselector/UserSelectorModal';
 import Calendar, { roundTime } from '../util/Calendar';
 import Label from '../util/Label';
@@ -109,6 +104,7 @@ export default function EventTabs({
   const makeToast = useToastService();
   const useDisclosureChiefOrganizers = useDisclosure();
   const useDisclosureOrganizers = useDisclosure();
+  const useDisclosureClubs = useDisclosure();
 
   const validTab = (index: number): void => {
     switch (index) {
@@ -122,7 +118,7 @@ export default function EventTabs({
         setStartValid(getStartValid(start));
         setEndValid(getEndValid(end, start));
         setRegStartValid(getRegStartValid(regStart, start));
-        setRegEndValid(getRegEndValid(regEnd, regStart));
+        setRegEndValid(getRegEndValid(regEnd, regStart, end));
         setPlaceValid(getPlaceValid(place));
         setCapacityValid(getCapacityValid(capacity));
         break;
@@ -241,10 +237,10 @@ export default function EventTabs({
                     </Box>
                   </Box>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény meghivó linkje{' '}
-                    <Tooltip label="Ez fog megjelenni az esemény URL-jében.">
-                      <QuestionIcon />
-                    </Tooltip>
+                    <Box>Esemény meghivó linkje</Box>
+                    <Box fontStyle="italic" fontSize="0.75rem">
+                      Ez fog megjelenni az esemény URL-jében.
+                    </Box>
                   </Label>
                   <Box>
                     <Input
@@ -308,7 +304,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isStartValid ? 'transparent' : 'red.500'}
@@ -316,8 +311,9 @@ export default function EventTabs({
                       <Calendar
                         name="start"
                         selected={start}
+                        withIcon
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setStart(newDate);
                           setStartValid(getStartValid(newDate));
                         }}
@@ -335,7 +331,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isEndValid ? 'transparent' : 'red.500'}
@@ -343,8 +338,9 @@ export default function EventTabs({
                       <Calendar
                         name="end"
                         selected={end}
+                        withIcon
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setEnd(newDate);
                           setEndValid(getEndValid(newDate, start));
                         }}
@@ -364,7 +360,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isRegStartValid ? 'transparent' : 'red.500'}
@@ -372,8 +367,9 @@ export default function EventTabs({
                       <Calendar
                         name="regStart"
                         selected={regStart}
+                        withIcon
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setRegStart(newDate);
                           setRegStartValid(getRegStartValid(newDate, start));
                         }}
@@ -393,7 +389,6 @@ export default function EventTabs({
                   <Box>
                     <Flex
                       alignItems="center"
-                      px={4}
                       borderRadius="0.25rem"
                       border="2px solid"
                       borderColor={isRegEndValid ? 'transparent' : 'red.500'}
@@ -401,10 +396,13 @@ export default function EventTabs({
                       <Calendar
                         name="regEnd"
                         selected={regEnd}
+                        withIcon
                         onChange={(date: Date): void => {
-                          const newDate = roundTime(date, 5);
+                          const newDate = roundTime(date, 15);
                           setRegEnd(newDate);
-                          setRegEndValid(getRegEndValid(newDate, regStart));
+                          setRegEndValid(
+                            getRegEndValid(newDate, regStart, end),
+                          );
                         }}
                       />
                     </Flex>
@@ -439,10 +437,11 @@ export default function EventTabs({
                     </Box>
                   </Box>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény létszám korlátja{' '}
-                    <Tooltip label="Maximálisan hány fő regisztrálhat. Hagyd üresen, ha korlátlan eseményt szeretnél.">
-                      <QuestionIcon />
-                    </Tooltip>
+                    <Box>Esemény létszám korlátja</Box>
+                    <Box fontStyle="italic" fontSize="0.75rem">
+                      Maximálisan hány fő regisztrálhat. Hagyd üresen, ha
+                      korlátlan eseményt szeretnél.
+                    </Box>
                   </Label>
                   <Box>
                     <Input
@@ -471,10 +470,11 @@ export default function EventTabs({
                   {withApplication && (
                     <>
                       <Label minHeight={['0', null, '2rem']}>
-                        Jelentkezés letiltva{' '}
-                        <Tooltip label="A regisztrációs időszak ellenére le van-e tiltva a jelentkezés.">
-                          <QuestionIcon />
-                        </Tooltip>
+                        <Box>Jelentkezés letiltva</Box>
+                        <Box fontStyle="italic" fontSize="0.75rem">
+                          A regisztrációs időszak ellenére le van-e tiltva a
+                          jelentkezés.
+                        </Box>
                       </Label>
                       <Select
                         name="application"
@@ -582,18 +582,12 @@ export default function EventTabs({
                   gridTemplateColumns={['1fr', null, '1fr 1fr']}
                   rowGap={['0', null, '1rem']}
                 >
-                  <Label minHeight={['0', null, '2rem']}>Szerező körök</Label>
+                  <Label minHeight={['0', null, '2rem']}>Szervező körök</Label>
                   <Flex flexDir="column">
-                    <Multiselect
-                      options={allClubs}
+                    <Multiselectpopup
                       value={hostingClubs}
                       isInvalid={hostingClubsValid.length > 0}
-                      onChangeCb={(values: Club[]): void => {
-                        onChangeClubs(values);
-                        setHostingClubsValid(
-                          getHostingClubsValid(values, managedClubs),
-                        );
-                      }}
+                      onClick={useDisclosureClubs.onOpen}
                       valueProp="id"
                       labelProp="name"
                     />
@@ -606,13 +600,12 @@ export default function EventTabs({
                     </Box>
                   </Flex>
                   <Label minHeight={['0', null, '2rem']}>
-                    Esemény látogathatósága{' '}
-                    <Tooltip
-                      label={`Nyílt: publikus esemény\nZárt: csak a szervező körök tagjai érhetik el`}
-                      whiteSpace="pre"
-                    >
-                      <QuestionIcon />
-                    </Tooltip>
+                    <Box>Esemény látogathatósága</Box>
+                    <Box fontStyle="italic" fontSize="0.75rem">
+                      Nyílt: publikus esemény
+                      <br />
+                      Zárt: csak a szervező körök tagjai érhetik el
+                    </Box>
                   </Label>
                   <Select
                     name="isClosed"
@@ -651,18 +644,19 @@ export default function EventTabs({
               for (let i = 0; i < 4; i += 1) {
                 validTab(i);
               }
-              if (
-                isNameValid.length === 0 &&
-                isReglinkValid.length === 0 &&
-                isStartValid.length === 0 &&
-                isEndValid.length === 0 &&
-                isRegStartValid.length === 0 &&
-                isRegEndValid.length === 0 &&
-                isPlaceValid.length === 0 &&
-                isCapacityValid.length === 0 &&
-                isChiefOrganizersValid.length === 0 &&
-                hostingClubsValid.length === 0
-              ) {
+              const allErrors = [
+                ...isNameValid,
+                ...isReglinkValid,
+                ...isStartValid,
+                ...isEndValid,
+                ...isRegStartValid,
+                ...isRegEndValid,
+                ...isPlaceValid,
+                ...isCapacityValid,
+                ...isChiefOrganizersValid,
+                ...hostingClubsValid,
+              ];
+              if (allErrors.length === 0) {
                 handleSubmit({
                   name,
                   description,
@@ -680,7 +674,7 @@ export default function EventTabs({
                   hostingClubs,
                 });
               } else {
-                makeToast('Hibás adatok', true);
+                makeToast('Hibás adatok', true, allErrors.join('\n'));
               }
             }}
           />
@@ -703,6 +697,16 @@ export default function EventTabs({
         users={organizers}
         setUsers={(values: User[], newValue?: User): void => {
           onChangeOrganizers(values, newValue);
+        }}
+      />
+      <ClubselectorModal
+        useDisclosureProps={useDisclosureClubs}
+        title="Szervező körök"
+        allClubs={allClubs}
+        selectedClubs={hostingClubs}
+        setClubs={(values: Club[]): void => {
+          onChangeClubs(values);
+          setHostingClubsValid(getHostingClubsValid(values, managedClubs));
         }}
       />
     </Box>

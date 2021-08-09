@@ -58,17 +58,18 @@ export default function Multiselect<T>({
       borderRadius="0.25rem"
       borderStyle="solid"
       borderWidth={isInvalid ? '2px' : '1px'}
-      borderColor={isInvalid ? 'red.500' : 'inherit'}
+      borderColor={isInvalid ? 'red.500' : 'gray.600'}
       backgroundColor="#fff"
       minHeight="3.125rem"
       height="100%"
+      tabIndex={0}
       onClick={(): void => {
         setOpen(!isOpen);
       }}
-      onMouseLeave={(): void => {
-        // TODO Change to outside click
+      onBlur={(): void => {
         setOpen(false);
       }}
+      _focus={{ borderColor: 'simonyi' }}
     >
       <Flex flexWrap="wrap" flexGrow={1} pr={1}>
         {value.map((o) => (
@@ -83,7 +84,7 @@ export default function Multiselect<T>({
       <Flex
         pl={2}
         borderLeft="2px solid"
-        borderColor="gray.400"
+        borderColor="gray.600"
         fontWeight="bold"
         cursor="pointer"
         height="100%"
@@ -107,6 +108,8 @@ export default function Multiselect<T>({
         borderColor="inherit"
         backgroundColor="#fff"
         boxShadow="rgb(210,210,210) 2px 2px 2px 1px"
+        maxHeight="20rem"
+        overflowY="auto"
       >
         {unselectedValues.map((o) => (
           <UnselectedOption

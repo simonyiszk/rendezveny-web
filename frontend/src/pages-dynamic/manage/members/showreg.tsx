@@ -5,6 +5,7 @@ import React from 'react';
 import { useQuery } from 'urql';
 
 import { registrationGetOneQuery } from '../../../api/registration/EventMembersQuery';
+import Backtext from '../../../components/control/Backtext';
 import LinkButton from '../../../components/control/LinkButton';
 import QuestionListElement from '../../../components/form/QuestionListElement';
 import { Layout } from '../../../components/layout/Layout';
@@ -89,6 +90,11 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
   return (
     <Layout>
       <Flex flexDir="column" alignItems="center">
+        <Backtext
+          text="Vissza a résztvevőkhöz"
+          to={`/manage/${event?.uniqueName}/members`}
+          state={{ event }}
+        />
         <Box as="form" width="80%">
           <Grid
             gridTemplateColumns={['1fr', null, '1fr 1fr']}

@@ -1,7 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { formAggregationQuery } from '../../api/form/FormAggregationQuery';
@@ -11,14 +11,16 @@ import { setAttendMutation } from '../../api/registration/RegistrationMutation';
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Backtext from '../../components/control/Backtext';
 import { Layout } from '../../components/layout/Layout';
 import FormAggregation from '../../components/sections/FormAggregation';
 import MemberSection from '../../components/sections/MemberSection';
 import Loading from '../../components/util/Loading';
 import { Event, EventGetOneResult, EventRelation } from '../../interfaces';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
+import { setEventToken } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -36,6 +38,8 @@ export default function MembersPage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const [
     { fetching: eventTokenIDFetch, error: eventTokenIDError },
@@ -100,13 +104,17 @@ export default function MembersPage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,6 +175,11 @@ export default function MembersPage({
 
   return (
     <Layout>
+      <Backtext
+        text="Vissza a rendezvény kezeléséhez"
+        to={`/manage/${event?.uniqueName}`}
+        state={{ event }}
+      />
       <Tabs isFitted variant="enclosed" width="100%">
         <TabList mb="1em">
           <Tab>Résztvevők</Tab>

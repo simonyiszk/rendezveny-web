@@ -15,6 +15,7 @@ export const eventGetInformationQuery = gql`
       uniqueName
       capacity
       alreadyRegistered
+      registrationAllowed
       hostingClubs {
         id
         name

@@ -16,6 +16,7 @@ export const eventGetAllQuery = gql`
         uniqueName
         capacity
         alreadyRegistered
+        registrationAllowed
         hostingClubs {
           id
           name
@@ -35,6 +36,7 @@ export const eventGetAllQuery = gql`
         uniqueName
         capacity
         alreadyRegistered
+        registrationAllowed
         hostingClubs {
           id
           name
@@ -54,6 +56,7 @@ export const eventGetAllQuery = gql`
         uniqueName
         capacity
         alreadyRegistered
+        registrationAllowed
         hostingClubs {
           id
           name

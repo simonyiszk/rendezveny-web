@@ -1,3 +1,5 @@
+import './main.css';
+
 import { Box } from '@chakra-ui/react';
 import { Link, navigate } from 'gatsby';
 import React from 'react';
@@ -8,6 +10,7 @@ import { Layout } from '../components/layout/Layout';
 import EventSection from '../components/sections/EventSection';
 import Loading from '../components/util/Loading';
 import { AllEventResult } from '../interfaces';
+import ProtectedComponent from '../utils/protection/ProtectedComponent';
 
 export default function IndexPage(): JSX.Element {
   const [{ data, fetching, error }] = useQuery<AllEventResult>({
@@ -48,11 +51,13 @@ export default function IndexPage(): JSX.Element {
       {registeredEvents.length === 0 && availableEvents.length === 0 && (
         <Box>
           Nincs elérhető esemény.{' '}
-          <Link to="/create">
-            <Box color="simonyi" fontWeight="bold" display="inline-block">
-              Hozz létre egyet.
-            </Box>
-          </Link>
+          <ProtectedComponent accessText={['admin', 'manager']}>
+            <Link to="/create">
+              <Box color="simonyi" fontWeight="bold" display="inline-block">
+                Hozz létre egyet.
+              </Box>
+            </Link>
+          </ProtectedComponent>
         </Box>
       )}
     </Layout>

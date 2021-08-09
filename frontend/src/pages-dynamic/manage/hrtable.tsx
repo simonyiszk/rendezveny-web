@@ -1,7 +1,7 @@
 import { Box, Flex, Heading, useDisclosure } from '@chakra-ui/react';
 import { RouteComponentProps } from '@reach/router';
 import { navigate, PageProps } from 'gatsby';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { eventGetHRTableQuery } from '../../api/hrtable/HRGetTableQuery';
@@ -14,8 +14,8 @@ import { profileGetSelfQuery } from '../../api/profile/UserGetSelfQuery';
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
-  setEventTokenAndRole,
 } from '../../api/token/EventsGetTokenMutation';
+import Backtext from '../../components/control/Backtext';
 import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import HRTableComp from '../../components/hrtable/HRTableComp';
@@ -28,7 +28,9 @@ import {
   OrganizerWorkingHours,
 } from '../../interfaces';
 import ProtectedComponent from '../../utils/protection/ProtectedComponent';
+import { RoleContext } from '../../utils/services/RoleContext';
 import useToastService from '../../utils/services/ToastService';
+import { setEventToken } from '../../utils/token/TokenContainer';
 
 interface PageState {
   event: Event;
@@ -46,6 +48,8 @@ export default function HRTablePage({
     // eslint-disable-next-line no-restricted-globals
     location?.state || (typeof history === 'object' && history.state) || {};
   const { event } = state as PageState;
+
+  const roleContext = useContext(RoleContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -107,13 +111,17 @@ export default function HRTablePage({
     if (event)
       getEventTokenMutationID({ id: event.id }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     else if (uniqueName)
       getEventTokenMutationUN({ uniqueName }).then((res) => {
         if (!res.error) {
-          setEventTokenAndRole(res.data);
+          setEventToken(res.data.events_getToken.eventToken);
+          if (roleContext.setEventRelation)
+            roleContext.setEventRelation(res.data);
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -246,6 +254,11 @@ export default function HRTablePage({
   if (!hrTable) {
     return (
       <Layout>
+        <Backtext
+          text="Vissza a rendezvény kezeléséhez"
+          to={`/manage/${event?.uniqueName}`}
+          state={{ event }}
+        />
         <Heading fontSize="3xl" textAlign="center">
           Nincs elérhető HR tábla
         </Heading>
@@ -271,6 +284,11 @@ export default function HRTablePage({
   const emptySegmentCount = getEmptySegmentCount();
   return (
     <Layout>
+      <Backtext
+        text="Vissza a rendezvény kezeléséhez"
+        to={`/manage/${event?.uniqueName}`}
+        state={{ event }}
+      />
       <ProtectedComponent accessText={['chief']}>
         <Flex
           justifyContent={['center', null, 'space-between']}
