@@ -62,13 +62,14 @@ export default function Multiselect<T>({
       backgroundColor="#fff"
       minHeight="3.125rem"
       height="100%"
+      tabIndex={0}
       onClick={(): void => {
         setOpen(!isOpen);
       }}
-      onMouseLeave={(): void => {
-        // TODO Change to outside click
-        // setOpen(false);
+      onBlur={(): void => {
+        setOpen(false);
       }}
+      _focus={{ borderColor: 'simonyi' }}
     >
       <Flex flexWrap="wrap" flexGrow={1} pr={1}>
         {value.map((o) => (
