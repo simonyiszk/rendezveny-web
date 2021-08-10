@@ -40,25 +40,29 @@ export default function MemberBox({
             py={1}
             px={2}
             backgroundColor="white"
-            flexDir="column"
-            alignItems={['center', null, 'flex-start']}
+            flexDir={['column', null, null, 'row']}
+            alignItems={['center', null, 'flex-start', 'center']}
           >
-            <Box fontWeight="bold" fontSize="1.5rem">
+            <Box fontWeight="bold" fontSize="1.5rem" flexGrow={1}>
               {user.name}
             </Box>
-            <Flex flexDir={['column', 'row']}>
+            <Flex
+              flexBasis={[null, null, null, '9rem']}
+              flexShrink={0}
+              alignSelf={[null, null, 'flex-end', 'center']}
+            >
               <Box>{convertDateToText(user.registration.registrationDate)}</Box>
             </Flex>
           </Flex>
         </Link>
       </Box>
-      <Box flexBasis="4.25rem">
+      <Box flexShrink={0}>
         <Button
           text={
             user.registration.didAttend ? (
-              <CheckIcon boxSize="1.2em" />
+              <CheckIcon boxSize={['1.2em', null, null, '0.6em']} />
             ) : (
-              <CloseIcon />
+              <CloseIcon boxSize={['1em', null, null, '0.5em']} />
             )
           }
           onClick={(): void => {
@@ -66,8 +70,8 @@ export default function MemberBox({
           }}
           boxShadow="rgb(210, 210, 210) 1px 1px 2px 2px"
           borderRadius="5px"
-          width="100%"
-          height="100%"
+          width={['4.25rem', null, null, '2.75rem']}
+          height={['4.25rem', null, null, '2.75rem']}
           py={1}
           px={2}
           backgroundColor={user.registration.didAttend ? 'simonyi' : 'red.500'}

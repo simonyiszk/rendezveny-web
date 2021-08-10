@@ -6,14 +6,12 @@ import MemberBox from './MemberBox';
 import SectionHeader from './SectionHeader';
 
 interface Props extends BoxProps {
-  text: string;
   listOfMembers: EventRelation[];
   eventL: Event;
   setAttendCb: (user: EventRelation) => void;
 }
 
 export default function MemberSection({
-  text,
   listOfMembers,
   eventL,
   setAttendCb,
@@ -22,7 +20,6 @@ export default function MemberSection({
     <Box>
       {listOfMembers.length > 0 && (
         <Box>
-          <SectionHeader text={text} />
           {listOfMembers.map((e: EventRelation) => (
             <MemberBox
               key={e.userId}

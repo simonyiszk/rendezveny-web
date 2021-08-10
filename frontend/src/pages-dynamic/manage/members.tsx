@@ -188,7 +188,6 @@ export default function MembersPage({
         <TabPanels>
           <TabPanel>
             <MemberSection
-              text="Résztvevők"
               listOfMembers={registeredUsers}
               eventL={
                 {
