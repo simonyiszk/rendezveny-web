@@ -7,7 +7,7 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Event, EventRelation } from '../../interfaces';
 import MemberBox from './MemberBox';
@@ -92,11 +92,40 @@ export default function MemberSection({
       : 1;
   };
 
-  const listOfMembersSorted = listOfMembers
-    .filter((e: EventRelation) => e.name.startsWith(filterName))
-    .sort(orderFunction);
-  const listOfMembersRender =
-    orderDirection === 0 ? listOfMembersSorted : listOfMembersSorted.reverse();
+  const listOfMembersSorted =
+    orderDirection === 0
+      ? [...listOfMembers].sort(orderFunction)
+      : [...listOfMembers].sort(orderFunction).reverse();
+
+  const [listOfMemberIdsPrevious, setlistOfMemberIdsPrevious] = useState(
+    listOfMembersSorted.map((u) => u.userId),
+  );
+
+  const actualizeListOfMembers = () => {
+    setlistOfMemberIdsPrevious(listOfMembersSorted.map((u) => u.userId));
+    console.log('Actualize');
+  };
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (orderType === OrderType.CheckedIn) {
+      timer = setTimeout(() => {
+        actualizeListOfMembers();
+      }, 3000);
+    }
+    return () => {
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listOfMembers]);
+
+  useEffect(() => {
+    actualizeListOfMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderType, orderDirection]);
+
+  const handleSetAttend = (user: EventRelation): void => {
+    setAttendCb(user);
+  };
 
   return (
     <Box>
@@ -149,16 +178,25 @@ export default function MemberSection({
         </Flex>
       </Box>
       <Box>
-        {listOfMembersRender.length > 0 && (
+        {listOfMembers.length > 0 && (
           <Box>
-            {listOfMembersRender.map((e: EventRelation) => (
-              <MemberBox
-                key={e.userId}
-                user={e}
-                eventL={eventL}
-                setAttendCb={setAttendCb}
-              />
-            ))}
+            {listOfMembers
+              .slice()
+              .sort((a, b) => {
+                return (
+                  listOfMemberIdsPrevious.indexOf(a.userId) -
+                  listOfMemberIdsPrevious.indexOf(b.userId)
+                );
+              })
+              .filter((e: EventRelation) => e.name.startsWith(filterName))
+              .map((e: EventRelation) => (
+                <MemberBox
+                  key={e.userId}
+                  user={e}
+                  eventL={eventL}
+                  setAttendCb={handleSetAttend}
+                />
+              ))}
           </Box>
         )}
       </Box>
