@@ -1,5 +1,4 @@
 import { Box, Flex, Grid, Input } from '@chakra-ui/react';
-import { navigate } from 'gatsby';
 import React, { useContext, useState } from 'react';
 import { useMutation } from 'urql';
 
