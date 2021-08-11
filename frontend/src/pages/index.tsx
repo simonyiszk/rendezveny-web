@@ -1,12 +1,13 @@
 import './main.css';
 
 import { Box } from '@chakra-ui/react';
-import { Link, navigate } from 'gatsby';
+import { Link } from 'gatsby';
 import React from 'react';
 import { useQuery } from 'urql';
 
 import { eventGetAllQuery } from '../api/index/EventsGetAllQuery';
 import { Layout } from '../components/layout/Layout';
+import LoginComponent from '../components/login/LoginComponent';
 import EventSection from '../components/sections/EventSection';
 import Loading from '../components/util/Loading';
 import { AllEventResult } from '../interfaces';
@@ -23,10 +24,10 @@ export default function IndexPage(): JSX.Element {
   }
 
   if (error) {
-    if (typeof window !== 'undefined') {
-      navigate('/login');
+    if (error?.message === '[GraphQL] Unauthorized to perform operation') {
+      return <LoginComponent />;
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const registeredEvents = data?.registeredEvents.nodes ?? [];

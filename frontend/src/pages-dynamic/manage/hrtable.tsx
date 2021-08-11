@@ -20,6 +20,7 @@ import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import HRTableComp from '../../components/hrtable/HRTableComp';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import InfoModal from '../../components/util/InfoModal';
 import Loading from '../../components/util/Loading';
 import {
@@ -98,8 +99,6 @@ export default function HRTablePage({
     query: profileGetSelfQuery,
   });
 
-  const hrTable = getHRTableData?.events_getOne.hrTable;
-  const organizer = getHRTableData?.events_getOne.selfRelation.organizer;
   const [signUps, setSignUps] = useState<string[]>([]);
   const [signOffs, setSignOffs] = useState<string[]>([]);
 
@@ -146,11 +145,25 @@ export default function HRTablePage({
     getHRTableError ||
     getSelfNameError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        eventTokenIDError,
+        eventTokenUNError,
+        getCurrentEventError,
+        getHRTableError,
+        getSelfNameError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <Box>Error</Box>;
+    return <div />;
   }
+
+  const hrTable = getHRTableData?.events_getOne.hrTable;
+  const organizer = getHRTableData?.events_getOne.selfRelation.organizer;
 
   const signUpCb = (segmentId: string): void => {
     if (signUps.includes(segmentId))

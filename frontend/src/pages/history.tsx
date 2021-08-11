@@ -1,14 +1,18 @@
 import { navigate } from 'gatsby';
-import React from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from 'urql';
 
 import { eventGetHistoryQuery } from '../api/history/EventsGetHistoryQuery';
 import { Layout } from '../components/layout/Layout';
+import LoginComponent from '../components/login/LoginComponent';
 import EventSection from '../components/sections/EventSection';
 import Loading from '../components/util/Loading';
 import { HistoryResult, HistoryYears } from '../interfaces';
+import { RoleContext } from '../utils/services/RoleContext';
 
 export default function HistoryPage(): JSX.Element {
+  const roleContext = useContext(RoleContext);
+
   const [{ data, fetching, error }] = useQuery<HistoryResult>({
     query: eventGetHistoryQuery,
   });
@@ -18,10 +22,11 @@ export default function HistoryPage(): JSX.Element {
   }
 
   if (error) {
-    if (typeof window !== 'undefined') {
+    if (error?.message === '[GraphQL] Unauthorized to perform operation') {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const allEvent = (): HistoryYears => {

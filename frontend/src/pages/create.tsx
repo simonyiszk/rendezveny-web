@@ -1,7 +1,7 @@
 import 'react-quill/dist/quill.snow.css';
 
 import { navigate } from 'gatsby';
-import React from 'react';
+import React, { useContext } from 'react';
 import { useMutation, useQuery } from 'urql';
 
 import { clubsGetAllQuery } from '../api/details/ClubsGetAllQuery';
@@ -11,6 +11,7 @@ import { eventGetUniquenamesQuery } from '../api/index/EventsGetUniquenamesQuery
 import { profileGetNameQuery } from '../api/profile/UserGetSelfQuery';
 import EventTabs from '../components/event/EventTabs';
 import { Layout } from '../components/layout/Layout';
+import LoginComponent from '../components/login/LoginComponent';
 import { ceilTime, nextTime } from '../components/util/Calendar';
 import Loading from '../components/util/Loading';
 import {
@@ -20,9 +21,12 @@ import {
   EventTabProps,
   UserGetSelfResult,
 } from '../interfaces';
+import { RoleContext } from '../utils/services/RoleContext';
 import useToastService from '../utils/services/ToastService';
 
 export default function CreatePage(): JSX.Element {
+  const roleContext = useContext(RoleContext);
+
   const [
     {
       data: otherMembersData,
@@ -79,10 +83,20 @@ export default function CreatePage(): JSX.Element {
     getUniquenamesError ||
     profileGetNameError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        otherMembersError,
+        clubsGetAllError,
+        getUniquenamesError,
+        profileGetNameError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const uniqueNames = getUniquenamesData

@@ -1,14 +1,18 @@
 import { Box } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
-import React from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from 'urql';
 
 import { profileGetSelfQuery } from '../api/profile/UserGetSelfQuery';
 import { Layout } from '../components/layout/Layout';
+import LoginComponent from '../components/login/LoginComponent';
 import Loading from '../components/util/Loading';
 import { ClubRole, UserGetSelfResult } from '../interfaces';
+import { RoleContext } from '../utils/services/RoleContext';
 
 export default function LogsPage(): JSX.Element {
+  const roleContext = useContext(RoleContext);
+
   const [
     { data: getProfileData, fetching: getProfileFetch, error: getProfileError },
   ] = useQuery<UserGetSelfResult>({
@@ -20,10 +24,13 @@ export default function LogsPage(): JSX.Element {
   }
 
   if (getProfileError) {
-    if (typeof window !== 'undefined') {
+    if (
+      getProfileError?.message === '[GraphQL] Unauthorized to perform operation'
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <Box>Error</Box>;
+    return <div />;
   }
   return (
     <Layout>

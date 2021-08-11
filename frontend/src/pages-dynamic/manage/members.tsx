@@ -14,6 +14,7 @@ import {
 } from '../../api/token/EventsGetTokenMutation';
 import Backtext from '../../components/control/Backtext';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import FormAggregation from '../../components/sections/FormAggregation';
 import MemberSection from '../../components/sections/MemberSection';
 import Loading from '../../components/util/Loading';
@@ -89,11 +90,11 @@ export default function MembersPage({
   });
 
   const [registeredUsers, setRegisteredUsers] = useState<EventRelation[]>(
-    getRegsData?.events_getOne.relations.nodes ?? [],
+    getRegsData?.events_getOne?.relations.nodes ?? [],
   );
   useEffect(() => {
     if (getRegsData)
-      setRegisteredUsers(getRegsData?.events_getOne.relations.nodes);
+      setRegisteredUsers(getRegsData?.events_getOne?.relations.nodes);
   }, [getRegsData]);
 
   const makeToast = useToastService();
@@ -139,10 +140,21 @@ export default function MembersPage({
     getAggregationError ||
     getRegsError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        eventTokenIDError,
+        eventTokenUNError,
+        getCurrentEventError,
+        getAggregationError,
+        getRegsError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const handleSetAttend = (user: EventRelation): void => {

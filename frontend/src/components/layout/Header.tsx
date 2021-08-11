@@ -24,7 +24,7 @@ export default function Header(): JSX.Element {
     resetTokens();
     if (roleContext.clearRelations) roleContext.clearRelations();
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      window.location.href = '/';
     }
   };
 

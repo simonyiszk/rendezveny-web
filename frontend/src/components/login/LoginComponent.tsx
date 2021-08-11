@@ -3,14 +3,14 @@ import { navigate } from 'gatsby';
 import React, { useContext, useState } from 'react';
 import { useMutation } from 'urql';
 
-import { loginWithLocalIdentityMutation } from '../api/token/LoginWithLocalIdentityMutation';
-import Button from '../components/control/Button';
-import { Layout } from '../components/layout/Layout';
-import { RoleContext } from '../utils/services/RoleContext';
-import useToastService from '../utils/services/ToastService';
-import { setAuthToken } from '../utils/token/TokenContainer';
+import { loginWithLocalIdentityMutation } from '../../api/token/LoginWithLocalIdentityMutation';
+import { RoleContext } from '../../utils/services/RoleContext';
+import useToastService from '../../utils/services/ToastService';
+import { setAuthToken } from '../../utils/token/TokenContainer';
+import Button from '../control/Button';
+import { Layout } from '../layout/Layout';
 
-export default function LoginPage(): JSX.Element {
+export default function LoginComponent(): JSX.Element {
   const roleContext = useContext(RoleContext);
 
   const [username, setUsername] = useState('');
@@ -33,7 +33,7 @@ export default function LoginPage(): JSX.Element {
             res.data.login_withLocalIdentity.memberships,
           );
         if (typeof window !== 'undefined') {
-          navigate('/');
+          window.location.reload();
         }
       }
     });

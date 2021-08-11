@@ -21,6 +21,7 @@ import {
 import Backtext from '../../components/control/Backtext';
 import EventTabs from '../../components/event/EventTabs';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import Loading from '../../components/util/Loading';
 import {
   Club,
@@ -84,7 +85,7 @@ export default function DetailsPage({
 
   const access = roleContext.isAdmin || roleContext.isManagerOfHost;
 
-  const originalUniqueName = eventData.uniqueName;
+  const originalUniqueName = eventData?.uniqueName;
 
   const [
     {
@@ -106,25 +107,25 @@ export default function DetailsPage({
       } as User;
     }) ?? []; */
   const resultOrganizers =
-    getOrganizersData?.events_getOne.organizers.nodes.map((u) => {
+    getOrganizersData?.events_getOne?.organizers.nodes.map((u) => {
       return {
         id: u.userId,
         name: u.name,
       } as User;
     }) ?? [];
   const resultChiefOrganizers =
-    getOrganizersData?.events_getOne.chiefOrganizers.nodes.map((u) => {
+    getOrganizersData?.events_getOne?.chiefOrganizers.nodes.map((u) => {
       return {
         id: u.userId,
         name: u.name,
       } as User;
     }) ?? [];
   const resultOrganizerClubs =
-    getOrganizersData?.events_getOne.hostingClubs.map((c) => {
+    getOrganizersData?.events_getOne?.hostingClubs.map((c) => {
       return { id: c.id, name: c.name } as Club;
     }) ?? [];
 
-  const initialValues = getOrganizersData
+  const initialValues = getOrganizersData?.events_getOne
     ? {
         name: getOrganizersData.events_getOne.name,
         description: getOrganizersData.events_getOne.description,
@@ -240,8 +241,7 @@ export default function DetailsPage({
     getUniqueNamesFetch ||
     getClubsFetch ||
     getOwnClubsFetch ||
-    profileGetNameFetch ||
-    !initialValues
+    profileGetNameFetch
   ) {
     return <Loading />;
   }
@@ -257,10 +257,24 @@ export default function DetailsPage({
     getOwnClubsError ||
     profileGetNameError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        getCurrentEventError,
+        eventTokenIDError,
+        eventTokenUNError,
+        getOrganizersError,
+        getUniqueNamesError,
+        getClubsError,
+        getOwnClubsError,
+        profileGetNameError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const handleSubmit = (values: EventTabProps): void => {

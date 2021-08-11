@@ -43,6 +43,7 @@ import Button from '../../components/control/Button';
 import { Radio, RadioGroup } from '../../components/control/RadioGroup';
 import QuestionListElement from '../../components/form/QuestionListElement';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import Loading from '../../components/util/Loading';
 import {
   Event,
@@ -143,11 +144,11 @@ export default function FormeditorPage({
   });
 
   const [questions, setQuestions] = useState<EventRegistrationFormQuestion[]>(
-    getEventData?.events_getOne.registrationForm.questions ?? [],
+    getEventData?.events_getOne?.registrationForm.questions ?? [],
   );
   useEffect(() => {
     if (getEventData)
-      setQuestions(getEventData?.events_getOne.registrationForm.questions);
+      setQuestions(getEventData?.events_getOne?.registrationForm.questions);
   }, [getEventData]);
 
   const makeToast = useToastService();
@@ -193,10 +194,21 @@ export default function FormeditorPage({
     getEventError ||
     getTemplatesError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        eventTokenIDError,
+        eventTokenUNError,
+        getCurrentEventError,
+        getEventError,
+        getTemplatesError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const getAnswer = (id: string): string | string[] => {

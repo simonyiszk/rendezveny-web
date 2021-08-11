@@ -19,6 +19,7 @@ import {
 import Button from '../../components/control/Button';
 import QuestionListElement from '../../components/form/QuestionListElement';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import {
@@ -195,10 +196,21 @@ export default function RegistrationPage({
     getEventError ||
     getCurrentError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        eventTokenIDError,
+        eventTokenUNError,
+        getCurrentEventError,
+        getEventError,
+        getCurrentError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <Box>Error</Box>;
+    return <div />;
   }
 
   const getAnswer = (id: string): string | string[] => {

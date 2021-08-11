@@ -1,15 +1,18 @@
-import { Box } from '@chakra-ui/react';
 import { navigate } from 'gatsby';
-import React from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from 'urql';
 
 import { logGetAllQuery } from '../api/logs/LogsGetAllQuery';
 import { Layout } from '../components/layout/Layout';
+import LoginComponent from '../components/login/LoginComponent';
 import LogBox from '../components/sections/LogBox';
 import Loading from '../components/util/Loading';
 import { LogsGetAllResult } from '../interfaces';
+import { RoleContext } from '../utils/services/RoleContext';
 
 export default function LogsPage(): JSX.Element {
+  const roleContext = useContext(RoleContext);
+
   const [
     { data: getLogData, fetching: getLogFetch, error: getLogError },
   ] = useQuery<LogsGetAllResult>({
@@ -20,10 +23,13 @@ export default function LogsPage(): JSX.Element {
     return <Loading />;
   }
   if (getLogError) {
-    if (typeof window !== 'undefined') {
+    if (
+      getLogError?.message === '[GraphQL] Unauthorized to perform operation'
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <Box>Error</Box>;
+    return <div />;
   }
 
   const logs = getLogData ? getLogData.logs_getAll.nodes : [];

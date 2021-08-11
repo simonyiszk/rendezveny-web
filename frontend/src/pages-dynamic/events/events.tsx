@@ -20,6 +20,7 @@ import {
 import Button from '../../components/control/Button';
 import LinkButton from '../../components/control/LinkButton';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import { Event, EventGetOneResult } from '../../interfaces';
@@ -80,7 +81,7 @@ export default function EventShowPage({
     pause: eventTokenUNData === undefined,
   });
   const eventData = event ?? getCurrentEventData?.events_getOne;
-  console.log('eventData', eventData);
+
   const tokenData = (eventTokenIDData ?? eventTokenUNData)?.events_getToken
     .relation.registration;
 
@@ -144,10 +145,20 @@ export default function EventShowPage({
     eventTokenUNError ||
     getEventError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [
+        getCurrentEventError,
+        eventTokenIDError,
+        eventTokenUNError,
+        getEventError,
+      ].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <Box>Error</Box>;
+    return <div />;
   }
 
   const convertDateToText = (d: string): string => {
@@ -186,7 +197,7 @@ export default function EventShowPage({
 
   const handleRegistration = (): void => {
     getRegisterSelfMutation({
-      eventId: eventData.id,
+      eventId: eventData?.id,
       filledInForm: {
         answers: [],
       },
@@ -215,8 +226,8 @@ export default function EventShowPage({
   const getRegistrationButtonComponent = (): JSX.Element => {
     if (!roleContext.isAdmin && !registered) {
       if (
-        new Date() < new Date(eventData.registrationStart) ||
-        new Date() > new Date(eventData.registrationEnd)
+        new Date() < new Date(eventData?.registrationStart) ||
+        new Date() > new Date(eventData?.registrationEnd)
       ) {
         return (
           <Button
@@ -230,9 +241,9 @@ export default function EventShowPage({
         );
       }
       if (
-        eventData.capacity &&
-        eventData.capacity > 0 &&
-        eventData.alreadyRegistered >= eventData.capacity
+        eventData?.capacity &&
+        eventData?.capacity > 0 &&
+        eventData?.alreadyRegistered >= eventData?.capacity
       ) {
         return (
           <Button
@@ -245,7 +256,7 @@ export default function EventShowPage({
           />
         );
       }
-      if (!eventData.registrationAllowed) {
+      if (!eventData?.registrationAllowed) {
         return (
           <Button
             width={['100%', null, '45%']}
@@ -264,7 +275,7 @@ export default function EventShowPage({
           <LinkButton
             text="Regisztráció"
             width={['100%', null, '45%']}
-            to={`/events/${eventData.uniqueName}/registration`}
+            to={`/events/${eventData?.uniqueName}/registration`}
             state={{ event: null }}
           />
         );
@@ -273,7 +284,7 @@ export default function EventShowPage({
         <LinkButton
           text="Regisztráció szerkesztése"
           width={['100%', null, '45%']}
-          to={`/events/${eventData.uniqueName}/registration`}
+          to={`/events/${eventData?.uniqueName}/registration`}
           state={{ event: null }}
         />
       );
@@ -370,7 +381,7 @@ export default function EventShowPage({
             text="Szerkesztés"
             width={['100%', null, '45%']}
             order={[1, null, 0]}
-            to={`/manage/${eventData.uniqueName}`}
+            to={`/manage/${eventData?.uniqueName}`}
             mt={[4, null, 0]}
             state={{ event: null }}
           />

@@ -44,7 +44,7 @@ export default function ShowMemberRegPage({ location }: Props): JSX.Element {
     },
   ] = useQuery<RegistrationGetOneResult>({
     query: registrationGetOneQuery,
-    variables: { id: user.registration.id },
+    variables: { id: user?.registration.id },
     pause: user === undefined,
   });
 

@@ -12,6 +12,7 @@ import {
 } from '../../api/token/EventsGetTokenMutation';
 import Button from '../../components/control/Button';
 import { Layout } from '../../components/layout/Layout';
+import LoginComponent from '../../components/login/LoginComponent';
 import BinaryModal from '../../components/util/BinaryModal';
 import Loading from '../../components/util/Loading';
 import ManagePageButton from '../../components/util/ManagePageButton';
@@ -107,10 +108,15 @@ export default function EventPage({
     eventTokenUNError ||
     getCurrentEventError
   ) {
-    if (typeof window !== 'undefined') {
+    if (
+      [eventTokenIDError, eventTokenUNError, getCurrentEventError].some(
+        (e) => e?.message === '[GraphQL] Unauthorized to perform operation',
+      )
+    ) {
+      if (!roleContext.isLoggedIn) return <LoginComponent />;
       navigate('/');
     }
-    return <div>Error</div>;
+    return <div />;
   }
 
   const handleDelete = (): void => {
