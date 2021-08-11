@@ -1,6 +1,7 @@
 import {
   Flex,
   Modal,
+  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
@@ -17,6 +18,7 @@ interface Props {
   title: string;
   onAccept: () => void;
   onReject: () => void;
+  description?: string;
 }
 
 export default function BinaryModal({
@@ -25,6 +27,7 @@ export default function BinaryModal({
   title,
   onAccept,
   onReject,
+  description,
 }: Props): JSX.Element {
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -32,6 +35,7 @@ export default function BinaryModal({
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
         <ModalCloseButton />
+        {description && <ModalBody>{description}</ModalBody>}
         <ModalFooter>
           <Flex width="100%" flexDirection="column">
             <Flex justifyContent="space-between" width="100%">
@@ -49,3 +53,6 @@ export default function BinaryModal({
     </Modal>
   );
 }
+BinaryModal.defaultProps = {
+  description: undefined,
+};

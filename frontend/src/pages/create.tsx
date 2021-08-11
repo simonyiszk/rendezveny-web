@@ -157,6 +157,7 @@ export default function CreatePage(): JSX.Element {
           application: true,
           hostingClubs: managedClubs,
         }}
+        userSelf={profileGetNameData?.users_getSelf}
       />
     </Layout>
   );

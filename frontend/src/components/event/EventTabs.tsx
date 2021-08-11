@@ -35,6 +35,8 @@ import Button from '../control/Button';
 import Multiselectpopup from '../control/Multiselectpopup';
 import ClubselectorModal from '../userselector/ClubSelectorModal';
 import UserSelectorModal from '../userselector/UserSelectorModal';
+import BinaryModal from '../util/BinaryModal';
+import useBinaryModalHook from '../util/BinaryModalHook';
 import Calendar, { roundTime } from '../util/Calendar';
 import Label from '../util/Label';
 
@@ -51,6 +53,7 @@ interface Props {
   handleSubmit: (values: EventTabProps) => void;
   withApplication: boolean;
   initialValues: EventTabProps;
+  userSelf: User | undefined;
 }
 
 export default function EventTabs({
@@ -63,6 +66,7 @@ export default function EventTabs({
   handleSubmit,
   withApplication,
   initialValues,
+  userSelf,
 }: Props): JSX.Element {
   const [name, setName] = useState(initialValues.name);
   const [isNameValid, setNameValid] = useState<string[]>([]);
@@ -105,6 +109,7 @@ export default function EventTabs({
   const useDisclosureChiefOrganizers = useDisclosure();
   const useDisclosureOrganizers = useDisclosure();
   const useDisclosureClubs = useDisclosure();
+  const useDisclosureChiefSelfUnsub = useBinaryModalHook();
 
   const validTab = (index: number): void => {
     switch (index) {
@@ -686,10 +691,32 @@ export default function EventTabs({
         title="Fő szervezők"
         users={chiefOrganizers}
         setUsers={(values: User[], newValue?: User): void => {
-          onChangeChiefOrganizers(values, newValue);
-          setChiefOrganizersValid(getChiefOrganizersValid(values));
+          if (
+            chiefOrganizers.some((o) => o.id === userSelf?.id) &&
+            !values.some((o) => o.id === userSelf?.id)
+          ) {
+            console.log('WARNING');
+            useDisclosureChiefSelfUnsub.onOpenAsync().then((res) => {
+              if (res === 1) {
+                onChangeChiefOrganizers(values, newValue);
+                setChiefOrganizersValid(getChiefOrganizersValid(values));
+              }
+            });
+          } else {
+            onChangeChiefOrganizers(values, newValue);
+            setChiefOrganizersValid(getChiefOrganizersValid(values));
+          }
         }}
       />
+      <BinaryModal
+        isOpen={useDisclosureChiefSelfUnsub.isOpen}
+        onClose={useDisclosureChiefSelfUnsub.onReject}
+        title="Biztosan törlöd magad a főszervezők közül?"
+        description="Mentés után nem fogod újra elérni ezt az oldalt."
+        onAccept={useDisclosureChiefSelfUnsub.onAccept}
+        onReject={useDisclosureChiefSelfUnsub.onReject}
+      />
+      ;
       <UserSelectorModal
         clubs={showedClubs}
         useDisclosureProps={useDisclosureOrganizers}

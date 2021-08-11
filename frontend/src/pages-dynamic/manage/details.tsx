@@ -10,7 +10,10 @@ import { eventGetOrganizersQuery } from '../../api/details/EventGetOrganizersQue
 import { eventInformationMutation } from '../../api/details/EventInformationMutation';
 import { eventGetInformationQuery } from '../../api/index/EventsGetInformation';
 import { eventGetUniquenamesQuery } from '../../api/index/EventsGetUniquenamesQuery';
-import { profileGetSelfQuery } from '../../api/profile/UserGetSelfQuery';
+import {
+  profileGetNameQuery,
+  profileGetSelfQuery,
+} from '../../api/profile/UserGetSelfQuery';
 import {
   eventsGetTokenMutationID,
   eventsGetTokenMutationUN,
@@ -194,6 +197,16 @@ export default function DetailsPage({
         return { id: c.club.id, name: c.club.name } as Club;
       }) ?? [];
 
+  const [
+    {
+      data: profileGetNameData,
+      fetching: profileGetNameFetch,
+      error: profileGetNameError,
+    },
+  ] = useQuery<UserGetSelfResult>({
+    query: profileGetNameQuery,
+  });
+
   const makeToast = useToastService();
 
   const [, getEventInformationMutation] = useMutation(eventInformationMutation);
@@ -227,6 +240,7 @@ export default function DetailsPage({
     getUniqueNamesFetch ||
     getClubsFetch ||
     getOwnClubsFetch ||
+    profileGetNameFetch ||
     !initialValues
   ) {
     return <Loading />;
@@ -240,7 +254,8 @@ export default function DetailsPage({
     getOrganizersError ||
     getUniqueNamesError ||
     getClubsError ||
-    getOwnClubsError
+    getOwnClubsError ||
+    profileGetNameError
   ) {
     if (typeof window !== 'undefined') {
       navigate('/');
@@ -295,6 +310,7 @@ export default function DetailsPage({
         handleSubmit={handleSubmit}
         withApplication
         initialValues={initialValues}
+        userSelf={profileGetNameData?.users_getSelf}
       />
     </Layout>
   );
